@@ -1,3 +1,12 @@
+# Copyright (C) 2021 György Barabás
+# This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
+# you are welcome to redistribute it under certain conditions. for details,
+# see the GNU General Public License Agreement (in the file COPYING.txt).
+
+# To run, either execute within R or enter the following at the command prompt:
+# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]
+
+
 require(deSolve) # solving ordinary differential equations (ODEs)
 require(tidyverse) # manipulating and visualizing data
 require(ggpmisc) # adding statistics to plots
@@ -21,10 +30,10 @@ if (length(clargs)>0) { # command-line arguments
   replicate <- as.numeric(clargs[5]) # for seeding random number generator
   outfile <- clargs[6] # name of file to save data in (w/ path & extension)
 } else { # sample input parameters, if no command line arguments are given
-  S <- 50 # fifty species per trophic level
+  S <- 10 # fifty species per trophic level
   vbar <- 1e-1 # average genetic variance = 0.1 celsius squared
   dbar <- 1e-5 # average dispersal = 1e-5 (100 meters per year)
-  model <- "Tdep_trophic" # 2 trophic levels & temperature-dependent competition
+  model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   replicate <- 1 # replicate number = 1
   outfile <- "authenticOut" # no output file; make plot instead
 }
@@ -37,7 +46,7 @@ if (length(clargs)>0) { # command-line arguments
 generate_network <- function(SR, SC) {
   w <- matrix(0, SR+SC, SR+SC) # initialize adjacency matrix
   for (i in 1:SR) { # determine which resources each consumer eats: it must eat
-    indices <- sort(c(i, sample((1:SC)[-i], 4))) # the one with
+    indices <- sort(c(i, sample((1:SC)[-i], 1))) # the one with
     w[i+SR,indices] <- 1 # matching trait value, plus a fixed number of
   } # randomly assigned ones (in this case 4 more, for 5 resources per consumer)
   omega <- numeric(0) # initialize matrix of consumption efforts
@@ -92,10 +101,10 @@ SR <- S # number of resource species
 SC <- 0 # number of consumer species: 0, unless we have...
 if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
 S <- SR + SC # set S to be the total number of species
-L <- 50 # number of patches
+L <- 20 # number of patches
 
 # random- and trophic-dependent quantities
-set.seed(1000*replicate+321) # set random seed for reproducibility
+set.seed(1000*replicate+325) # set random seed for reproducibility
 v <- runif(SR, 0.5*vbar, 1.5*vbar) # resource genetic variances
 d <- runif(SR, 0.1*dbar, 10.0*dbar) # resource dispersal rates
 rho <- runif(SR, 0.9, 1.1) # resource growth-tolerance tradeoff parameter
@@ -142,7 +151,9 @@ mig <- mig + t(mig) # nearest-neighbor patches
 
 # initial conditions
 ninit <- matrix(0, S, L) # reserve memory for initial densities
-muinit <- matrix(seq(Tmin, Tmax, l=SR), SR, L) # initial trait means
+muinit <- matrix(seq(Tmax, Tmax, l=SR), SR, L) # initial trait means
+# Edit ! all initial species start with same location 
+# controlled de-facto by muninit 
 # initial temperatures
 Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin)
 for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
