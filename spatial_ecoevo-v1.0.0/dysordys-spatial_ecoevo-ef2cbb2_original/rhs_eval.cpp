@@ -1,5 +1,15 @@
+/*
+ Copyright (C) 2021 György Barabás
+ This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
+ you are welcome to redistribute it under certain conditions. for details,
+ see the GNU General Public License Agreement (in the file COPYING.txt).
+*/
+
+
 #include <Rcpp.h>
 #include <math.h>
+#include <iostream>
+using namespace std;
 using namespace Rcpp;
 
 
@@ -93,6 +103,10 @@ List eqs(double time, NumericVector state, List pars) {
       m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
     }
   }
+  if(max(n)<1.0e-5 || mean(n)<0){
+    cout<<time<<endl;
+    throw("All gone");
+  } 
   T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   for (k=0; k<L; k++) {

@@ -178,7 +178,7 @@ In tables there are no worries, but in cpp level it is a pain in the arse to mov
 I will need to see in the future if my datatable is mostly sparse and if I run to complexity issues, then it will be the first hting to do.
 At the moment no ne dies so it is not relevant yet. 
 
-Pay attention that in current implentation, split only controls the favor in growth for the descendant speices int the very first step of its creation (that is, to start up some gentic migration)
+Pay attention that in current implementation, split only controls the favor in growth for the descendant speices int the very first step of its creation (that is, to start up some gentic migration)
 In the next call of eqs the groth terms will be calculated by the n itself, which will probably will not shift much from full population for ancestor and zero for descandant.
 For the descandant that aint much of an issue, maybe a harsher condition to really come to surface. The problem is that the original species will not vanish neccesarily, and so the S will boom with tiny species all around. We will see.
 
@@ -187,7 +187,7 @@ After short consultation with the gen3is rep in github (https://github.com/proje
 in create_species_from_existing in the species script, lines 67-68 indicates that my original thought was alright, that in the cells of birth of a new species n(son)=n(parent),and the same for m.
 Sadly, I could not directly substitute in my case, and so i must think of a way to stay in an event or re-labeling format. 
 
-All for the worse, I have a difficulty to copy m, since it start with 0, I will have an entirly wronf trait for the newborn species!!
+All for the worse, I have a difficulty to copy m, since it start with 0, I will have an entirly wrong trait for the newborn species!!
 VERY CRUICAL!
 I have no choice but to dig in deSolve src, and find the way dt is determined. With that knowledge and the hope that dt is somehow constant per run (now from the deSolve docs I am sure that
 the "times" input is only the output displayed, not the entire timepoints calculated.
@@ -201,3 +201,38 @@ It is preferable now to work through the correct parameters and time settings. N
 I remembered that the original paper by Nornberg mentioned 'generations' and the code gave an option to plot_richness which occured a suspect that maybe I missed a speciation code in the original one and was doing nonesense.
 In the plot_richness function under plot_functions.R file line 247 the "richness" is just the different densities segmented by their local zone (temperate/polar/tropic) with the condition that
 densities < 1e-6 does not count, and so richness may shift (started with 50 species with max density 1, all of them became sparse and some "vanished" according to this count).
+
+
+Hagai Plan:
+The ORIGINAL CODE is good enough!
+Maybe one day we will use the Speciation option, for the moment the addition of unknowns is not compulsary since we hav enough of them.
+The runs to do are:
+With and without time to adapt:
+Generate 1 species at one source (or 10 identical, see a couple of configurations all at once) , and :
+1. Give 100M yrs to disperse and adapt, then perform climate change (say 300M yrs) , of 30 degrees.
+2. Give minimalistic time (<1M yrs), so it doesn't disperse much, then perform climate change.
+Arrange all the constants so the behaviour deifference will be on this scale. 
+Obviously needs to change methods to "rk4" or something so I can control the dt (I don't want the simulation to run forever).
+
+As for the Thesis Suggestion , I should write in 0.5-1 pages in word (english) what is the aim of the research, what tools (the EcoEvolution code) and what we intend to do.
+
+So far I had a nice chance at balancing the model parameters, but its yet to be good.
+I will have to suffice with the adaptive timestep, since rk4 goes negative n(i) for step > 0.01. For tE~1e5 it runs ~2 minutes. Runtime dependency is not exactlt linear but not very far from it,
+so for tE~3e8 it  will take ~6000 min = 100h = 4 days! not worth it
+
+
+The rtol and atol was nice. Got to speedy computation on the right timescales, with baseline model.
+But, when ic heck for the random seed, aperantly the ode success (getting to the end) is sensitive to seed choice.
+I will continue with the baseline to make the model immune to this sensitivity.
+
+
+Back again (19.09.23) after a while. For comparison, I got access to Nornberg's code in 5th of June 2023.
+So I figured out that the original code by Nornberg is not generic in reference to the initial mean temprature over the planet, that is, for a long simulation with Tmin = Tmax = 35: (add image from screenshots) the population at t=0 is 4 times larger than initial time, compared to long simulation with Tmin=Tmax=15: (add image from screenshots) where the t=0 actually shows a decrease in population compared to initial, up to several tens of %. 
+The reason must be connected to hard-coded numbers in the code. It might come from the constants in smoothStep, or it probably originates in the constants main sends to eqs.
+It needs to be cleanly tested.
+Also - it might be the right time to move to cleaner platforms. It should be a good idea to invest a little time in how to push to git some updaes since i change the code all the time, and some versions reconstruction might come at handy.
+As for this notes document, it can move to a markdown format, where it can be divided to sub-parts for readability.
+
+
+Welcome to git mangement ! (23.09.23), now we will commit and push to github
+

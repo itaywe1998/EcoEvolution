@@ -323,9 +323,9 @@ plot_timeseries <- function(dat) {
     scale_x_reverse(name="habitat patch number", expand=c(0.02, 0.02)) +
     scale_y_continuous(name="density", labels=abbreviate) +
     scale_colour_manual(values=color_pal(S)) +
-    scale_fill_manual(values=color_pal(S)) +
-    theme_bw() +
-    theme(legend.position="none") %>%
+    scale_fill_manual(values=color_pal(S)) %>%
+  #+theme_bw() 
+  #+theme(legend.position="none")
     return()
 }
 

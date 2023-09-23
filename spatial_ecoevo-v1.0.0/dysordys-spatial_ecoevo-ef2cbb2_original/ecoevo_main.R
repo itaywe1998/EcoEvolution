@@ -6,7 +6,9 @@
 # To run, either execute within R or enter the following at the command prompt:
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]
 
-
+rm(list = ls())
+start <- Sys.time()
+require(gridExtra)
 require(deSolve) # solving ordinary differential equations (ODEs)
 require(tidyverse) # manipulating and visualizing data
 require(ggpmisc) # adding statistics to plots
@@ -18,9 +20,7 @@ library(readr)
 sourceCpp("rhs_eval.cpp") # compile external C functions
 source("./plotting_functions.R") # various functions for plotting final data
 
-
 # ---------------------------- input parameters --------------------------------
-
 clargs <- commandArgs(trailingOnly=TRUE)
 if (length(clargs)>0) { # command-line arguments
   S <- as.numeric(clargs[1]) # number of species per trophic level
@@ -31,14 +31,25 @@ if (length(clargs)>0) { # command-line arguments
   outfile <- clargs[6] # name of file to save data in (w/ path & extension)
 } else { # sample input parameters, if no command line arguments are given
   S <- 10 # fifty species per trophic level
-  vbar <- 1e-1 # average genetic variance = 0.1 celsius squared
-  dbar <- 1e-5 # average dispersal = 1e-5 (100 meters per year)
-  model <- "Tdep" # 2 trophic levels & temperature-dependent competition
+  vbar <- 6e-5  # average genetic variance = 0.1 celsius squared
+  dbar <- 6e-5  # average dispersal = 1e-5 (100 meters per year)
+  model <- "baseline" # 2 trophic levels & temperature-dependent competition
   replicate <- 1 # replicate number = 1
-  outfile <- "authenticOut" # no output file; make plot instead
+  small <-FALSE
+  id <-"7"
+  if (small){
+    ts<--1e6
+    str<-"small"
+  }
+  else {
+    ts<--1e8
+    str<-"large"
+  }
+  file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
 }
 
-
+outfile <- paste("outputs/",file, sep = "") # no output file; make plot instead
+workspace <-paste("parameters/",file, sep="")
 # --------------------------------functions ------------------------------------
 
 # return matrix W[i,j], which is nonzero if consumer i eats resource j;
@@ -103,14 +114,34 @@ if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
 S <- SR + SC # set S to be the total number of species
 L <- 20 # number of patches
 
-# random- and trophic-dependent quantities
-set.seed(1000*replicate+325) # set random seed for reproducibility
-v <- runif(SR, 0.5*vbar, 1.5*vbar) # resource genetic variances
+# scalars
+set.seed(300*replicate+395) # set random seed for reproducibility
+v <- runif(SR, 0.25*vbar, 2.5*vbar) # resource genetic variances
 d <- runif(SR, 0.1*dbar, 10.0*dbar) # resource dispersal rates
+
+kappa <- 0.1 # intrinsic mortality parameter
+venv <- vbar # environmental variance
+vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
+s <- v + venv # species' total phenotypic variances
+eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
+eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
+nmin <- 1e-5 # below this threshold density, genetic variances are reduced
+aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
+bw <- 4 # intercept of trait-dependence of tolerance width
+Tmax <- 15.0 # initial mean temperature at equator
+Tmin <- 15 # initial mean temperature at poles
+Cmax <- -80 # projected temperature increase at poles
+Cmin <- -70 # projected temperature increase at equator
+tstart <- ts # starting time (relative to start of climate change at t = 0)
+tE <- 2e8 # time at which climate change stops (assuming it starts at t = 0)
+save.image(file = workspace)
+
+# matrices
 rho <- runif(SR, 0.9, 1.1) # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
-aP <- matrix(runif(SR*SR, 0.15*0.5, 0.15*1.5), SR, SR) # resource comp coeffs
-diag(aP) <- runif(SR, 0.2*0.5, 0.2*1.5) # resource intraspecific comp coeffs
+# assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
+aP <- matrix(runif(SR*SR, 0.15*0.8, 0.15*0.8), SR, SR) # resource comp coeffs
+diag(aP) <- runif(SR, 0.2*0.8, 0.2*0.8) # resource intraspecific comp coeffs
 a[1:SR,1:SR] <- aP # top left block: resources
 W <- matrix(0, S, S) # create feeding network: nothing if no consumers
 Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
@@ -126,23 +157,7 @@ if (model %in% c("trophic", "Tdep_trophic")) {
   arate[(SR+1):S] <- runif(S-SR, 1, 10) # attack rates in type II f.r.
 }
 
-# all other parameters
-kappa <- 0.1 # intrinsic mortality parameter
-venv <- vbar # environmental variance
-vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
-s <- v + venv # species' total phenotypic variances
-eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
-eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
-nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
-bw <- 4 # intercept of trait-dependence of tolerance width
-Tmax <- 25.0 # initial mean temperature at equator
-Tmin <- -10.0 # initial mean temperature at poles
-Cmax <- 9.66 # projected temperature increase at poles
-Cmin <- 1.26 # projected temperature increase at equator
-tstart <- -4000 # starting time (relative to start of climate change at t = 0)
-tE <- 300.0 # time at which climate change stops (assuming it starts at t = 0)
-tend <- 2500 # time at which integration ends
+
 
 # dispersal matrix
 mig <- matrix(0, L, L) # initialize dispersal matrix
@@ -151,7 +166,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 
 # initial conditions
 ninit <- matrix(0, S, L) # reserve memory for initial densities
-muinit <- matrix(seq(Tmax, Tmax, l=SR), SR, L) # initial trait means
+muinit <- matrix(seq(Tmin, Tmin, l=SR), SR, L) # initial trait means
 # Edit ! all initial species start with same location 
 # controlled de-facto by muninit 
 # initial temperatures
@@ -172,44 +187,56 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 
 # --------------------------- integrate ODEs -----------------------------------
-
-before_cc <- ode(y=ic, times=seq(tstart, 0, by=200), func=eqs, parms=pars,
-                 method="bdf_d") # integrate ODEs before climate change starts
+#consider changing rtol and atol
+at <-1e-4
+rt <-1e-4
+before_step <- -tstart/200
+tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
+       method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
+      error=function(e){message("All Species Extinct")
+                        return(NA)}) # integrate ODEs before climate change starts
+diagnostics(before_cc)
 ic <- as.numeric(before_cc[nrow(before_cc),-1]) # final state -> new initial cond.
 before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble:
-  organize_data(times=seq(from=tstart, to=0, by=200), pars=pars) %>%
+  organize_data(times=seq(from=tstart, to=0, by=before_step), pars = pars) %>%
   filter(time!=0) # remove time point 0 (will be starting point of during_cc)
 
-during_cc <- ode(y=ic, times=seq(0, tE, by=0.5), func=eqs, parms=pars,
-                 method="rk4") # integrate from start to end of climate change
-ic <- as.numeric(during_cc[nrow(during_cc),-1]) # final state -> new initial cond.
-during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
-  organize_data(times=seq(from=0, to=tE, by=100), pars=pars) %>%
-  filter(time!=tE) # remove time point tE (will be starting point of after_cc)
+print(Sys.time()-start)
 
-after_cc <- ode(y=ic, times=seq(tE, tend, by=100), func=eqs, parms=pars,
-                method="bdf_d") %>% # integrate from end of climate change to end
-  # put after-climate-change solution into tidy tibble:
-  organize_data(times=seq(from=tE, to=tend, by=100), pars=pars)
-
-# merge data from before, during, and after climate change
-dat <- bind_rows(before_cc, during_cc, after_cc) %>%
-  # add replicate, genetic var., dispersal rate, and structure as new columns
-  mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
-  # merge average genetic variance and dispersal into a single column
-  mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
-  # create regions
-  mutate(region=case_when(
-    (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
-    (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
-    TRUE                           ~ "temperate")) # the rest are "temperate"
-
-
+during_step <- tE/200
+at <-1e-3
+rt <-1e-3
+tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
+      method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
+      error=function(e){message("All Species Extinct")
+                        return(NA)},
+      finally = {
+        diagnostics(during_cc)
+        during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
+          organize_data(times=seq(from=0, to=tE, by=during_step), pars = pars) #%>%
+        
+        # merge data from before, during, and after climate change
+        dat <- bind_rows(before_cc, during_cc) %>%
+          # add replicate, genetic var., dispersal rate, and structure as new columns
+          mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
+          # merge average genetic variance and dispersal into a single column
+          mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
+          # create regions
+          mutate(region=case_when(
+            (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
+            (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
+            TRUE                           ~ "temperate")) # the rest are "temperate"
+        
+      })  # integrate from start to end of climate change
 # --------------------------- generate output ----------------------------------
+print(tE-max(during_cc$time))
+temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
+print(mean(temp$n))
+#print(min(dat$time[dat$n < 0]))
+if(tE==max(during_cc$time) && mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
+  if (outfile!="") { # if data file to save to was not specified as empty (""):
+    write_csv(dat, path=outfile) }# save data to specified file
+    plot_timeseries(dat %>% filter(time %in% c(tstart, 0, tE)))
+  }
+print(Sys.time()-start)
 
-if (outfile!="") { # if data file to save to was not specified as empty (""):
-  write_csv(dat, path=outfile) # save data to specified file
-} else { # otherwise, create a plot:
-  # replace function below with any function from "plotting_functions.R"
-  plot_timeseries(dat %>% filter(time %in% c(tstart, 0, tE, tend)))
-}
