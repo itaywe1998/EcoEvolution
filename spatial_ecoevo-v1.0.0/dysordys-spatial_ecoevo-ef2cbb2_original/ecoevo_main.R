@@ -1,10 +1,10 @@
-# Copyright (C) 2021 György Barabás
+# Copyright (C) 2021 György Barabás ----
 # This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
 # you are welcome to redistribute it under certain conditions. for details,
 # see the GNU General Public License Agreement (in the file COPYING.txt).
 
 # To run, either execute within R or enter the following at the command prompt:
-# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]
+# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
 
 rm(list = ls())
 start <- Sys.time()
@@ -110,14 +110,14 @@ organize_data <- function(dat, times, pars) {
 
 # ------------------------------- parameters -----------------------------------
 
-# number of species and number of patches
+# number of species and number of patches----
 SR <- S # number of resource species
 SC <- 0 # number of consumer species: 0, unless we have...
 if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
 S <- SR + SC # set S to be the total number of species
 L <- 20 # number of patches
 
-# scalars
+# scalars----
 set.seed(300*replicate+395) # set random seed for reproducibility
 v <- runif(SR, 0.25*vbar, 2.5*vbar) # resource genetic variances
 d <- runif(SR, 0.1*dbar, 10.0*dbar) # resource dispersal rates
@@ -139,7 +139,7 @@ tstart <- ts # starting time (relative to start of climate change at t = 0)
 tE <- 2e8 # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)
 
-# matrices
+# matrices----
 rho <- runif(SR, 0.9, 1.1) # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
@@ -162,16 +162,15 @@ if (model %in% c("trophic", "Tdep_trophic")) {
 
 
 
-# dispersal matrix
+# dispersal matrix----
 mig <- matrix(0, L, L) # initialize dispersal matrix
 for (k in 2:L) mig[k-1,k] <- 1 # each species can only migrate to the two
 mig <- mig + t(mig) # nearest-neighbor patches
 
-# initial conditions
+# initial conditions----
 ninit <- matrix(0, S, L) # reserve memory for initial densities
 muinit <- matrix(seq(Tmin, Tmin, l=SR), SR, L) # initial trait means
-# Edit ! all initial species start with same location 
-# controlled de-facto by muninit 
+# Edit ! all initial species start with same location controlled de-facto by muninit 
 # initial temperatures
 Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin)
 for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
@@ -182,7 +181,7 @@ if (model %in% c("trophic", "Tdep_trophic")) {
 }
 ic <- c(ninit, muinit) # merge initial conditions into a vector
 
-# coerce parameters into a list
+# coerce parameters into a list----
 pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
              eps=eps, W=W, venv=venv, vmat=vmat, s=s, nmin=nmin, aw=aw, bw=bw,
              Tmax=Tmax, Tmin=Tmin, Th=Th, arate=arate, Cmax=Cmax, Cmin=Cmin,
