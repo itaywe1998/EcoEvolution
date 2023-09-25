@@ -27,8 +27,10 @@ if (length(clargs)>0) { # command-line arguments
   vbar <- as.numeric(clargs[2]) # mean genetic variance
   dbar <- as.numeric(clargs[3]) # mean dispersal rate
   model <- clargs[4] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
-  replicate <- as.numeric(clargs[5]) # for seeding random number generator
-  outfile <- clargs[6] # name of file to save data in (w/ path & extension)
+  small <- as.logical(clargs[5]) # true for short adaptation time, false for long
+  replicate <- as.numeric(clargs[6]) # for seeding random number generator
+  outfile <- clargs[7] # name of file to save data in (w/ path & extension)
+  workspace <- clargs[8] # path to save configuration in
 } else { # sample input parameters, if no command line arguments are given
   S <- 10 # fifty species per trophic level
   vbar <- 6e-5  # average genetic variance = 0.1 celsius squared
@@ -46,10 +48,11 @@ if (length(clargs)>0) { # command-line arguments
     str<-"large"
   }
   file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
-}
+  outfile <- paste("outputs/",file, sep = "") # no output file; make plot instead
+  workspace <-paste("parameters/",file, sep="")
+  }
 
-outfile <- paste("outputs/",file, sep = "") # no output file; make plot instead
-workspace <-paste("parameters/",file, sep="")
+
 # --------------------------------functions ------------------------------------
 
 # return matrix W[i,j], which is nonzero if consumer i eats resource j;
