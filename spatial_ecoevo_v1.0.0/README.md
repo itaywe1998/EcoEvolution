@@ -6,11 +6,11 @@ editor_options:
 
 Three sub-directories :
 
-1.  dysordys-spatial_ecoevo-ef2cbb2 : Stable version of modified code to
+1.  ecoevo : Stable version of modified code to
     run simple time gaps (\~10k years) with prospering evolution , short
     processes which the species survive
 
-2\. dysordys-spatial_ecoevo-ef2cbb2_modif : advanced modified versions
+2\. modif : advanced modified versions
 
 -   backup_beforeSpeciation_WithOrigins : data structure was shifted in
     order to include origins per cell in tabular data. rhs_eval and main
@@ -22,7 +22,7 @@ Three sub-directories :
     like other major directories, currently (25.09.23) same as
     backup_SpeciationWorks
 
-3.  dysordys-spatial_ecoevo-ef2cbb2_original : Contains two main files.
+3.  original : Contains two main files.
 
 -   ecoevo_main_original - The clone of Nornberg's code - runs short
     times for multiple species, for \~3 minutes, in contrast to most of
@@ -31,6 +31,7 @@ Three sub-directories :
 -   ecoevo_main - Current (25.09.23) working main, modified in attemp to
     find suitable separation between extinction on short adaptation
     time, and survival on long adaptation time.
+4. (temporary) TempratureDebug :special directory with much resemblence to "original"'s file structure, created in order to detect dependencies in average temperature.
 
 TODO : Decide if each important version should reside on its own branch
 on git, renaming directories to shorter and more clear names, and make
