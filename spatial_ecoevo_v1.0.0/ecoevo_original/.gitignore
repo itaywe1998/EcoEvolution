@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.md
+*.txt
+*.rds
+*.Rout
+*/
+*Out
+
