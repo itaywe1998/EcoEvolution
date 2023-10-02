@@ -36,9 +36,9 @@ if (length(clargs)>0) { # command-line arguments
   vbar <- 6e-3  # average genetic variance = 0.1 celsius squared
   dbar <- 6e-3  # average dispersal = 1e-5 (100 meters per year)
   model <- "baseline" # 2 trophic levels & temperature-dependent competition
-  replicate <- 1 # replicate number = 1
   small <-FALSE
-  id <-"debugT"
+  replicate <- 1 # replicate number = 1
+  id <-"debugTSolved?"
   if (small){
     ts<--1e6
     str<-"small"
@@ -129,12 +129,12 @@ s <- v + venv # species' total phenotypic variances
 eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
 eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
+aw <- 0 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
-Tmax <- -60.0 # initial mean temperature at equator
+Tmax <- 30 # initial mean temperature at equator
 Tmin <- Tmax # initial mean temperature at poles
-Cmax <- 0 # projected temperature increase at poles
-Cmin <- 0 # projected temperature increase at equator
+Cmax <- -20 # projected temperature increase at poles
+Cmin <- Cmax # projected temperature increase at equator
 tstart <- ts # starting time (relative to start of climate change at t = 0)
 tE <- 2e8 # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)
