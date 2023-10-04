@@ -32,13 +32,13 @@ if (length(clargs)>0) { # command-line arguments
   outfile <- clargs[7] # name of file to save data in (w/ path & extension)
   workspace <- clargs[8] # path to save configuration in
 } else { # sample input parameters, if no command line arguments are given
-  S <- 10 # fifty species per trophic level
+  S <- 4 # fifty species per trophic level
   vbar <- 6e-5  # average genetic variance = 0.1 celsius squared
   dbar <- 6e-5  # average dispersal = 1e-5 (100 meters per year)
   model <- "baseline" # 2 trophic levels & temperature-dependent competition
   replicate <- 1 # replicate number = 1
-  small <-FALSE
-  id <-"debugT"
+  small <-TRUE
+  id <-"MakeBeforeVarying"
   if (small){
     ts<--1e6
     str<-"small"
@@ -134,7 +134,7 @@ bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 15.0 # initial mean temperature at equator
 Tmin <- Tmax # initial mean temperature at poles
 Cmax <- -70 # projected temperature increase at poles
-Cmin <- -80 # projected temperature increase at equator
+Cmin <- -60 # projected temperature increase at equator
 tstart <- ts # starting time (relative to start of climate change at t = 0)
 tE <- 2e8 # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)

@@ -119,8 +119,8 @@ L <- 20 # number of patches
 
 # scalars----
 set.seed(1000*replicate+325) # set random seed for reproducibility
-v <- runif(SR, 0.25*vbar, 0.25*vbar) # resource genetic variances
-d <- runif(SR, 1*dbar, 1*dbar) # resource dispersal rates
+v <- runif(SR, 0.25*vbar, 2.5*vbar) # resource genetic variances
+d <- runif(SR, 0.1*dbar, 10*dbar) # resource dispersal rates
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -132,7 +132,7 @@ nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 30 # initial mean temperature at equator
-Tmin <- Tmax # initial mean temperature at poles
+Tmin <- Tmax-25 # initial mean temperature at poles
 Cmax <- -20 # projected temperature increase at poles
 Cmin <- Cmax # projected temperature increase at equator
 tstart <- ts # starting time (relative to start of climate change at t = 0)
