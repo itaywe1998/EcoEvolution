@@ -32,19 +32,20 @@ if (length(clargs)>0) { # command-line arguments
   outfile <- clargs[7] # name of file to save data in (w/ path & extension)
   workspace <- clargs[8] # path to save configuration in
 } else { # sample input parameters, if no command line arguments are given
-  S <- 4 # fifty species per trophic level
-  vbar <- 6e-5  # average genetic variance = 0.1 celsius squared
-  dbar <- 6e-5  # average dispersal = 1e-5 (100 meters per year)
-  model <- "baseline" # 2 trophic levels & temperature-dependent competition
+  y <- 100
+  S <- 10 # fifty species per trophic level
+  vbar <- 1e-3 /y  # average genetic variance = 0.1 celsius squared
+  dbar <- 1e-5 / y   # average dispersal = 1e-5 (100 meters per year)
+  model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   replicate <- 1 # replicate number = 1
-  small <-TRUE
-  id <-"MakeBeforeVarying"
+  small <-FALSE
+  id <-"Promising"
   if (small){
-    ts<--1e6
+    ts<--1e3 * y
     str<-"small"
   }
   else {
-    ts<--1e8
+    ts<--1e6 * y
     str<-"large"
   }
   file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
@@ -119,8 +120,8 @@ L <- 20 # number of patches
 
 # scalars----
 set.seed(3000*replicate+695) # set random seed for reproducibility
-v <- runif(SR, 0.25*vbar, 2.5*vbar) # resource genetic variances
-d <- runif(SR, 0.1*dbar, 10.0*dbar) # resource dispersal rates
+v <- runif(SR, 1.0*vbar, 1.2*vbar) # resource genetic variances
+d <- runif(SR, 1.0*dbar, 1.2*dbar) # resource dispersal rates
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -132,15 +133,17 @@ nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 15.0 # initial mean temperature at equator
-Tmin <- Tmax # initial mean temperature at poles
-Cmax <- -70 # projected temperature increase at poles
-Cmin <- -60 # projected temperature increase at equator
+Tmin <- Tmax-30 # initial mean temperature at poles
+Cmax <- 30 # projected temperature increase at poles
+Cmin <- 12 # projected temperature increase at equator
+#Cmax <- 0
+#Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
-tE <- 2e8 # time at which climate change stops (assuming it starts at t = 0)
+tE <- 2e4*y # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)
 
 # matrices----
-rho <- runif(SR, 0.9, 1.1) # resource growth-tolerance tradeoff parameter
+rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
 aP <- matrix(runif(SR*SR, 0.15*0.8, 0.15*0.8), SR, SR) # resource comp coeffs
@@ -190,9 +193,9 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-4
-rt <-1e-4
-before_step <- -tstart/200
+at <-1e-10
+rt <-1e-10
+before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
       error=function(e){message("All Species Extinct")
@@ -206,8 +209,8 @@ before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble
 print(Sys.time()-start)
 
 during_step <- tE/200
-at <-1e-5
-rt <-1e-5
+at <-1e-10
+rt <-1e-10
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
       method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
       error=function(e){message("All Species Extinct")
@@ -238,7 +241,7 @@ print(mean(temp$n))
 if(tE==max(during_cc$time) && mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     write_csv(dat, path=outfile) }# save data to specified file
-    plot_timeseries(dat %>% filter(time %in% c(tstart, 0, tE)))
+    plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0, 100*during_step,tE)))
   }
 print(Sys.time()-start)
 

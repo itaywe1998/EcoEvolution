@@ -230,4 +230,20 @@ Update : aw = 0 consumes breaks down the R Session (memory consumption) in the c
 
 It appears to be (04.10.23) that the first stage is non-varying, and so it is fast. The more gradients are present in the ODE, the longer the calculation takes, and smaller steps are required. 
 Now, an "interesting" development may take (even though its not the best way rate such a thing) few minutes for the common configuration we currently have. Changing run id to "MakeBeforeVarying" , because my current interest shift to solve this issue as a key to achieve cases separation.
+
+Both images under 'ecoevo_original/noted' demonstrate the same thing (maybe id2 was wrong, will check) that adaptation time does not change the final result. Could see what is the difference in evolve towards this final common state.
+
+Carry on from ecoevo_original/ecoevo_main.R
+
+Congratulations!
+The simulation id "Promising" bear fruit. For short adaptation time exctinction occurs, and for long adaptation time life prevails.
+Several comments:
+1. What I did not realize before qas that I did not touch every single variable of the code, and the specific relatively constant scale was the Climate change time compared to the short adaptation time. 
+Once scaling them both with the vbar and dbar through scale variable `y` , this degree of freedom was utilized.
+2. This config is not the most general one. Competition was reduced as far as possible, dbar and vbar identical across all species, and most of all, the CC (Climate Cahnge) was not equally drstic through the entire planet, and a temprature range which existed at t=0 remained (somewhere else on the planet, but still) up until the end.
+Namely for the first success case:
+```Tmax <- 15.0 # initial mean temperature at equator
+Tmin <- Tmax-30 # initial mean temperature at poles
+Cmax <- 30 # projected temperature increase at poles
+Cmin <- 12 # projected temperature increase at equator```
 ```
