@@ -246,4 +246,8 @@ Namely for the first success case:
 Tmin <- Tmax-30 # initial mean temperature at poles
 Cmax <- 30 # projected temperature increase at poles
 Cmin <- 12 # projected temperature increase at equator```
+Specificaly , for CC duration of 2e6 years, all adaptation times smaller than 1e8 years were exctint
+
+
+Little Remainder : There is no point in setting different random seeds if all "runif" in the code bound to equal min and max. Runif is a random number sampler, with syntax - (sample_num, min, max).
 ```

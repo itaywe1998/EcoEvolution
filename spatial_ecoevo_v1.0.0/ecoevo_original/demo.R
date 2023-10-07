@@ -4,12 +4,12 @@ require(Rcpp) # importing C functions
 library(ggplot2)
 library(readr)
 source("./plotting_functions.R") # various functions for plotting final data
-vbar <- 6e-15  
-dbar <- 6e-15
-id <-"BiggerCC_check"
-final_time <- 2e8
+vbar <- 1e-5  
+dbar <- 1e-7
+id <-"rep3"
+final_time <- 2e6
 large_dat <-read_csv(paste("outputs/large_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep =""))
-large_tstart <--3e8
+large_tstart <--1e8
 plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(large_tstart, large_tstart-large_tstart/200, final_time)))+ggtitle("Long Adaptation Period")
 small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep =""))
 small_tstart <--1e6

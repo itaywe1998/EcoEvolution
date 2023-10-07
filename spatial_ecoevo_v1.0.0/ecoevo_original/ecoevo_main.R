@@ -23,37 +23,38 @@ source("./plotting_functions.R") # various functions for plotting final data
 # ---------------------------- input parameters --------------------------------
 clargs <- commandArgs(trailingOnly=TRUE)
 if (length(clargs)>0) { # command-line arguments
-  S <- as.numeric(clargs[1]) # number of species per trophic level
-  vbar <- as.numeric(clargs[2]) # mean genetic variance
-  dbar <- as.numeric(clargs[3]) # mean dispersal rate
-  model <- clargs[4] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
-  small <- as.logical(clargs[5]) # true for short adaptation time, false for long
-  replicate <- as.numeric(clargs[6]) # for seeding random number generator
-  outfile <- clargs[7] # name of file to save data in (w/ path & extension)
-  workspace <- clargs[8] # path to save configuration in
+  #S <- as.numeric(clargs[1]) # number of species per trophic level
+  #vbar <- as.numeric(clargs[2]) # mean genetic variance
+  #dbar <- as.numeric(clargs[3]) # mean dispersal rate
+  #outfile <- clargs[7] # name of file to save data in (w/ path & extension)
+  #workspace <- clargs[8] # path to save configuration in
+  model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
+  small <- as.logical(clargs[2]) # true for short adaptation time, false for long
+  seed <- as.numeric(clargs[3]) # for seeding random number generator
+  id <- clargs[4] # current run name 
+
 } else { # sample input parameters, if no command line arguments are given
-  y <- 100
-  S <- 10 # fifty species per trophic level
-  vbar <- 1e-3 /y  # average genetic variance = 0.1 celsius squared
-  dbar <- 1e-5 / y   # average dispersal = 1e-5 (100 meters per year)
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  replicate <- 1 # replicate number = 1
   small <-FALSE
-  id <-"Promising"
-  if (small){
-    ts<--1e3 * y
-    str<-"small"
+  id <-"default"
+  seed <- 1000
   }
-  else {
-    ts<--1e6 * y
-    str<-"large"
-  }
-  file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
-  outfile <- paste("outputs/",file, sep = "") # no output file; make plot instead
-  workspace <-paste("parameters/",file, sep="")
-  }
+y <- 100
+S <- 4 # fifty species per trophic level
+vbar <- 1e-3 /y  # average genetic variance = 0.1 celsius squared
+dbar <- 1e-5 / y   # average dispersal = 1e-5 (100 meters per year)
 
-
+if (small){
+  ts<--1e3 * y
+  str<-"small"
+}else {
+  ts<--1e6 * y
+  str<-"large"
+}
+replicate <- 1 # replicate number = 1
+file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+outfile <- paste("outputs/",file, sep = "") 
+workspace <-paste("parameters/",file, sep="")
 # --------------------------------functions ------------------------------------
 
 # return matrix W[i,j], which is nonzero if consumer i eats resource j;
@@ -119,7 +120,7 @@ S <- SR + SC # set S to be the total number of species
 L <- 20 # number of patches
 
 # scalars----
-set.seed(3000*replicate+695) # set random seed for reproducibility
+set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 1.2*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 1.2*dbar) # resource dispersal rates
 
