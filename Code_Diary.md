@@ -261,5 +261,6 @@ writing a dual run bash (small and large automatically one after another ) is go
 Near future (08.10.23) task - find a family/neighborhood of inputs so that case separation occurs.
 
 (09.10.23) Done with data display for FAILED runs. Now just a dual demo.
+Demo ready.Going for little grid search on bash.
 
 ```

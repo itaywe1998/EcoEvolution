@@ -26,20 +26,18 @@ if (length(clargs)>0) { # command-line arguments
   #S <- as.numeric(clargs[1]) # number of species per trophic level
   #vbar <- as.numeric(clargs[2]) # mean genetic variance
   #dbar <- as.numeric(clargs[3]) # mean dispersal rate
-  #outfile <- clargs[7] # name of file to save data in (w/ path & extension)
-  #workspace <- clargs[8] # path to save configuration in
   model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
   small <- as.logical(clargs[2]) # true for short adaptation time, false for long
   seed <- as.numeric(clargs[3]) # for seeding random number generator
-  id <- clargs[4] # current run name 
-
+  id <- clargs[4] # current run name
+  y <- as.numeric(clargs[5]) # scaling factor
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
   id <-"DualDisp"
   seed <- 3695
+  y <- 100
   }
-y <- 100
 S <- 4 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance = 0.1 celsius squared
 dbar <- 1e-5 / y   # average dispersal = 1e-5 (100 meters per year)
