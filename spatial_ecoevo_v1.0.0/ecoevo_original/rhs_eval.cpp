@@ -105,7 +105,7 @@ List eqs(double time, NumericVector state, List pars) {
   }
   if(max(n)<1.0e-5 || mean(n)<0){
     cout<<time<<endl;
-    throw("All gone");
+    throw range_error(to_string(time));
   } 
   T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k

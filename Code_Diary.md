@@ -246,8 +246,20 @@ Namely for the first success case:
 Tmin <- Tmax-30 # initial mean temperature at poles
 Cmax <- 30 # projected temperature increase at poles
 Cmin <- 12 # projected temperature increase at equator```
-Specificaly , for CC duration of 2e6 years, all adaptation times smaller than 1e8 years were exctint
+Specifically , for CC duration of 2e6 years, all adaptation times smaller than 1e8 years were extinct
 
 
 Little Remainder : There is no point in setting different random seeds if all "runif" in the code bound to equal min and max. Runif is a random number sampler, with syntax - (sample_num, min, max).
+
+Multiple runs ares still wanted, now that the format is clearer (e.g):
+Rscript ecoevo_main.R Tdep False 2 bashTrial
+
+I guess check for more interesting temperature range.Than add complexity step by step.
+For some reason when CC is uniform, the population goes to inf, crashes R. I wonder why is that so and if this is a sensitive case or a more general one.
+
+writing a dual run bash (small and large automatically one after another ) is good, but a dual demo is also needed. I want to show the small time failure , and so a certain data needs to come from there. Currently when throwing an error the data up to this point is lost. Should think of a way to save it.
+Near future (08.10.23) task - find a family/neighborhood of inputs so that case separation occurs.
+
+(09.10.23) Done with data display for FAILED runs. Now just a dual demo.
+
 ```

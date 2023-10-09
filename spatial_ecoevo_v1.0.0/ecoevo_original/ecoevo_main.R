@@ -36,12 +36,12 @@ if (length(clargs)>0) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"default"
-  seed <- 1000
+  id <-"DualDisp"
+  seed <- 3695
   }
 y <- 100
 S <- 4 # fifty species per trophic level
-vbar <- 1e-3 /y  # average genetic variance = 0.1 celsius squared
+vbar <- 3e-3 /y  # average genetic variance = 0.1 celsius squared
 dbar <- 1e-5 / y   # average dispersal = 1e-5 (100 meters per year)
 
 if (small){
@@ -212,11 +212,21 @@ print(Sys.time()-start)
 during_step <- tE/200
 at <-1e-10
 rt <-1e-10
+fail_time <- 0
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
       method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
-      error=function(e){message("All Species Extinct")
-                        return(NA)},
+      error=function(fail_time){
+          message("All Species Extinct")
+          fail_time<<-as.numeric(fail_time$message)},
       finally = {
+        if (fail_time > 0) {
+          outfile <<- paste(outfile,"_FAILED",sep="")
+          unlink(workspace) # Deleting old name workspace
+          workspace <<- paste(workspace,"_FAILED",sep="")
+          save.image(file = workspace)
+          during_cc <-ode(y=ic, times=seq(0, fail_time-during_step, by=during_step), func=eqs, parms=pars,
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
+        }
         diagnostics(during_cc)
         during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
           organize_data(times=seq(from=0, to=tE, by=during_step), pars = pars) #%>%
@@ -239,7 +249,7 @@ print(tE-max(during_cc$time))
 temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
 print(mean(temp$n))
 #print(min(dat$time[dat$n < 0]))
-if(tE==max(during_cc$time) && mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
+if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     write_csv(dat, path=outfile) }# save data to specified file
     plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0, 100*during_step,tE)))
