@@ -1,13 +1,13 @@
 #!/bin/bash
 
+seed=$1
+run_name=$2
+y=$3
+
 model="Tdep"
 small="TRUE"
-seed=1234
-run_name="DualDisp&Run"
-y=200
 dual="TRUE"
-do_run=false
-
+do_run=true
 if $do_run
 then
 Rscript ecoevo_main.R $model $small $seed $run_name $y
