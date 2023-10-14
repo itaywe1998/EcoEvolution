@@ -1,0 +1,5 @@
+small_time_v5e-06_d1e-06id2 & large_time_v5e-06_d1e-06id2 from 09.09.2023 demonstrate mortage and survival case seperation, but in the reverse direction than anticipated (longer wait killed)
+
+id6 was long as hell, 3 minutes for short and 17 minutes for long. The lsode is informative but very long. Accuracy and computation speed is a trade off.
+
+Both images demonstrate the same thing (maybe id2 was wrong, will check) that adaptation time does not change the final result.
