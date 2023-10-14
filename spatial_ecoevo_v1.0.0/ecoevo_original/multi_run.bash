@@ -7,7 +7,7 @@ x_array=()
 for ((i=1; i<=7; i++)); do
    y_array[i]=100
    x_array[i]=1
-   seed_array[i]=$((3695*i+4**i))
+   seed_array[i]=$((3695*i+2**i))
 done
 
 for ((i=1; i<=7; i++)); do
