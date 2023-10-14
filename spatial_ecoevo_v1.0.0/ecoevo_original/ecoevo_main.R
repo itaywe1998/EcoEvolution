@@ -40,6 +40,7 @@ if (length(clargs)>0) { # command-line arguments
 S <- 4 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance in Celsius squared
 dbar <- (1e-5 / y) / x  # average dispersal (1e-7 <=> 1 meter per year)
+# more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 
 if (small){
   ts<--1e3 * y
@@ -131,9 +132,9 @@ nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 15.0 # initial mean temperature at equator
-Tmin <- Tmax-30 # initial mean temperature at poles
+Tmin <- Tmax-40 # initial mean temperature at poles
 Cmax <- 30 # projected temperature increase at poles
-Cmin <- 12 # projected temperature increase at equator
+Cmin <- 20 # projected temperature increase at equator
 #Cmax <- 0
 #Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
@@ -144,8 +145,8 @@ save.image(file = workspace)
 rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
-aP <- matrix(runif(SR*SR, 0.15*0.8, 0.15*0.8), SR, SR) # resource comp coeffs
-diag(aP) <- runif(SR, 0.2*0.8, 0.2*0.8) # resource intraspecific comp coeffs
+aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.9), SR, SR) # resource comp coeffs
+diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.9) # resource intraspecific comp coeffs
 a[1:SR,1:SR] <- aP # top left block: resources
 W <- matrix(0, S, S) # create feeding network: nothing if no consumers
 Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
