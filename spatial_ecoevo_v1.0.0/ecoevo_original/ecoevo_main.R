@@ -37,7 +37,7 @@ if (length(clargs)>0) { # command-line arguments
   y <- 100
   x <- 1
   }
-S <- 4 # fifty species per trophic level
+S <- 10 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance in Celsius squared
 dbar <- (1e-5 / y) / x  # average dispersal (1e-7 <=> 1 meter per year)
 # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
@@ -119,8 +119,8 @@ L <- 20 # number of patches
 
 # scalars----
 set.seed(seed) # set random seed for reproducibility
-v <- runif(SR, 1.0*vbar, 1.2*vbar) # resource genetic variances
-d <- runif(SR, 1.0*dbar, 1.2*dbar) # resource dispersal rates
+v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
+d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -131,7 +131,7 @@ eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
-Tmax <- 15.0 # initial mean temperature at equator
+Tmax <- 25.0 # initial mean temperature at equator
 Tmin <- Tmax-40 # initial mean temperature at poles
 Cmax <- 30 # projected temperature increase at poles
 Cmin <- 20 # projected temperature increase at equator
