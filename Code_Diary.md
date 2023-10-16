@@ -265,4 +265,14 @@ Demo ready.Going for little grid search on bash.
 
 (10.10.23) Bash loop on y variable is implemented.[multi_run.bash]
 
+Remember! patch #1 - poles, patch maximal number  - equator.
+For reading paramters saved from past runs, use the "load" R command from any R console with the proper file path.
+
+
+Hagai meeting summary:
+Very good progress. For article we also need 
+1. periodic climate change. Maybe do few (4-5) periods over entire CC time
+2. start technical description in overleaf. Introduction text and mainly the equations behind the code.
+Nice!
+
 ```
