@@ -123,7 +123,7 @@ v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
 periodic <- TRUE
-cycles <- 5
+cycles <- 2
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -141,7 +141,7 @@ Cmin <- 7 # projected temperature increase at equator
 #Cmax <- 0
 #Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
-tE <- 2e4*y*10 # time at which climate change stops (assuming it starts at t = 0)
+tE <- 2e4*y*(cycles*2) # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)
 
 # matrices----

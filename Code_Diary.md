@@ -278,4 +278,13 @@ Nice!
 Let is start with periodic CC.
 Periodic CC first attempt, needs to configure a successful survival scenario for long adaptation since now for fully CC shifts (30 degrees) the CC is effectively cycles*2 faster, so needs to answer this time dependencies.
 
+First successful (16.10.23) periodic CC! Survival at long adaptation, mediate CC shift (Cmin=7 and Cmax=15) and cycles=3.
+Need to see:
+1. Generate cases where short time fail when long succeed
+2. Consider sin() and not just abs(sin) for temp profile [in rhs_eval.cpp, periodic_smoothstep function], that is, low tempratures beyond initials
+
+*by the way, good to know that with the updated tolerances (1e-14) the sin profile is a non issue. maybe it is a run duration thing and not deriatives problem.
+3.Allow more periods safely, enlarging tE is a good direction but not trivial,
+didn't go smoothly at first attempt
+
 ```
