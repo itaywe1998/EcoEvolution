@@ -276,5 +276,6 @@ Very good progress. For article we also need
 Nice!
 
 Let is start with periodic CC.
+Periodic CC first attempt, needs to configure a successful survival scenario for long adaptation since now for fully CC shifts (30 degrees) the CC is effectively cycles*2 faster, so needs to answer this time dependencies.
 
 ```
