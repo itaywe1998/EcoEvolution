@@ -27,6 +27,27 @@ double smoothstep(double x) {
   return(y);
 }
 
+/* In here the range [0,1] is divided to 'cycles' amount of periods, for which 
+ * symmetric rise and fall smoothstep occurs.
+ * i.e for `cycles` = 5, in range [0,0.1] y = smoothstep and in [0.1,0.2] y = 1-smoothstep,
+ * with the appropriate argument normalization.
+ */
+
+// [[Rcpp::export]]
+double periodic_smoothstep(double x, int cycles) {
+  double y;
+  y = abs(sin(cycles*M_PI*x));
+  // we will see if has to be smooth or abs(sin) is OK
+  /* double aug_x = x * cycles;
+   aug_x = aug_x - floor(aug_x);
+   if (0.0<=aug_x && aug_x<= 0.5) y = smoothstep(x);
+   else if (0.5<aug_x && aug_x<=1.0) y = 1.0-smoothstep(x);
+   else {
+     throw range_error(to_string(aug_x));
+   }*/
+  return y;
+}
+
 
 /* Temperature as a function of space (x), time (t), and some climate parameters
  Input:
@@ -41,8 +62,13 @@ double smoothstep(double x) {
  - Vector of temperatures at each location x */
 // [[Rcpp::export]]
 NumericVector Temp(NumericVector x, double t, double tE,
-                   double Cmax, double Cmin, double Tmax, double Tmin) {
-  return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*smoothstep(t/tE));
+                   double Cmax, double Cmin, double Tmax, double Tmin, bool periodic, int cycles) {
+  if (periodic) {
+    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*periodic_smoothstep((t/tE),cycles));
+  }
+  else {
+    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*smoothstep(t/tE));
+  }
 }
 
 
@@ -81,7 +107,7 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
 // [[Rcpp::export]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
-  int S=pars["S"], SR=pars["SR"], L=pars["L"];
+  int S=pars["S"], SR=pars["SR"], L=pars["L"], cycles=pars["cycles"];
   double eta=pars["eta"], nmin=pars["nmin"], venv=pars["venv"];
   double tE=pars["tE"], Cmax=pars["Cmax"], Cmin=pars["Cmin"], Tmax=pars["Tmax"];
   double Tmin=pars["Tmin"], aw=pars["aw"], bw=pars["bw"], kappa=pars["kappa"];
@@ -89,6 +115,7 @@ List eqs(double time, NumericVector state, List pars) {
   NumericVector arate=pars["arate"], eps=pars["eps"];
   NumericMatrix vmat=pars["vmat"], W=pars["W"], mig=pars["mig"], a=pars["a"];
   String model=pars["model"];
+  bool periodic=pars["periodic"];
   // Variables
   int i, j, k, l;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
@@ -107,7 +134,7 @@ List eqs(double time, NumericVector state, List pars) {
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 
-  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin); // Vector of temperatures
+  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:

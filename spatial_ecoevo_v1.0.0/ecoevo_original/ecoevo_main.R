@@ -32,12 +32,12 @@ if (length(clargs)>0) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"DualDisp"
+  id <-"BiggerPeriodicCC"
   seed <- 3695
   y <- 100
   x <- 1
   }
-S <- 10 # fifty species per trophic level
+S <- 4 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance in Celsius squared
 dbar <- (1e-5 / y) / x  # average dispersal (1e-7 <=> 1 meter per year)
 # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
@@ -122,6 +122,9 @@ set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
+periodic <- TRUE
+cycles <- 5
+
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
 vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
@@ -133,12 +136,12 @@ aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 25.0 # initial mean temperature at equator
 Tmin <- Tmax-40 # initial mean temperature at poles
-Cmax <- 30 # projected temperature increase at poles
-Cmin <- 20 # projected temperature increase at equator
+Cmax <- 15 # projected temperature increase at poles
+Cmin <- 7 # projected temperature increase at equator
 #Cmax <- 0
 #Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
-tE <- 2e4*y # time at which climate change stops (assuming it starts at t = 0)
+tE <- 2e4*y*10 # time at which climate change stops (assuming it starts at t = 0)
 save.image(file = workspace)
 
 # matrices----
@@ -174,7 +177,7 @@ ninit <- matrix(0, S, L) # reserve memory for initial densities
 muinit <- matrix(seq(Tmin, Tmin, l=SR), SR, L) # initial trait means
 # Edit ! all initial species start with same location controlled de-facto by muninit 
 # initial temperatures
-Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin)
+Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles)
 for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
 # initial traits and densities for consumers
 if (model %in% c("trophic", "Tdep_trophic")) {
@@ -187,13 +190,13 @@ ic <- c(ninit, muinit) # merge initial conditions into a vector
 pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
              eps=eps, W=W, venv=venv, vmat=vmat, s=s, nmin=nmin, aw=aw, bw=bw,
              Tmax=Tmax, Tmin=Tmin, Th=Th, arate=arate, Cmax=Cmax, Cmin=Cmin,
-             tE=tE, d=d, mig=mig, model=model)
+             tE=tE, d=d, mig=mig, model=model, periodic=periodic, cycles=cycles)
 
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-10
-rt <-1e-10
+at <-1e-14
+rt <-1e-14
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
@@ -208,8 +211,8 @@ before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble
 print(Sys.time()-start)
 
 during_step <- tE/200
-at <-1e-10
-rt <-1e-10
+at <-1e-14
+rt <-1e-14
 fail_time <- 0
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
       method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
@@ -250,7 +253,8 @@ print(mean(temp$n))
 if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     write_csv(dat, path=outfile) }# save data to specified file
-    plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0, 100*during_step,tE)))
+  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0,25*during_step, 50*during_step,75*during_step,
+                                             100*during_step,125*during_step, 150*during_step,175*during_step,tE)))
   }
 print(Sys.time()-start)
 

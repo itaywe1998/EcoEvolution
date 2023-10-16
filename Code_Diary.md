@@ -275,4 +275,6 @@ Very good progress. For article we also need
 2. start technical description in overleaf. Introduction text and mainly the equations behind the code.
 Nice!
 
+Let is start with periodic CC.
+
 ```
