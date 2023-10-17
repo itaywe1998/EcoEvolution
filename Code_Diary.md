@@ -288,10 +288,10 @@ Need to see:
 didn't go smoothly at first attempt
 
 17.10.23
-Tried to compare (using cpp std::chrono) the speed of periodic (sin) comared to 
-regular CC (polynom). In the single call level, sin was even faster (20ns compared to 30ns in average)
-for some reason the runs never ended even after 25 minutes, and the output files reached 2GB (not mega, giga!) before interupted by user.
-Lesson learned is not trying to print each time such a small function is called.Runtime skyrocketed for this prints alone.
+Tried to compare (using cpp std::chrono) the speed of periodic (sin) compared to 
+regular CC (polynomial). In the single call level, sin was even faster (20ns compared to 30ns in average)
+for some reason the runs never ended even after 25 minutes, and the output files reached 2GB (not mega, giga!) before interrupted by user.
+Lesson learned is not trying to print each time such a small function is called. Runtime skyrocketed for this prints alone.
 Plus, there is no way to compare the amount of times of function was called, but by the logic of the rhs_eval function structure, it is soppused to be indentical call number.
 So for now the check is enough, and the run time extension is probably not 
 due to sin() itself, but the complexity the frequent CC is loading on the ODE solver.

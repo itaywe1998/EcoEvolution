@@ -9,11 +9,9 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
-#include <chrono>
 
 using namespace std;
 using namespace Rcpp;
-using namespace std::chrono;
 
 
 /* Apply twice continuously differentiable smoothed step function to a number x
@@ -24,13 +22,9 @@ using namespace std::chrono;
 // [[Rcpp::export]]
 double smoothstep(double x) {
   double y;
-  auto start = high_resolution_clock::now();
   if (x<0.0) y=0.0;
   else if (x>1.0) y=1.0;
   else y=x*x*x*(10.0+x*(-15.0+6.0*x));
-  auto stop = high_resolution_clock::now();
-  auto duration = duration_cast<nanoseconds>(stop - start);
-  cout << duration.count() << endl;
   return(y);
 }
 
@@ -43,20 +37,7 @@ double smoothstep(double x) {
 // [[Rcpp::export]]
 double periodic_smoothstep(double x, int cycles) {
   double y;
-  auto start = high_resolution_clock::now();
   y = abs(sin(cycles*M_PI*x));
-  auto stop = high_resolution_clock::now();
-  auto duration = duration_cast<nanoseconds>(stop - start);
-  cout << duration.count() << endl;
-  
-  // we will see if has to be smooth or abs(sin) is OK
-  /* double aug_x = x * cycles;
-   aug_x = aug_x - floor(aug_x);
-   if (0.0<=aug_x && aug_x<= 0.5) y = smoothstep(x);
-   else if (0.5<aug_x && aug_x<=1.0) y = 1.0-smoothstep(x);
-   else {
-     throw range_error(to_string(aug_x));
-   }*/
   return y;
 }
 
