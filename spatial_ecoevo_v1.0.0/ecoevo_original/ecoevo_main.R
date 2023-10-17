@@ -32,7 +32,7 @@ if (length(clargs)>0) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"BiggerPeriodicCC"
+  id <-"TimingCheck"
   seed <- 3695
   y <- 100
   x <- 1
@@ -122,7 +122,7 @@ set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
-periodic <- TRUE
+periodic <- FALSE
 cycles <- 2
 
 kappa <- 0.1 # intrinsic mortality parameter
