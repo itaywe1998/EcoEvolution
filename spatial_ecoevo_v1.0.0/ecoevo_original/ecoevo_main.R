@@ -29,13 +29,21 @@ if (length(clargs)>0) { # command-line arguments
   id <- clargs[4] # current run name
   y <- as.numeric(clargs[5]) # scaling factor
   x <- as.numeric(clargs[6]) # scaling factor
+  cycles <- as.numeric(clargs[7])
+  updown <- as.logical(clargs[8])
+  Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
+  Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"TimingCheck"
+  id <-"LargerPeriodic"
   seed <- 3695
   y <- 100
   x <- 1
+  cycles <- 5
+  updown <- FALSE # if true, T = sin(t) , else T=abs(sin(t))
+  Cmax <- 20 
+  Cmin <- 10 
   }
 S <- 4 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance in Celsius squared
@@ -122,8 +130,8 @@ set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
-periodic <- FALSE
-cycles <- 2
+periodic <- TRUE
+
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -136,8 +144,6 @@ aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 25.0 # initial mean temperature at equator
 Tmin <- Tmax-40 # initial mean temperature at poles
-Cmax <- 15 # projected temperature increase at poles
-Cmin <- 7 # projected temperature increase at equator
 #Cmax <- 0
 #Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
@@ -177,7 +183,7 @@ ninit <- matrix(0, S, L) # reserve memory for initial densities
 muinit <- matrix(seq(Tmin, Tmin, l=SR), SR, L) # initial trait means
 # Edit ! all initial species start with same location controlled de-facto by muninit 
 # initial temperatures
-Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles)
+Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles, updown)
 for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
 # initial traits and densities for consumers
 if (model %in% c("trophic", "Tdep_trophic")) {
@@ -190,13 +196,13 @@ ic <- c(ninit, muinit) # merge initial conditions into a vector
 pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
              eps=eps, W=W, venv=venv, vmat=vmat, s=s, nmin=nmin, aw=aw, bw=bw,
              Tmax=Tmax, Tmin=Tmin, Th=Th, arate=arate, Cmax=Cmax, Cmin=Cmin,
-             tE=tE, d=d, mig=mig, model=model, periodic=periodic, cycles=cycles)
+             tE=tE, d=d, mig=mig, model=model, periodic=periodic, cycles=cycles, updown=updown)
 
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-14
-rt <-1e-14
+at <-1e-7
+rt <-1e-7
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},

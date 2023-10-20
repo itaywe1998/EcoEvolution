@@ -35,9 +35,10 @@ double smoothstep(double x) {
  */
 
 // [[Rcpp::export]]
-double periodic_smoothstep(double x, int cycles) {
+double periodic_smoothstep(double x, int cycles, bool updown) {
   double y;
-  y = abs(sin(cycles*M_PI*x));
+  y = sin(cycles*M_PI*x);
+  if (!updown) y = abs(y);
   return y;
 }
 
@@ -55,9 +56,10 @@ double periodic_smoothstep(double x, int cycles) {
  - Vector of temperatures at each location x */
 // [[Rcpp::export]]
 NumericVector Temp(NumericVector x, double t, double tE,
-                   double Cmax, double Cmin, double Tmax, double Tmin, bool periodic, int cycles) {
+                   double Cmax, double Cmin, double Tmax, double Tmin,
+                   bool periodic, int cycles, bool updown) {
   if (periodic) {
-    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*periodic_smoothstep((t/tE),cycles));
+    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*periodic_smoothstep((t/tE),cycles, updown));
   }
   else {
     return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*smoothstep(t/tE));
@@ -108,7 +110,7 @@ List eqs(double time, NumericVector state, List pars) {
   NumericVector arate=pars["arate"], eps=pars["eps"];
   NumericMatrix vmat=pars["vmat"], W=pars["W"], mig=pars["mig"], a=pars["a"];
   String model=pars["model"];
-  bool periodic=pars["periodic"];
+  bool periodic=pars["periodic"],updown=pars["updown"];
   // Variables
   int i, j, k, l;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
@@ -127,7 +129,7 @@ List eqs(double time, NumericVector state, List pars) {
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 
-  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles); // Vector of temperatures
+  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles , updown); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:
