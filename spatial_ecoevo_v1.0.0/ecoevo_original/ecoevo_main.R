@@ -5,20 +5,23 @@
 
 # To run, either execute within R or enter the following at the command prompt:
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
-
-rm(list = ls())
-start <- Sys.time()
-require(gridExtra)
-require(deSolve) # solving ordinary differential equations (ODEs)
-require(tidyverse) # manipulating and visualizing data
-require(ggpmisc) # adding statistics to plots
-require(Rcpp) # importing C functions
-library(tidyr)
-library(dplyr)
-library(ggplot2)
-library(readr)
-sourceCpp("rhs_eval.cpp") # compile external C functions
-source("./plotting_functions.R") # various functions for plotting final data
+suppressPackageStartupMessages({
+  suppressWarnings({
+    rm(list = ls())
+    start <- Sys.time()
+    require(gridExtra)
+    require(deSolve) # solving ordinary differential equations (ODEs)
+    require(tidyverse) # manipulating and visualizing data
+    require(ggpmisc) # adding statistics to plots
+    require(Rcpp) # importing C functions
+    library(tidyr)
+    library(dplyr)
+    library(ggplot2)
+    library(readr)
+    sourceCpp("rhs_eval.cpp") # compile external C functions
+    source("./plotting_functions.R") # various functions for plotting final data
+  })
+})
 
 # ---------------------------- input parameters --------------------------------
 clargs <- commandArgs(trailingOnly=TRUE)
@@ -40,7 +43,7 @@ if (length(clargs)>0) { # command-line arguments
   seed <- 3695
   y <- 100
   x <- 1
-  cycles <- 5
+  cycles <- 2
   updown <- FALSE # if true, T = sin(t) , else T=abs(sin(t))
   Cmax <- 20 
   Cmin <- 10 
@@ -130,7 +133,7 @@ set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
-periodic <- TRUE
+periodic <- FALSE
 
 
 kappa <- 0.1 # intrinsic mortality parameter
@@ -147,7 +150,8 @@ Tmin <- Tmax-40 # initial mean temperature at poles
 #Cmax <- 0
 #Cmin <- 0 
 tstart <- ts # starting time (relative to start of climate change at t = 0)
-tE <- 2e4*y*(cycles*2) # time at which climate change stops (assuming it starts at t = 0)
+tE <- 2e4*y # time at which climate change stops (assuming it starts at t = 0)
+#if (periodic) tE <- tE*(2*cycles)
 save.image(file = workspace)
 
 # matrices----
@@ -201,8 +205,8 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-7
-rt <-1e-7
+at <-1e-14
+rt <-1e-14
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
@@ -214,6 +218,7 @@ before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble
   organize_data(times=seq(from=tstart, to=0, by=before_step), pars = pars) %>%
   filter(time!=0) # remove time point 0 (will be starting point of during_cc)
 
+print("Before CC")
 print(Sys.time()-start)
 
 during_step <- tE/200
@@ -258,9 +263,10 @@ print(mean(temp$n))
 #print(min(dat$time[dat$n < 0]))
 if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
-    write_csv(dat, path=outfile) }# save data to specified file
+    suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
   plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0,25*during_step, 50*during_step,75*during_step,
                                              100*during_step,125*during_step, 150*during_step,175*during_step,tE)))
-  }
+}
+print("Final Runtime")
 print(Sys.time()-start)
 
