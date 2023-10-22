@@ -322,6 +322,8 @@ Should coordinate between them automatically , or give up the mentioning in the 
 
 For now , since this is more than just hese two variables, the manual coordination will continue, but I intend to dedicate next workday to this alone, since this is risky and highly prone to errors.
 
+Factory is at least functioning, just did not find the grain case yet. It will come soon enough.
+
 
 
 ```

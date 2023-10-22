@@ -47,8 +47,8 @@ during_step <- final_time/200
 large_dat <-suppressMessages(read_csv(paste("outputs/large_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")))
 large_tstart <- -1e6 * y
 before_step <- -large_tstart/1000
-plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(large_tstart, large_tstart+before_step, 0 , 50*during_step,
-                                                          100*during_step, 150*during_step, final_time)))+ggtitle("Long Adaptation Period")
+plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(large_tstart, large_tstart+before_step, 0 ,25*during_step, 50*during_step,
+                                                          75*during_step,100*during_step,125*during_step, 150*during_step, final_time)))+ggtitle("Long Adaptation Period")
 
 #--- small time plot----
 # if small has failed (no way of knowing before reading the correct file)
