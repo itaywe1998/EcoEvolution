@@ -39,18 +39,18 @@ if (length(clargs)>0) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"LargerPeriodic"
+  id <-"Periodic"
   seed <- 3695
   y <- 100
   x <- 1
-  cycles <- 2
+  cycles <- 3
   updown <- FALSE # if true, T = sin(t) , else T=abs(sin(t))
-  Cmax <- 20 
-  Cmin <- 10 
+  Cmax <- 30 
+  Cmin <- 20 
   }
 S <- 4 # fifty species per trophic level
 vbar <- 3e-3 /y  # average genetic variance in Celsius squared
-dbar <- (1e-5 / y) / x  # average dispersal (1e-7 <=> 1 meter per year)
+dbar <- (1e-5 / y) / x *(cycles)  # average dispersal (1e-7 <=> 1 meter per year)
 # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 
 if (small){
@@ -191,7 +191,7 @@ Tempinit <- Temp(seq(from=0, to=1, l=L), 0, tE, Cmax, Cmin, Tmax, Tmin, periodic
 for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
 # initial traits and densities for consumers
 if (model %in% c("trophic", "Tdep_trophic")) {
-  muinit <- rbind(muinit, matrix(seq(Tmin, Tmax, l=SC), SC, L))
+  muinit <- rbind(muinit, matrix(seq(Tmin, Tmin, l=SC), SC, L))
   for (i in (SR+1):S) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
 }
 ic <- c(ninit, muinit) # merge initial conditions into a vector
@@ -205,8 +205,8 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-14
-rt <-1e-14
+at <-1e-11
+rt <-1e-11
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
@@ -222,8 +222,8 @@ print("Before CC")
 print(Sys.time()-start)
 
 during_step <- tE/200
-at <-1e-14
-rt <-1e-14
+at <-1e-13
+rt <-1e-13
 fail_time <- 0
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
       method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},

@@ -296,5 +296,32 @@ Plus, there is no way to compare the amount of times of function was called, but
 So for now the check is enough, and the run time extension is probably not 
 due to sin() itself, but the complexity the frequent CC is loading on the ODE solver.
 
+made progress with periodic CC, vey prospering and good demo. Just make sure changing the tolerances doesnt affect the final population in order of magnitudes
+
+
+22.10.23
+Learned from bitter huge batch runs, so examined manually the surroundings of eligible configuration.
+It appears that changing S is the same as having a complete different "dice throwing", as for each 'runif' function alters the number of samples, and so the entire values.
+
+As for updown, in the configuration relevant to today, the population skyrocketing doesn't change much, and not periodically at all.
+
+The tolerances modifications are important in order for ODE to yield a successful integration, as when the run code = -1 in diagnostics the integration failed, and so the results are not valid (for most of the times failure will occur on the very first step of ODE, i.e for before it will be t = -9.997e7)
+
+In case of adding Predators (I was looking for ways to deal with the ever-growing population in this particular configuration) - it is still (TODO) to be found how to hold a proper integration in this more complex scenario, since no tolerance I tried helps, all integrations failed (code -1).
+
+Now for the most intriguing part. It seems the sweet spot for now is [Cmax,Cmin]=[30,20], For 20,10 the short time survived, and for [50,40] both failed and, more importantly , long time lost its advantage, and both demised at exact same time after CC start (same t).
+
+Fairly interesting. The safe bet now for case manufacturing is just go with the said configuration and alter only the seed.
+I guesss it is quite boring but it will potentially give several periodically succesful cases. Problem is the periodicity does not show with this population explosion, so I think retrieving the past dual configuration is prefered, and go changing seeds from there.
+
+Would like to add an aid - if lsode returns -1, the program entirely is not valid, and exec must stop (something like exit() in C)
+
+
+Comment :in the end it is not that "FAILED" label is not applied on relevant cases (when small time fails) but the coordination between demo and main script in regard of the vbar and dbar values is just the worst!
+Should coordinate between them automatically , or give up the mentioning in the name.
+
+For now , since this is more than just hese two variables, the manual coordination will continue, but I intend to dedicate next workday to this alone, since this is risky and highly prone to errors.
+
+
 
 ```

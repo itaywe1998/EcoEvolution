@@ -22,7 +22,7 @@ if (length(clargs)>0) { # command-line arguments
   periodic<-as.logical(clargs[6])
 } else { # sample input parameters, if no command line arguments are given
   dual <-TRUE
-  id <-"DualDisp&Run"
+  id <-"PeriodicCC_Factory"
   y <- 100
   x <- 1
   cycles<-5
@@ -30,12 +30,17 @@ if (length(clargs)>0) { # command-line arguments
 }
 
 #print(clargs)
-# Currently coordinated with ecoevo_main
+
+
+##### ALWAYS COORDINATE THIS WITH ECOEVO_MAIN.R !!!!!!   ########
 vbar <- 3e-3 /y  
-dbar <- (1e-5 / y) / x
+dbar <- (1e-5 / y) / x *(cycles)
 #final_time <- 2e4 * y * (2*cycles)
 final_time <- 2e4 * y 
+half_cycle_duration <- final_time/(2*cycles)
 during_step <- final_time/200
+##### ALWAYS COORDINATE THIS WITH ECOEVO_MAIN.R !!!!!!   ########
+
 
 
 #--- large time plot----
