@@ -291,12 +291,12 @@ didn't go smoothly at first attempt
 Tried to compare (using cpp std::chrono) the speed of periodic (sin) compared to 
 regular CC (polynomial). In the single call level, sin was even faster (20ns compared to 30ns in average)
 for some reason the runs never ended even after 25 minutes, and the output files reached 2GB (not mega, giga!) before interrupted by user.
-Lesson learned is not trying to print each time such a small function is called. Runtime skyrocketed for this prints alone.
-Plus, there is no way to compare the amount of times of function was called, but by the logic of the rhs_eval function structure, it is soppused to be indentical call number.
+Lesson learned is not trying to print each time such a small function is called. Run time skyrocketed for this prints alone.
+Plus, there is no way to compare the amount of times of function was called, but by the logic of the rhs_eval function structure, it is supposed to be indentical call number.
 So for now the check is enough, and the run time extension is probably not 
 due to sin() itself, but the complexity the frequent CC is loading on the ODE solver.
 
-made progress with periodic CC, vey prospering and good demo. Just make sure changing the tolerances doesnt affect the final population in order of magnitudes
+made progress with periodic CC, very prospering and good demo. Just make sure changing the tolerances doesn't affect the final population in order of magnitudes
 
 
 22.10.23
@@ -312,7 +312,7 @@ In case of adding Predators (I was looking for ways to deal with the ever-growin
 Now for the most intriguing part. It seems the sweet spot for now is [Cmax,Cmin]=[30,20], For 20,10 the short time survived, and for [50,40] both failed and, more importantly , long time lost its advantage, and both demised at exact same time after CC start (same t).
 
 Fairly interesting. The safe bet now for case manufacturing is just go with the said configuration and alter only the seed.
-I guesss it is quite boring but it will potentially give several periodically succesful cases. Problem is the periodicity does not show with this population explosion, so I think retrieving the past dual configuration is prefered, and go changing seeds from there.
+I guess it is quite boring but it will potentially give several periodically successful cases. Problem is the periodicity does not show with this population explosion, so I think retrieving the past dual configuration is preferred, and go changing seeds from there.
 
 Would like to add an aid - if lsode returns -1, the program entirely is not valid, and exec must stop (something like exit() in C)
 
@@ -320,10 +320,15 @@ Would like to add an aid - if lsode returns -1, the program entirely is not vali
 Comment :in the end it is not that "FAILED" label is not applied on relevant cases (when small time fails) but the coordination between demo and main script in regard of the vbar and dbar values is just the worst!
 Should coordinate between them automatically , or give up the mentioning in the name.
 
-For now , since this is more than just hese two variables, the manual coordination will continue, but I intend to dedicate next workday to this alone, since this is risky and highly prone to errors.
+For now , since this is more than just these two variables, the manual coordination will continue, but I intend to dedicate next workday to this alone, since this is risky and highly prone to errors.
 
 Factory is at least functioning, just did not find the grain case yet. It will come soon enough.
 
+25.10.23
+Coordinated between demo and main R script through shared inputs from multi_run.bash.
+Due to this implementation heavily modified input/output format (up to 12 argument to a single script)
+But now all is controllable from multi_run.bash, with option to replace scalars with arrays , if nneded in the future.
 
+Plus discovered a serious BUG in R main - periodic was set to false during mid process, no reason I can think of it will be justified.Removed.
 
 ```

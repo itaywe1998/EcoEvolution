@@ -2,21 +2,27 @@
 
 seed_array=()
 run_name="PeriodicCC_Factory"
-y_array=()
-x_array=()
-Cmax=()
+vbar=$((3/(10**5))) #sort of scientific writing (not supported directly in bash)
+dbar=$((1/(10**7)))
+cmax=30
+cmin=30
+small_start=$((-1*(10**5)))
+large_start=$((-1*(10**8)))
+final_time=$((2*(10**6))) 
+
 for ((i=1; i<=8; i++)); do
-   y_array[i]=100
-   x_array[i]=1
    seed_array[i]=$((3696*i+2**i))
-   Cmax[i]=$((30))
-   Cmin[i]=$((30))
 done
 
 for ((i=2; i<=2; i++)); do
   for ((c=8; c<=8; c++)); do
-  	./run.bash ${seed_array[$i]} "$run_name"_cycles"$c"_seed"${seed_array[$i]}"_AbsSin_"${Cmax[$i]}"_"${Cmin[$i]}" ${y_array[$i]} ${x_array[$i]} $c "FALSE" ${Cmax[$i]} ${Cmin[$i]} 
-  #	./run.bash ${seed_array[$i]} "$run_name"_cycles"$c"_seed"${seed_array[$i]}"_FullSin_"${Cmax[$i]}"_"${Cmin[$i]}" ${y_array[$i]} ${x_array[$i]} $c "TRUE" ${Cmax[$i]} ${Cmin[$i]}
+  	./run.bash ${seed_array[$i]} \
+  	"$run_name"_cycles"$c"_seed"${seed_array[$i]}"_AbsSin_"$Cmax"_"$Cmin"\
+  	$vbar $dbar $c "FALSE" $Cmax $Cmin $small_time $large_time $final_time
+  	
+  #	./run.bash ${seed_array[$i]} \
+  #	"$run_name"_cycles"$c"_seed"${seed_array[$i]}"_FullSin_"$Cmax"_"$Cmin"\
+  #	$vbar $dbar $c "TRUE" $Cmax $Cmin $small_time $large_time $final_time  	
 	done
 done
 

@@ -30,34 +30,35 @@ if (length(clargs)>0) { # command-line arguments
   small <- as.logical(clargs[2]) # true for short adaptation time, false for long
   seed <- as.numeric(clargs[3]) # for seeding random number generator
   id <- clargs[4] # current run name
-  y <- as.numeric(clargs[5]) # scaling factor
-  x <- as.numeric(clargs[6]) # scaling factor
+  vbar <- as.numeric(clargs[5]) 
+  dbar <- as.numeric(clargs[6]) 
   cycles <- as.numeric(clargs[7])
   updown <- as.logical(clargs[8])
   Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
   Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
+  tstart <-as.numeric(clargs[11])
+  tE <- as.numeric(clargs[12])
+  
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
   id <-"Periodic"
   seed <- 3695
-  y <- 100
-  x <- 1
+  vbar <- 3e-5 # average genetic variance in Celsius squared 
+  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
+               # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
   cycles <- 3
-  updown <- FALSE # if true, T = sin(t) , else T=abs(sin(t))
-  Cmax <- 30 
-  Cmin <- 20 
+  updown <- TRUE
+  Cmax <- 30 # projected temperature increase at poles
+  Cmin <- 30 # projected temperature increase at equator
+  tstart <- -1e8 # for large case
+  tE <- 2e6
   }
 S <- 4 # fifty species per trophic level
-vbar <- 3e-3 /y  # average genetic variance in Celsius squared
-dbar <- (1e-5 / y) / x *(cycles)  # average dispersal (1e-7 <=> 1 meter per year)
-# more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 
 if (small){
-  ts<--1e3 * y
   str<-"small"
 }else {
-  ts<--1e6 * y
   str<-"large"
 }
 replicate <- 1 # replicate number = 1
@@ -133,9 +134,6 @@ set.seed(seed) # set random seed for reproducibility
 v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
 d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
-periodic <- FALSE
-
-
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
 vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
@@ -147,11 +145,6 @@ aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
 bw <- 4 # intercept of trait-dependence of tolerance width
 Tmax <- 25.0 # initial mean temperature at equator
 Tmin <- Tmax-40 # initial mean temperature at poles
-#Cmax <- 0
-#Cmin <- 0 
-tstart <- ts # starting time (relative to start of climate change at t = 0)
-tE <- 2e4*y # time at which climate change stops (assuming it starts at t = 0)
-#if (periodic) tE <- tE*(2*cycles)
 save.image(file = workspace)
 
 # matrices----
