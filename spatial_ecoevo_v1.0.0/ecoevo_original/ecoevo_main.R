@@ -42,25 +42,22 @@ if (length(clargs)>0) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"Periodic"
-  seed <- 3695
+  id <-"PeriodicSSuccess"
+  seed <- 3690
   vbar <- 3e-5 # average genetic variance in Celsius squared 
   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
                # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 3
-  updown <- TRUE
-  Cmax <- 30 # projected temperature increase at poles
-  Cmin <- 30 # projected temperature increase at equator
-  tstart <- -1e8 # for large case
+  cycles <- 4
+  updown <- FALSE
+  Cmax <- 25 # projected temperature increase at poles
+  Cmin <- 10 # projected temperature increase at equator
+  tstart <- if (small) -1e5 else -1e8 
   tE <- 2e6
-  }
-S <- 4 # fifty species per trophic level
-
-if (small){
-  str<-"small"
-}else {
-  str<-"large"
 }
+
+S <- 4 # fifty species per trophic level
+str <- if (small) "small" else "large"
+periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 replicate <- 1 # replicate number = 1
 file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
@@ -198,8 +195,8 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-11
-rt <-1e-11
+at <-1e-10
+rt <-1e-10
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
        method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
@@ -214,10 +211,11 @@ before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble
 print("Before CC")
 print(Sys.time()-start)
 
-during_step <- tE/200
-at <-1e-13
-rt <-1e-13
+during_step <- tE/2000
+at <-1e-11
+rt <-1e-11
 fail_time <- 0
+original_tE <- tE
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
       method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
       error=function(fail_time){
@@ -229,7 +227,8 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
           unlink(workspace) # Deleting old name workspace
           workspace <<- paste(workspace,"_FAILED",sep="")
           save.image(file = workspace)
-          during_cc <-ode(y=ic, times=seq(0, fail_time-during_step, by=during_step), func=eqs, parms=pars,
+          tE <<-fail_time
+          during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
         }
         diagnostics(during_cc)
@@ -250,15 +249,16 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
         
       })  # integrate from start to end of climate change
 # --------------------------- generate output ----------------------------------
-print(tE-max(during_cc$time))
+print(original_tE-max(during_cc$time))
 temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
 print(mean(temp$n))
 #print(min(dat$time[dat$n < 0]))
 if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
-  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, 0,25*during_step, 50*during_step,75*during_step,
-                                             100*during_step,125*during_step, 150*during_step,175*during_step,tE)))
+  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, seq(from=0,to=tE,l=2*cycles+1))))
+  #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
+   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
 }
 print("Final Runtime")
 print(Sys.time()-start)

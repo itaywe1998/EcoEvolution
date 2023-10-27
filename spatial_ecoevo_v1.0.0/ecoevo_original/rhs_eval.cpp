@@ -37,8 +37,12 @@ double smoothstep(double x) {
 // [[Rcpp::export]]
 double periodic_smoothstep(double x, int cycles, bool updown) {
   double y;
-  y = sin(cycles*M_PI*x);
-  if (!updown) y = abs(y);
+  if (x<0.0) y=0.0;
+  else if (x>1.0) y=0.0;
+  else {
+    y = sin(cycles*M_PI*x);
+    if (!updown) y = abs(y);        
+  }
   return y;
 }
 
