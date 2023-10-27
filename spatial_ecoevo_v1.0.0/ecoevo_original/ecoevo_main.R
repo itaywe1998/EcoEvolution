@@ -15,6 +15,7 @@ suppressPackageStartupMessages({
     require(ggpmisc) # adding statistics to plots
     require(Rcpp) # importing C functions
     library(tidyr)
+    library(plyr)
     library(dplyr)
     library(ggplot2)
     library(readr)
@@ -41,7 +42,7 @@ if (length(clargs)>0) { # command-line arguments
   
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-FALSE
+  small <-TRUE
   id <-"PeriodicSSuccess"
   seed <- 3690
   vbar <- 3e-5 # average genetic variance in Celsius squared 
@@ -211,7 +212,7 @@ before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble
 print("Before CC")
 print(Sys.time()-start)
 
-during_step <- tE/2000
+during_step <- tE/200
 at <-1e-11
 rt <-1e-11
 fail_time <- 0
@@ -227,7 +228,8 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
           unlink(workspace) # Deleting old name workspace
           workspace <<- paste(workspace,"_FAILED",sep="")
           save.image(file = workspace)
-          tE <<-fail_time
+          during_step <<- 1000
+          tE <<-round_any(fail_time-during_step, during_step, f=floor)
           during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
         }
