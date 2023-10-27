@@ -15,13 +15,13 @@ suppressPackageStartupMessages({
     require(ggpmisc) # adding statistics to plots
     require(Rcpp) # importing C functions
     library(tidyr)
-    library(plyr)
-    library(dplyr)
     library(ggplot2)
     library(readr)
     sourceCpp("rhs_eval.cpp") # compile external C functions
     source("./plotting_functions.R") # various functions for plotting final data
   })
+  library(plyr)
+  library(dplyr)
 })
 
 # ---------------------------- input parameters --------------------------------
@@ -56,6 +56,7 @@ if (length(clargs)>0) { # command-line arguments
   tE <- 2e6
 }
 
+print(clargs)
 S <- 4 # fifty species per trophic level
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
