@@ -17,15 +17,16 @@ suppressPackageStartupMessages({
     library(tidyr)
     library(ggplot2)
     library(readr)
+    library(dplyr)
     sourceCpp("rhs_eval.cpp") # compile external C functions
     source("./plotting_functions.R") # various functions for plotting final data
   })
-  library(plyr)
-  library(dplyr)
 })
 
 # ---------------------------- input parameters --------------------------------
-clargs <- commandArgs(trailingOnly=TRUE)
+arg <- commandArgs(trailingOnly=TRUE)
+clargs = unlist(strsplit(arg[1], "#"))
+print(clargs)
 if (length(clargs)>0) { # command-line arguments
   model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
   small <- as.logical(clargs[2]) # true for short adaptation time, false for long
@@ -38,8 +39,7 @@ if (length(clargs)>0) { # command-line arguments
   Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
   Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
   tstart <-as.numeric(clargs[11])
-  tE <- as.numeric(clargs[12])
-  
+  tE <-as.numeric(clargs[12])
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-TRUE
@@ -55,8 +55,6 @@ if (length(clargs)>0) { # command-line arguments
   tstart <- if (small) -1e5 else -1e8 
   tE <- 2e6
 }
-
-print(clargs)
 S <- 4 # fifty species per trophic level
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
@@ -230,7 +228,8 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
           workspace <<- paste(workspace,"_FAILED",sep="")
           save.image(file = workspace)
           during_step <<- 1000
-          tE <<-round_any(fail_time-during_step, during_step, f=floor)
+          tE <<-floor((fail_time-during_step)/during_step) * during_step #alternative for round_any
+          # if needed in another place will move to a function
           during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
         }

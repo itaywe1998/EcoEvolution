@@ -1,22 +1,19 @@
 #!/bin/bash
+IN=$1
+arrIN=(${IN//#/ })
 
-seed=$1
-run_name=$2
-vbar=$3
-dbar=$4
-cycles=$5
-updown=$6
-Cmax=$7 
-Cmin=$8
-small_time=$9
-large_time=$10
-final_time=$11
+seed=${arrIN[0]}
+run_name=${arrIN[1]}
+vbar=${arrIN[2]}
+dbar=${arrIN[3]}
+cycles=${arrIN[4]}
+updown=${arrIN[5]}
+Cmax=${arrIN[6]} 
+Cmin=${arrIN[7]}
+small_time=${arrIN[8]}
+large_time=${arrIN[9]}
+final_time=${arrIN[10]}
 
-# Check for no missing arguments
-if [ $# -ne 11 ]; then
-    echo "Not enough arguments provided"
-    exit 1
-fi
 
 model="Tdep"
 small="TRUE"
@@ -26,12 +23,12 @@ do_run=true
 if $do_run
 then
   echo "Short Adaptation Time"
-  echo $@
-  Rscript ecoevo_main.R $model $small $seed $run_name $vbar $dbar $cycles $updown $Cmax $Cmin $small_time $final_time
+  input="${model}#${small}#${seed}#${run_name}#${vbar}#${dbar}#${cycles}#${updown}#${Cmax}#${Cmin}#${small_time}#${final_time}"
+  Rscript ecoevo_main.R $input
   small="FALSE"
   echo "Long Adaptation Time"
-  echo $@
-  Rscript ecoevo_main.R $model $small $seed $run_name $vbar $dbar $cycles $updown $Cmax $Cmin $large_time $final_time
+  input="${model}#${small}#${seed}#${run_name}#${vbar}#${dbar}#${cycles}#${updown}#${Cmax}#${Cmin}#${large_time}#${final_time}"
+  Rscript ecoevo_main.R $input
 fi
 
 echo "Demo"

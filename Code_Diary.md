@@ -362,9 +362,16 @@ If no need to coordinate between demo and ecoevo this things, maybe it can go ba
 But I still want to keep the capability to easily manipulate them in different runs.
 
 Three possible ways for solving:
-1. Check for plyr blame - re implement the round_any function, shouldnt be long. See
+1. Check for plyr blame - re implement the round_any function, shouldn't be long. See
 if without the package things go back to normal
-2. Try to write the relevant times to sys.env varaible, and write/read minimally.
+2. Try to write the relevant times to sys.env variable, and write/read minimally.
 3. Keep investigating 
 
+30.10.23
+Done 1 - not the solution.
+Investigating - for some reason when run.bash gets to the 10th argument things start to go wrong.
+May use a single string to describe all three times, in a format "[small,large,final]"
+Maybe in the future will make a more compact argument list so won't cross 9 arguments.
+
+Ok, now it is working with manual parsing, both bash-bash & bash-R. 
 ```
