@@ -331,4 +331,40 @@ But now all is controllable from multi_run.bash, with option to replace scalars 
 
 Plus discovered a serious BUG in R main - periodic was set to false during mid process, no reason I can think of it will be justified.Removed.
 
+
+27.10.23
+Had a bug when adding 'plyr' library to the include section. Did not see the warning regarding its use with dplyr (needed to arange them with plyr first).
+This is an example to why supress warning is not a good idea, unless you already trsut the package.
+For next time - do include the library outside the SupressWarning block, and only after check you can move it inside.
+
+For the good news - we have a first case for factory ! Will run now on multiple seeds, at the very least. Then try to find additional cases.
+
+
+In manual run (Rstudio) all is well, but fro some reason when passing the lat two time arguments through bash scripts:
+// Bash echo $@ output
+3690 PeriodicCC_Factory_cycles4_seed3690_AbsSin_25_10 .00003000000000000000 .00000010000000000000 4 FALSE 25 10 -100000 -100000000 2000000
+// ecoevo_main.R print(clargs) output
+ [1] "Tdep"                                            
+ [2] "FALSE"                                           
+ [3] "3690"                                            
+ [4] "PeriodicCC_Factory_cycles4_seed3690_AbsSin_25_10"
+ [5] ".00003000000000000000"                           
+ [6] ".00000010000000000000"                           
+ [7] "4"                                               
+ [8] "FALSE"                                           
+ [9] "25"                                              
+[10] "10"                                              
+[11] "36900"                                           
+[12] "36901"    
+
+which are following the seed for some reason. Problem was avoided with demo since I found a way to not have demo necessary informed from bash, but from the data loaded.
+If no need to coordinate between demo and ecoevo this things, maybe it can go back being an internal ?
+But I still want to keep the capability to easily manipulate them in different runs.
+
+Three possible ways for solving:
+1. Check for plyr blame - re implement the round_any function, shouldnt be long. See
+if without the package things go back to normal
+2. Try to write the relevant times to sys.env varaible, and write/read minimally.
+3. Keep investigating 
+
 ```
