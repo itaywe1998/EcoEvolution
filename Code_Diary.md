@@ -373,5 +373,39 @@ Investigating - for some reason when run.bash gets to the 10th argument things s
 May use a single string to describe all three times, in a format "[small,large,final]"
 Maybe in the future will make a more compact argument list so won't cross 9 arguments.
 
-Ok, now it is working with manual parsing, both bash-bash & bash-R. 
+Ok, now it is working with manual parsing, both bash-bash & bash-R.
+
+31.10.23
+I am quite satisfied with the current examples of periodic CC.
+It is however important to keep note for future case production for how to manage the current configuration in order to keep getting successful results -efficiently and without unnecessary searching time.
+
+For the configuration 
+vbar=$(bc -l <<<"3/(10^5)")
+dbar=$(bc -l <<<"1/(10^7)")
+Cmax=25
+Cmin=10
+small_time=$((-1*(10**5)))
+large_time=$((-1*(10**8)))
+final_time=$((2*(10**6))) 
+
+(all is abs(sin) and not full sin)
+One can have 3 or 4 cycles with good results.
+At 5 cycles the CC is too fast.
+So, for instance a solution like this can be done:
+  vbar <- 3e-4  
+  dbar <- 1e-6 
+  cycles <- 5
+  updown <- FALSE
+  Cmax <- 25 # projected temperature increase at poles
+  Cmin <- 10 # projected temperature increase at equator
+  tstart <- if (small) -1e5 else -1e8 
+  tE <- 2.5e6
+  
+Where the experienced user will notice a slight tE extension, but mainly a uniform rise at the vbar,dbar.
+One could also try lowering the temperatures (Cmac,Cmin) but not directly successful like the aforementioned suggestions.
+
+Another thing is to pay attention to difference between went extinct but run , vs failed to compute (code -1 from lsode).
+When code -1, try to make the tolerances smaller. When too small (slowing down the process considerably) or even too much steps were taken (up to MAXSTEP) consider moderating the CC with ny of the suggestions above.
+
+Even so, sometimes it will not work out, but if you get stuck under many attempts, lower the species number, it will hasten run times and make the process more accessible. 
 ```

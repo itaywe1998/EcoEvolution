@@ -45,17 +45,17 @@ if (!is.na(clargs)) { # command-line arguments
   small <-FALSE
   id <-"PeriodicSSuccess"
   seed <- 3690
-  vbar <- 3e-5 # average genetic variance in Celsius squared 
-  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 3e-4 # average genetic variance in Celsius squared 
+  dbar <- 1e-6 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 3
+  cycles <- 5
   updown <- FALSE
   Cmax <- 25 # projected temperature increase at poles
   Cmin <- 10 # projected temperature increase at equator
   tstart <- if (small) -1e5 else -1e8 
-  tE <- 2e6
+  tE <- 2.5e6
 }
-S <- 6 # fifty species per trophic level
+S <- 3 # fifty species per trophic level
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 replicate <- 1 # replicate number = 1
