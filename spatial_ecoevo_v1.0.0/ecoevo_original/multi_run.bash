@@ -14,8 +14,8 @@ for ((i=1; i<=8; i++)); do
    seed_array[i]=$((3688*i+2**i))
 done
 
-for ((i=1; i<=1; i++)); do
-  for ((c=3; c<=4; c++)); do
+for ((i=1; i<=8; i++)); do
+  for ((c=3; c<=3; c++)); do
   	./run.bash "${seed_array[$i]}#"$run_name"_cycles"$c"_seed"${seed_array[$i]}"_AbsSin_"$Cmax"_"$Cmin"#$vbar#$dbar#$c#FALSE#$Cmax#$Cmin#$small_time#$large_time#$final_time"
 	done
 done
