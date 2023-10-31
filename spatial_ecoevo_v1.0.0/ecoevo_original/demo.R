@@ -33,8 +33,15 @@ tstart <- min(large_dat$time)
 final_time <-max(large_dat$time)
 during_step <- final_time/200
 before_step <- -tstart/1000
+
 if(cycles>0){
-  plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart,tstart+before_step, seq(from=0,to=final_time,l=2*cycles+1))))
+  req_times <- seq(from=0,to=final_time,l=2*cycles+1)
+  obs_times <- seq(from=0,to=2*cycles)
+  for (i in seq(from=1,to=2*cycles+1)) {
+    obs_times[i] <-large_dat$time[which.min(abs(large_dat$time - req_times[i]))]
+  }
+  print(obs_times)
+  plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
 }else {
   plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart, tstart+before_step, seq(from=0,to=final_time,by=25*during_step))))+ggtitle("Long Adaptation Period")
 }
@@ -58,4 +65,4 @@ if(cycles>0){
 #---Combined plot----
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)
 ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),".png",sep ="")
-      , plot = plotCombined)
+       , plot = plotCombined)

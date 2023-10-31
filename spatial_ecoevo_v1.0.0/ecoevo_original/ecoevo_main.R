@@ -27,7 +27,7 @@ suppressPackageStartupMessages({
 arg <- commandArgs(trailingOnly=TRUE)
 clargs = unlist(strsplit(arg[1], "#"))
 print(clargs)
-if (length(clargs)>0) { # command-line arguments
+if (!is.na(clargs)) { # command-line arguments
   model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
   small <- as.logical(clargs[2]) # true for short adaptation time, false for long
   seed <- as.numeric(clargs[3]) # for seeding random number generator
@@ -42,20 +42,20 @@ if (length(clargs)>0) { # command-line arguments
   tE <-as.numeric(clargs[12])
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-TRUE
+  small <-FALSE
   id <-"PeriodicSSuccess"
   seed <- 3690
   vbar <- 3e-5 # average genetic variance in Celsius squared 
   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
-               # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 4
+  # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
+  cycles <- 3
   updown <- FALSE
   Cmax <- 25 # projected temperature increase at poles
   Cmin <- 10 # projected temperature increase at equator
   tstart <- if (small) -1e5 else -1e8 
   tE <- 2e6
 }
-S <- 4 # fifty species per trophic level
+S <- 6 # fifty species per trophic level
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 replicate <- 1 # replicate number = 1
@@ -199,9 +199,9 @@ at <-1e-10
 rt <-1e-10
 before_step <- -tstart/1000
 tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
-       method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
-      error=function(e){message("All Species Extinct")
-                        return(NA)}) # integrate ODEs before climate change starts
+                          method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
+         error=function(e){message("All Species Extinct")
+           return(NA)}) # integrate ODEs before climate change starts
 diagnostics(before_cc)
 ic <- as.numeric(before_cc[nrow(before_cc),-1]) # final state -> new initial cond.
 before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble:
@@ -212,55 +212,60 @@ print("Before CC")
 print(Sys.time()-start)
 
 during_step <- tE/200
-at <-1e-11
-rt <-1e-11
+at <-1e-12
+rt <-1e-12
 fail_time <- 0
 original_tE <- tE
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
-      method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
-      error=function(fail_time){
-          message("All Species Extinct")
-          fail_time<<-as.numeric(fail_time$message)},
-      finally = {
-        if (fail_time > 0) {
-          outfile <<- paste(outfile,"_FAILED",sep="")
-          unlink(workspace) # Deleting old name workspace
-          workspace <<- paste(workspace,"_FAILED",sep="")
-          save.image(file = workspace)
-          during_step <<- 1000
-          tE <<-floor((fail_time-during_step)/during_step) * during_step #alternative for round_any
-          # if needed in another place will move to a function
-          during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
-                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
-        }
-        diagnostics(during_cc)
-        during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
-          organize_data(times=seq(from=0, to=tE, by=during_step), pars = pars) #%>%
-        
-        # merge data from before, during, and after climate change
-        dat <- bind_rows(before_cc, during_cc) %>%
-          # add replicate, genetic var., dispersal rate, and structure as new columns
-          mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
-          # merge average genetic variance and dispersal into a single column
-          mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
-          # create regions
-          mutate(region=case_when(
-            (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
-            (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
-            TRUE                           ~ "temperate")) # the rest are "temperate"
-        
-      })  # integrate from start to end of climate change
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
+         error=function(fail_time){
+           message("All Species Extinct")
+           fail_time<<-as.numeric(fail_time$message)},
+         finally = {
+           if (fail_time > 0) {
+             outfile <<- paste(outfile,"_FAILED",sep="")
+             unlink(workspace) # Deleting old name workspace
+             workspace <<- paste(workspace,"_FAILED",sep="")
+             save.image(file = workspace)
+             during_step <<- 1000
+             tE <<-floor((fail_time-during_step)/during_step) * during_step #alternative for round_any
+             # if needed in another place will move to a function
+             during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
+                             method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
+           }
+           diagnostics(during_cc)
+           during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
+             organize_data(times=seq(from=0, to=tE, by=during_step), pars = pars) #%>%
+           
+           # merge data from before, during, and after climate change
+           dat <- bind_rows(before_cc, during_cc) %>%
+             # add replicate, genetic var., dispersal rate, and structure as new columns
+             mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
+             # merge average genetic variance and dispersal into a single column
+             mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
+             # create regions
+             mutate(region=case_when(
+               (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
+               (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
+               TRUE                           ~ "temperate")) # the rest are "temperate"
+           
+         })  # integrate from start to end of climate change
 # --------------------------- generate output ----------------------------------
 print(original_tE-max(during_cc$time))
 temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
 print(mean(temp$n))
 #print(min(dat$time[dat$n < 0]))
+req_times <- seq(from=0,to=tE,l=2*cycles+1)
+obs_times <- seq(from=0,to=2*cycles)
+for (i in seq(from=1,to=2*cycles+1)) {
+  obs_times[i] <-during_cc$time[which.min(abs(during_cc$time - req_times[i]))]
+}
 if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
-  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, seq(from=0,to=tE,l=2*cycles+1))))
+  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
   #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
-   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
+  #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
 }
 print("Final Runtime")
 print(Sys.time()-start)
