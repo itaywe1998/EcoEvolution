@@ -80,6 +80,7 @@ NumericVector Temp(NumericVector x, double t, double tE,
  Output:
  - A matrix F(i,j), the feeding rate of consumer i on resource j
  */
+// all zeroes if only consumers
 // [[Rcpp::export]]
 NumericMatrix funcresp(NumericVector n, NumericVector Th,
                        NumericVector arate, NumericMatrix W) {

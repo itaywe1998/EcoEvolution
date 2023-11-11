@@ -408,4 +408,15 @@ Another thing is to pay attention to difference between went extinct but run , v
 When code -1, try to make the tolerances smaller. When too small (slowing down the process considerably) or even too much steps were taken (up to MAXSTEP) consider moderating the CC with ny of the suggestions above.
 
 Even so, sometimes it will not work out, but if you get stuck under many attempts, lower the species number, it will hasten run times and make the process more accessible. 
+
+05.11.23
+Hagai meeting summary:
+1. Define in the introduction what is habitability.
+2. Define in each of the equations in methods what is the meaning of each of the terms (heratability for instance)
+3. In the introduction needs to explain the idea of our research
+4. In methods needs to present the program (tool) i am working on
+5. Attach some graphs as is to results section, then we will see which ones to chose from
+6. Summarize in a table what series of runs we did precisely, what are the inputs of the model and what range of each of them was tested
+7. *Code Related*: Find succesful cases also for CoSai data - average temperature from real systems (outer simulation) , will be a nice addition to the paper
+8. Format - for now aim for APJ (Astrophysical Journal). I guess it is for my own good but he said it in the last minute so it is not top priority.
 ```
