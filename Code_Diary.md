@@ -417,6 +417,13 @@ Hagai meeting summary:
 4. In methods needs to present the program (tool) i am working on
 5. Attach some graphs as is to results section, then we will see which ones to chose from
 6. Summarize in a table what series of runs we did precisely, what are the inputs of the model and what range of each of them was tested
-7. *Code Related*: Find succesful cases also for CoSai data - average temperature from real systems (outer simulation) , will be a nice addition to the paper
+7. *Code Related*: Find successful cases also for Kozai Oscillations - average temperature from real systems (outer simulation) , will be a nice addition to the paper
 8. Format - for now aim for APJ (Astrophysical Journal). I guess it is for my own good but he said it in the last minute so it is not top priority.
+
+11.11.23
+I have worked but did not document.
+In the middle of typing the equations from naoz 2016 appendix for the secular equations.
+Need the other 7 out of 8 state variables rate equations.
+Good luck and take it easy, it will take some time to make sure its all correct.
+* I believe all ^2 in trigonometric terms mean (cos(itot))^2 and not cos(itot^2), it just does not make sense to have the square of the inclination.
 ```

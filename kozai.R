@@ -43,8 +43,12 @@ kozai_osc <- function(t, state, params){
   
   
   cit <- cos(itot)
+  co1 <- cos(omega1)
+  co2 <- cos(omega2)
   c2o1 <- cos(2*omega1)
+  s2o1 <- sin(2*omega1)
   e12 <- e1^2
+  e22 <-e2^2
   so1 <- sin(omega1)
   so2 <- sin(omega2)
   sit <- sin(itot)
@@ -53,8 +57,26 @@ kozai_osc <- function(t, state, params){
               C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
                        -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
   
+  omega2_dt <- 3*C2*(2*cis/G1 * (2+e12*(3-5*c2o1)) + 1/G2 * (4+6*e12+(5*cit^2-3)*(2+e12*(3-5*c2o1)))) +
+               C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
+                      e2*(1/G1 + cit/G2)*(A+10*(3*cit^2-1)*(1-e12))) +
+                      cosphi*(5*B*cit*e2*(1/G1 +cit/G2) + (4*e22+1)/(e2*G2) * A)  
+                        )
   
-  list(c(1))
+  e1_dt <- C2 * (1-e12)/G1 * (30*e1*sit^2 * s2o1) + C3*e2*(1-e12)/G1 * (35*cosphi*sit^2 *e12 * s2o1
+            -10*cit*sit^2 * co1 * so2 * (1-e12) - A*(so1*co2-cit*co1*so2))
+  e2_dt <- -C3*e1*(1-e12)/G2 * (10*cit*sit^2 * (1-e12)*so1*co2+ A*(co1*so2-cit*so1*co2))
+  G1_dt <- -C2*30*e12*s2o1*sit^2 +C3*e1*e2*(-35*e12*sit^2 *s2o1 * cosphi +A*(so1*co2-cit*co1*so2) + 10*cit*sit^2 * (1-e12)*co1*so2)
+  G2_dt <- C3 * e1*e2*(A*(co1*so2-cit*so1*co2) +10*cit*sit^2 * (1-e12)*so1*co2)
+  ### Not a part of the state vector but yet useful intermediate equations
+  H1_dt <- G1/Gtot * G1_dt - G2/Gtot * G2_dt
+  H2_dt <- -H1_dt
+  ####
+  cosi1_dt <- H1_dt/G1 - G1_dt/G1 * cosi1
+  cosi2_dt <- H2_dt/G2 - G2_dt/G2 * cosi2
+  
+  
+  list(c(e1_dt,e2_dt,G1_dt,G2_dt,cosi1_dt,cosi2_dt,omega1_dt,omega2_dt))
 }
 
 lyr_to_AU <- function(l){
