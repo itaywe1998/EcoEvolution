@@ -426,4 +426,13 @@ In the middle of typing the equations from naoz 2016 appendix for the secular eq
 Need the other 7 out of 8 state variables rate equations.
 Good luck and take it easy, it will take some time to make sure its all correct.
 * I believe all ^2 in trigonometric terms mean (cos(itot))^2 and not cos(itot^2), it just does not make sense to have the square of the inclination.
+
+24.11.23
+got periodic eccentricity, but changes are very small and with periodicity of ~60K yrs, and so the temperature shifts between -107.35 and -107.45 Celsius, not very interesting.
+The eccentricity changes between 0.22 to 0.205, which is more than the error on the initial value (+-0.03) which is significant.
+I might have the chance to see a proper process when twiking the numbers.
+Should consult with Hagai if taking a real system is good or take other parameters.
+For now let us try to find more significant configuration.
+
+
 ```
