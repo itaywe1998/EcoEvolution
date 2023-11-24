@@ -8,6 +8,7 @@ suppressPackageStartupMessages({
 })
 # working in mks
 AU <- 1.495978707e11 # m
+yr <- 31556926 # s
 Ls <- 3.846e26 # W
 Ms <- 1.989e30 # kg
 Mj <- 1.89813e27 # kg
@@ -103,11 +104,11 @@ mas_to_dist <- function(angle, r){
 #---HD 202206 data ------
 m1 <- 1.07 * Ms # G-type primary star
 m2 <- 0.089 * Ms # brown dwarf companion
-m3 <- 17.9 * Mj # planet
+m3 <- 17.9 * Mj# planet
 a1_mas <-1.4 #mas
 d_system <-150 # lyr from sun
 # 1 is for inner binary
-a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) *AU
+a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) * AU
 e1 <- 	0.432
 i1 <- to_radians(10.9)
 omega1 <- to_radians(161.9)
@@ -134,24 +135,30 @@ ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
 pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
 at <- 1e-7
 rt <- 1e-7
-tE <- 2e6
+tE <- 2e6 * yr
 step <- tE/1000
 
 #---- Differential Equation -------
 results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
                 method="bdf", atol  = at, rtol = rt, maxsteps = 5000)
 
+times <- results[,1]/yr
+ecc_vec <- results[,3]
+
+ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
+  geom_line()
 
 
 
 
+#----- Eccentricity to Temperature ----------
+d <- a2
+Lum <- 1.0 * Ls
+e <- ecc_vec # This should come from kozai results
+# source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
+# the relation of average energy received over entire orbit to eccentricity
+E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
+T <- (E)^(1/4) + T0
 
-
-# #----- Eccentricity to Temperature ----------
-# d <- 1.0 * AU
-# Lum <- 1.0 * Ls
-# e <- 0.7 # This should come from kozai results
-# # source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
-# # the relation of average energy received over entire orbit to eccentricity
-# E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
-# T <- (E)^(1/4) + T0
+ggplot(data = as.data.frame(cbind(times,T)))+aes(x= times, y= T) +
+  geom_line()
