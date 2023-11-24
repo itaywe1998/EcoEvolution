@@ -6,20 +6,23 @@ suppressPackageStartupMessages({
     library(ggplot2)
   })
 })
+# working in mks
 AU <- 1.495978707e11 # m
 Ls <- 3.846e26 # W
 Ms <- 1.989e30 # kg
 Mj <- 1.89813e27 # kg
 GC <- 6.6743e-11
-
-
+sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
+albedo <- 0.29 # Earth's Albedo
+T0 <- -273.15 # Kelvin to Celsius conversion
+# --- Functions ----
 kozai_osc <- function(t, state, params){
-  # global paramters
-  L1 <- params[1]
-  L2 <- params[2]
-  Gtot <- params[3]
-  C3_noG <- params[4]
-  C2_coeff <-params[5]
+  # global parameters
+  L1 <- unlist(params[1])
+  L2 <- unlist(params[2])
+  Gtot <- unlist(params[3])
+  C3_noG <- unlist(params[4])
+  C2_coeff <-unlist(params[5])
   
   # state variables
   e1 <- state[1]
@@ -32,15 +35,11 @@ kozai_osc <- function(t, state, params){
   omega2 <-state[8]
   
   # useful parameters per iteration
-  C3 <- C3_noG / (G2^5)
+  C3 <- C3_noG / G2^5
   C2 <- (e2 ^2 -1) * C3 / C2_coeff
   i1 <- acos(cosi1)
   i2 <- acos(cosi2)
   itot <- i1 + i2
-  B <- 2 +5*e1^2 - 7 * e1^2 * cos(2*omega1)
-  A <- 4 + 3*e1^2 -2.5 * B * sin(itot^2)
-  cosphi <- -cos(omega1) * cos(omega2) - cos(itot)*sin(omega1)*sin(omega2)
-  
   
   cit <- cos(itot)
   co1 <- cos(omega1)
@@ -53,11 +52,17 @@ kozai_osc <- function(t, state, params){
   so2 <- sin(omega2)
   sit <- sin(itot)
   
+  B <- 2 +5*e12 - 7 * e12 * c2o1
+  A <- 4 + 3*e12 -2.5 * B * sit^2
+  cosphi <- -co1 * co2 - cit*so1*so2
+  
+  # Rates
+  
   omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
               C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
                        -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
   
-  omega2_dt <- 3*C2*(2*cis/G1 * (2+e12*(3-5*c2o1)) + 1/G2 * (4+6*e12+(5*cit^2-3)*(2+e12*(3-5*c2o1)))) +
+  omega2_dt <- 3*C2*(2*cit/G1 * (2+e12*(3-5*c2o1)) + 1/G2 * (4+6*e12+(5*cit^2-3)*(2+e12*(3-5*c2o1)))) +
                C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
                       e2*(1/G1 + cit/G2)*(A+10*(3*cit^2-1)*(1-e12))) +
                       cosphi*(5*B*cit*e2*(1/G1 +cit/G2) + (4*e22+1)/(e2*G2) * A)  
@@ -83,18 +88,17 @@ lyr_to_AU <- function(l){
   return(l*6.3241e4)
 }
 
+to_radians<-function(deg){
+  return(deg*pi/180)
+}
+
+# Convert mili-arcseconds to distance in the same units as the radius is given in
 mas_to_dist <- function(angle, r){
   p<-2*pi*r
   as <- (p/360)/(60*60)
   mas <- 1e-3 * as
   return(angle*mas)
 }
-
-
-
-
-
-
 
 #---HD 202206 data ------
 m1 <- 1.07 * Ms # G-type primary star
@@ -103,18 +107,20 @@ m3 <- 17.9 * Mj # planet
 a1_mas <-1.4 #mas
 d_system <-150 # lyr from sun
 # 1 is for inner binary
-a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system))
+a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) *AU
 e1 <- 	0.432
-i1 <- 10.9
+i1 <- to_radians(10.9)
+omega1 <- to_radians(161.9)
 # 2 is for outer planet (HD 202206-c)
-a2 <- 2.41
+a2 <- 2.41 * AU
 e2 <- 0.22
-i2 <- 7.7
+i2 <- to_radians(7.7)
+omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
 #-------Kozai Inputs-----------
 # constants
 L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
 L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5
-C3_noG <- -15/16 * GC^2 /4 * (m1+m2)^9 / (m1+m2+m3)^4 * m3^9 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3
+C3_noG <-  -15/16 * GC^2 /4 * (m1+m2)^9 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * m3^9
 C2_coeff <- 15/4 * (m1-m2)/(m1+m2) * (a1/a2)
 # initial values for state vector
 G1 <-L1 * (1-e1^2)^0.5
@@ -124,6 +130,16 @@ H2 <- G2 * cos(i2)
 # constant
 Gtot <- H1 + H2
 
+ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
+pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
+at <- 1e-7
+rt <- 1e-7
+tE <- 2e6
+step <- tE/1000
+
+#---- Differential Equation -------
+results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
+                method="bdf", atol  = at, rtol = rt, maxsteps = 5000)
 
 
 
@@ -131,16 +147,11 @@ Gtot <- H1 + H2
 
 
 
-
-#rel <- a2/a1
-#----- Distance to Temperature ----------
-d <- 1.0 * AU
-L <- 1.0 * Ls 
-sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
-a <- 0.29 # Earth's Albedo
-T0 <- -273.15 # Kelvin to Celsius conversion
-e <- 0.7
-# source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
-# the relation of average energy received over entire orbit to eccentricity
-E <- (L*(1-a)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
-T <- (E)^(1/4) + T0
+# #----- Eccentricity to Temperature ----------
+# d <- 1.0 * AU
+# Lum <- 1.0 * Ls
+# e <- 0.7 # This should come from kozai results
+# # source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
+# # the relation of average energy received over entire orbit to eccentricity
+# E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
+# T <- (E)^(1/4) + T0
