@@ -92,6 +92,9 @@ lyr_to_AU <- function(l){
 to_radians<-function(deg){
   return(deg*pi/180)
 }
+to_deg<-function(rad){
+  return(rad*180/pi)
+}
 
 # Convert mili-arcseconds to distance in the same units as the radius is given in
 mas_to_dist <- function(angle, r){
@@ -105,18 +108,20 @@ mas_to_dist <- function(angle, r){
 m1 <- 1.07 * Ms # G-type primary star
 m2 <- 0.089 * Ms # brown dwarf companion
 m3 <- 17.9 * Mj# planet
-a1_mas <-1.4 #mas
+a1_mas <-0.2 #mas
 d_system <-150 # lyr from sun
 # 1 is for inner binary
 a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) * AU
-e1 <- 	0.432
-i1 <- to_radians(10.9)
+e1 <- 	0.472
+i1 <- to_radians(12.9)
 omega1 <- to_radians(161.9)
 # 2 is for outer planet (HD 202206-c)
-a2 <- 2.41 * AU
-e2 <- 0.22
-i2 <- to_radians(7.7)
+a2 <- 0.8 * AU
+e2 <- 0.37
+i2 <- to_radians(8.8)
 omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
+
+rel <- a1/a2
 #-------Kozai Inputs-----------
 # constants
 L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
@@ -135,15 +140,22 @@ ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
 pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
 at <- 1e-7
 rt <- 1e-7
-tE <- 2e6 * yr
-step <- tE/1000
+tE <- 2e8 * yr
+step <- tE/200
 
 #---- Differential Equation -------
 results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
                 method="bdf", atol  = at, rtol = rt, maxsteps = 5000)
+diagnostics(results)
 
-times <- results[,1]/yr
-ecc_vec <- results[,3]
+disp_results <- results
+disp_results[,1] <- results[,1]/yr
+disp_results[,6:7] <-to_deg(acos(results[,6:7]))
+disp_results[,8:9] <-results[,8:9] %% 360
+times <- disp_results[,1]
+ecc_vec <- disp_results[,2]
+disp_results <-as.data.frame(disp_results)
+colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
 
 ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
   geom_line()
@@ -153,7 +165,7 @@ ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
 
 #----- Eccentricity to Temperature ----------
 d <- a2
-Lum <- 1.0 * Ls
+Lum <- 1.084 * Ls # originaly 1.084
 e <- ecc_vec # This should come from kozai results
 # source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
 # the relation of average energy received over entire orbit to eccentricity
