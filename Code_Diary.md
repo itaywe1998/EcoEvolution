@@ -438,4 +438,11 @@ For now let us try to find more significant configuration.
 When running data from naoz2016 figure 4
 large eccentricity differences where found, but on e1 !!!
 that's in accordance with the article, which means i have to find a configuration for highly changing e2 from a different place.
+
+We kind of have a design problem.
+The significant lidov-kozai oscillations are on the inner test particle, a.k.a e1. For that to be a planet, one must place a nearby host star, and a far perturbator. 
+If the m3 (perturbator) is the most massive, then it will emit most of the radiation and will dominate the heating of the planet. On main sequence stars for instance , L is proportionate to M^3.5.
+Stellar BH are even more luminous from accretion disks.
+
+Maybe we can consider a sun-near planet-far planet relation, like the sun-earth-jupiter setting.
 ```

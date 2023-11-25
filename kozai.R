@@ -4,6 +4,7 @@ suppressPackageStartupMessages({
     start <- Sys.time()
     require(deSolve) # solving ordinary differential equations (ODEs)
     library(ggplot2)
+    library(patchwork)
   })
 })
 # working in mks
@@ -12,6 +13,7 @@ yr <- 31556926 # s
 Ls <- 3.846e26 # W
 Ms <- 1.989e30 # kg
 Mj <- 1.89813e27 # kg
+Me <- 5.972e24 #kg
 GC <- 6.6743e-11
 sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
 albedo <- 0.29 # Earth's Albedo
@@ -105,20 +107,21 @@ mas_to_dist <- function(angle, r){
 }
 
 #---HD 202206 data ------
-m1 <- 1.07 * Ms # G-type primary star
-m2 <- 0.089 * Ms # brown dwarf companion
-m3 <- 17.9 * Mj# planet
-a1_mas <-0.2 #mas
+m1 <- 1 * Ms # Star
+m2 <- 1 * Me # solid-planet
+m3 <- 1 * Mj# gas-planet
+a1_mas <-0.1 #mas
 d_system <-150 # lyr from sun
 # 1 is for inner binary
-a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) * AU
-e1 <- 	0.472
-i1 <- to_radians(12.9)
-omega1 <- to_radians(161.9)
+ #a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) * AU
+a1 <- 1 * AU
+e1 <- 	0.01
+i1 <- to_radians(32)
+omega1 <- to_radians(40)
 # 2 is for outer planet (HD 202206-c)
-a2 <- 0.8 * AU
-e2 <- 0.37
-i2 <- to_radians(8.8)
+a2 <- 3.9 * AU
+e2 <- 0.3
+i2 <- to_radians(15)
 omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
 
 rel <- a1/a2
@@ -138,10 +141,10 @@ Gtot <- H1 + H2
 
 ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
 pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
-at <- 1e-7
-rt <- 1e-7
-tE <- 2e8 * yr
-step <- tE/200
+at <- 1e-10
+rt <- 1e-10
+tE <- 1e8 * yr
+step <- tE/500
 
 #---- Differential Equation -------
 results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
@@ -157,20 +160,22 @@ ecc_vec <- disp_results[,2]
 disp_results <-as.data.frame(disp_results)
 colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
 
-ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
+p1<-ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
   geom_line()
 
 
 
 
 #----- Eccentricity to Temperature ----------
-d <- a2
-Lum <- 1.084 * Ls # originaly 1.084
+d <- a1
+Lum <- 1 * Ls # originaly 1.084
 e <- ecc_vec # This should come from kozai results
 # source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
 # the relation of average energy received over entire orbit to eccentricity
 E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
 T <- (E)^(1/4) + T0
 
-ggplot(data = as.data.frame(cbind(times,T)))+aes(x= times, y= T) +
-  geom_line()
+ p2<-ggplot(data = as.data.frame(cbind(times,T)))+aes(x= times, y= T) +
+   geom_line()
+ 
+ p1+p2+plot_layout(ncol=1)
