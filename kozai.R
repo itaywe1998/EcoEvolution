@@ -109,11 +109,8 @@ mas_to_dist <- function(angle, r){
 #---HD 202206 data ------
 m1 <- 1 * Ms # Star
 m2 <- 1 * Me # solid-planet
-m3 <- 1 * Mj# gas-planet
-a1_mas <-0.1 #mas
-d_system <-150 # lyr from sun
+m3 <- 0.3 * Mj# gas-planet 
 # 1 is for inner binary
- #a1 <- mas_to_dist(a1_mas, lyr_to_AU(d_system)) * AU
 a1 <- 1 * AU
 e1 <- 	0.01
 i1 <- to_radians(32)
@@ -143,7 +140,7 @@ ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
 pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
 at <- 1e-10
 rt <- 1e-10
-tE <- 1e8 * yr
+tE <- 1e7 * yr
 step <- tE/500
 
 #---- Differential Equation -------
