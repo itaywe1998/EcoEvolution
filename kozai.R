@@ -5,19 +5,9 @@ suppressPackageStartupMessages({
     require(deSolve) # solving ordinary differential equations (ODEs)
     library(ggplot2)
     library(patchwork)
+    library(pracma)
   })
 })
-# working in mks
-AU <- 1.495978707e11 # m
-yr <- 31556926 # s
-Ls <- 3.846e26 # W
-Ms <- 1.989e30 # kg
-Mj <- 1.89813e27 # kg
-Me <- 5.972e24 #kg
-GC <- 6.6743e-11
-sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
-albedo <- 0.29 # Earth's Albedo
-T0 <- -273.15 # Kelvin to Celsius conversion
 # --- Functions ----
 kozai_osc <- function(t, state, params){
   # global parameters
@@ -91,13 +81,6 @@ lyr_to_AU <- function(l){
   return(l*6.3241e4)
 }
 
-to_radians<-function(deg){
-  return(deg*pi/180)
-}
-to_deg<-function(rad){
-  return(rad*180/pi)
-}
-
 # Convert mili-arcseconds to distance in the same units as the radius is given in
 mas_to_dist <- function(angle, r){
   p<-2*pi*r
@@ -106,73 +89,111 @@ mas_to_dist <- function(angle, r){
   return(angle*mas)
 }
 
-#---HD 202206 data ------
-m1 <- 1 * Ms # Star
-m2 <- 1 * Me # solid-planet
-m3 <- 0.3 * Mj# gas-planet 
-# 1 is for inner binary
-a1 <- 1 * AU
-e1 <- 	0.01
-i1 <- to_radians(32)
-omega1 <- to_radians(40)
-# 2 is for outer planet (HD 202206-c)
-a2 <- 3.9 * AU
-e2 <- 0.3
-i2 <- to_radians(15)
-omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
+to_radians<-function(deg){
+  return(deg*pi/180)
+}
 
-rel <- a1/a2
-#-------Kozai Inputs-----------
-# constants
-L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
-L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5
-C3_noG <-  -15/16 * GC^2 /4 * (m1+m2)^9 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * m3^9
-C2_coeff <- 15/4 * (m1-m2)/(m1+m2) * (a1/a2)
-# initial values for state vector
-G1 <-L1 * (1-e1^2)^0.5
-G2 <-L2 * (1-e2^2)^0.5
-H1 <- G1 * cos(i1)
-H2 <- G2 * cos(i2) 
-# constant
-Gtot <- H1 + H2
+to_deg<-function(rad){
+  return(rad*180/pi)
+}
 
-ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
-pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
-at <- 1e-10
-rt <- 1e-10
-tE <- 1e7 * yr
-step <- tE/500
 
-#---- Differential Equation -------
-results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
+kozai <-function(){
+  # -----Global Constants-----
+  # working in mks
+  AU <- 1.495978707e11 # m
+  yr <- 31556926 # s
+  Ls <- 3.846e26 # W
+  Ms <- 1.989e30 # kg
+  Mj <- 1.89813e27 # kg
+  Me <- 5.972e24 #kg
+  GC <- 6.6743e-11
+  sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
+  albedo <- 0.29 # Earth's Albedo
+  eps <- to_radians(23) # Earth's Obliquity
+  T0 <- -273.15 # Kelvin to Celsius conversion
+  
+  #---System data ------
+  m1 <- 1.001 * Ms # Star
+  m2 <- 1 * Me # solid-planet
+  m3 <- 0.3 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  # 1 is for inner binary
+  a1 <- 0.4 * AU
+  e1 <- 	0.01
+  i1 <- to_radians(32)
+  omega1 <- to_radians(40)
+  # 2 is for outer binary
+  a2 <- 3.9 * AU
+  e2 <- 0.3
+  i2 <- to_radians(15)
+  omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
+  
+  rel <- a1/a2
+  #-------Kozai Inputs-----------
+  # constants
+  L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
+  L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5
+  C3_noG <-  -15/16 * GC^2 /4 * (m1+m2)^9 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * m3^9
+  C2_coeff <- 15/4 * (m1-m2)/(m1+m2) * (a1/a2)
+  # initial values for state vector
+  G1 <-L1 * (1-e1^2)^0.5
+  G2 <-L2 * (1-e2^2)^0.5
+  H1 <- G1 * cos(i1)
+  H2 <- G2 * cos(i2) 
+  # constant
+  Gtot <- H1 + H2
+  
+  ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
+  pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
+  at <- 1e-10
+  rt <- 1e-10
+  tE <- 1e7 * yr
+  step <- tE/500
+  
+  #---- Differential Equation -------
+  results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
                 method="bdf", atol  = at, rtol = rt, maxsteps = 5000)
-diagnostics(results)
-
-disp_results <- results
-disp_results[,1] <- results[,1]/yr
-disp_results[,6:7] <-to_deg(acos(results[,6:7]))
-disp_results[,8:9] <-results[,8:9] %% 360
-times <- disp_results[,1]
-ecc_vec <- disp_results[,2]
-disp_results <-as.data.frame(disp_results)
-colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
-
-p1<-ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
-  geom_line()
-
-
-
-
-#----- Eccentricity to Temperature ----------
-d <- a1
-Lum <- 1 * Ls # originaly 1.084
-e <- ecc_vec # This should come from kozai results
-# source : https://www.sciencedirect.com/science/article/pii/S1631071310000052
-# the relation of average energy received over entire orbit to eccentricity
-E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) # energy per area per time
-T <- (E)^(1/4) + T0
-
- p2<-ggplot(data = as.data.frame(cbind(times,T)))+aes(x= times, y= T) +
-   geom_line()
- 
- p1+p2+plot_layout(ncol=1)
+  diagnostics(results)
+  
+  disp_results <- results
+  disp_results[,1] <- results[,1]/yr
+  disp_results[,6:7] <-to_deg(acos(results[,6:7]))
+  disp_results[,8:9] <-results[,8:9] %% 360
+  times <- disp_results[,1]
+  ecc_vec <- disp_results[,2]
+  disp_results <-as.data.frame(disp_results)
+  colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
+  
+  p1<-ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
+    geom_line()
+  
+  
+  
+  
+  #----- Eccentricity to Temperature ----------
+  d <- a1
+  Lum <- 1 * Ls 
+  e <- ecc_vec # This should come from kozai results
+  # sources :
+  #basic calculation :https://web.archive.org/web/20210605120431/https://scied.ucar.edu/earth-system/planetary-energy-balance-temperature-calculate
+  # eccentricity and obliquity addition: https://www.sciencedirect.com/science/article/pii/S1631071310000052
+  # the relation of average energy received over entire orbit to eccentricity
+  E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) 
+  E_pole <- E * sin(eps)/pi
+  E_equator <- E * 2/pi^2 * ellipke(sin(eps))$e
+  T_pole <- (E_pole)^(1/4) + T0
+  T_equator <- (E_equator)^(1/4) + T0
+  
+  p2<-ggplot(data = as.data.frame(cbind(times,T_equator)))+aes(x= times, y= T_equator) +
+    geom_line()
+  
+  p3<-ggplot(data = as.data.frame(cbind(times,T_pole)))+aes(x= times, y= T_pole) +
+    geom_line()
+  
+  p1+p2+p3+plot_layout(ncol=1)
+  
+  Tvec <-cbind(times,T_pole, T_equator)
+  
+  Tvec
+  
+}

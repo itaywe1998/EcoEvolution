@@ -445,4 +445,7 @@ If the m3 (perturbator) is the most massive, then it will emit most of the radia
 Stellar BH are even more luminous from accretion disks.
 
 Maybe we can consider a sun-near planet-far planet relation, like the sun-earth-jupiter setting.
+
+In this current config - m3 is the parameter who controls the cycles - that is how many periods of temprature profile there are in a certain time range. Make it smaller for fewer cycles, and vice versa."
+[main 7cb92fd] in this current config - m3 is the parameter who controls the cycles - that is how many periods of temperature profile there are in a certain time range. Make it smaller for fewer cycles, and vice versa.
 ```
