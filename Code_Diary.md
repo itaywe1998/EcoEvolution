@@ -448,4 +448,17 @@ Maybe we can consider a sun-near planet-far planet relation, like the sun-earth-
 
 In this current config - m3 is the parameter who controls the cycles - that is how many periods of temprature profile there are in a certain time range. Make it smaller for fewer cycles, and vice versa."
 [main 7cb92fd] in this current config - m3 is the parameter who controls the cycles - that is how many periods of temperature profile there are in a certain time range. Make it smaller for fewer cycles, and vice versa.
+
+26.11.23
+proud to say kozai is working.
+I opened a new directory in order to massively adapt the main R and cpp scripts to an outside temperature profile.
+The attitude is now completely different. There is no before climate change and during one.
+There is no small or large preparation time.
+The entire temperature history is given by the astrophysics from the start to the end.
+There are several modifications to be done:
+1. Cpp needs to have access to all temperatures in any given time, even though it chose its time jumps on its own. This is going to be a nightmare, since besides the accessibility to a non R script (passed as parameter is the best solution) one must match the times inside eqs to a time given in the Temprature table. I guess a round to nearest will be fine as long as the table is with enough resolution from one side, but not to heavy on the other side.
+2. Many script arguments are now deprecated, such as small (boolean), cycles, periodic, Cmax, Cmin, Tmax, Tmin, tstart, tE ...
+Keep only model, dbar, vbar, id, seed.
+Less complex on this aspect.
+3. Need to adapt Cpp not to generate its own temperature profile, but to read from a given one, in the manner described in clause 1. The only profile to be made is the spatial interpolation, which in turn can be also better described than the linear one if a scientific source will be found. For now its good enough, but patches are still an inner choice and not astrophysical.
 ```

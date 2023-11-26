@@ -114,7 +114,7 @@ kozai <-function(){
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
-  m1 <- 1.001 * Ms # Star
+  m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
   m3 <- 0.3 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
