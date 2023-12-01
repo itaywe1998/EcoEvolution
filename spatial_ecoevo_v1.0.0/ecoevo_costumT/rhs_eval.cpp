@@ -12,8 +12,6 @@
 
 using namespace std;
 using namespace Rcpp;
-
-
 /* Apply twice continuously differentiable smoothed step function to a number x
  Input:
  - x: Distance from pole, measured in units of the pole-to-equator distance
@@ -26,24 +24,6 @@ double smoothstep(double x) {
   else if (x>1.0) y=1.0;
   else y=x*x*x*(10.0+x*(-15.0+6.0*x));
   return(y);
-}
-
-/* In here the range [0,1] is divided to 'cycles' amount of periods, for which 
- * symmetric rise and fall smoothstep occurs.
- * i.e for `cycles` = 5, in range [0,0.1] y = smoothstep and in [0.1,0.2] y = 1-smoothstep,
- * with the appropriate argument normalization.
- */
-
-// [[Rcpp::export]]
-double periodic_smoothstep(double x, int cycles, bool updown) {
-  double y;
-  if (x<0.0) y=0.0;
-  else if (x>1.0) y=0.0;
-  else {
-    y = sin(cycles*M_PI*x);
-    if (!updown) y = abs(y);        
-  }
-  return y;
 }
 
 
@@ -59,15 +39,8 @@ double periodic_smoothstep(double x, int cycles, bool updown) {
  Output:
  - Vector of temperatures at each location x */
 // [[Rcpp::export]]
-NumericVector Temp(NumericVector x, double t, double tE,
-                   double Cmax, double Cmin, double Tmax, double Tmin,
-                   bool periodic, int cycles, bool updown) {
-  if (periodic) {
-    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*periodic_smoothstep((t/tE),cycles, updown));
-  }
-  else {
-    return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*smoothstep(t/tE));
-  }
+NumericVector Temp(NumericVector x,double Tmax, double Tmin) {
+    return((Tmax-Tmin)*x+Tmin);
 }
 
 
@@ -107,17 +80,16 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
 // [[Rcpp::export]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
-  int S=pars["S"], SR=pars["SR"], L=pars["L"], cycles=pars["cycles"];
+  int S=pars["S"], SR=pars["SR"], L=pars["L"] , lT=pars["lT"];
   double eta=pars["eta"], nmin=pars["nmin"], venv=pars["venv"];
-  double tE=pars["tE"], Cmax=pars["Cmax"], Cmin=pars["Cmin"], Tmax=pars["Tmax"];
-  double Tmin=pars["Tmin"], aw=pars["aw"], bw=pars["bw"], kappa=pars["kappa"];
+  double aw=pars["aw"], bw=pars["bw"], kappa=pars["kappa"];
   NumericVector d=pars["d"], V=pars["s"], Th=pars["Th"], rho=pars["rho"];
   NumericVector arate=pars["arate"], eps=pars["eps"];
   NumericMatrix vmat=pars["vmat"], W=pars["W"], mig=pars["mig"], a=pars["a"];
+  NumericMatrix T_kozai=pars["T_kozai"];
   String model=pars["model"];
-  bool periodic=pars["periodic"],updown=pars["updown"];
   // Variables
-  int i, j, k, l;
+  int i, j, k, l, ki, Tmin = 0, Tmax = 0;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
   NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
   NumericVector dvdt(2*S*L), x(L), T(L);
@@ -134,7 +106,28 @@ List eqs(double time, NumericVector state, List pars) {
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 
-  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin, periodic, cycles , updown); // Vector of temperatures
+  int prev, next;
+  for(ki=0; ki<lT-1; ki++){
+    prev = T_kozai(ki,0);
+    next = T_kozai(ki+1,0);
+    if(time> prev && time<next){
+      if(abs(time-prev) <= abs(time-next)){ //ki is closest
+        Tmin = T_kozai(ki,1);
+        Tmax = T_kozai(ki,2);
+      }
+      else{//ki+1 is closest
+        Tmin = T_kozai(ki+1,1);
+        Tmax = T_kozai(ki+1,2);
+      }
+      break;
+    }
+  } 
+  if(time == T_kozai(lT-1,0)) {
+    Tmin = T_kozai(lT-1,1);
+    Tmax = T_kozai(lT-1,2);
+  }
+  //cout<<Tmax<<endl;//  cout<<Tmin<<endl;
+  T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:

@@ -461,4 +461,9 @@ There are several modifications to be done:
 Keep only model, dbar, vbar, id, seed.
 Less complex on this aspect.
 3. Need to adapt Cpp not to generate its own temperature profile, but to read from a given one, in the manner described in clause 1. The only profile to be made is the spatial interpolation, which in turn can be also better described than the linear one if a scientific source will be found. For now its good enough, but patches are still an inner choice and not astrophysical.
+
+P.S dont forget to do source to kozai in the new ecoevo_main.R
+
+28.11.23
+Wrote a sketch. Need to be checked.Only ecoevo_main.R and cpp, not all the bash around and not demo. Plus need to see about plot, not decided yet.
 ```
