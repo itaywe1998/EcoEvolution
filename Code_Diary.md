@@ -466,4 +466,7 @@ P.S dont forget to do source to kozai in the new ecoevo_main.R
 
 28.11.23
 Wrote a sketch. Need to be checked.Only ecoevo_main.R and cpp, not all the bash around and not demo. Plus need to see about plot, not decided yet.
+01-02.12.23
+successful kozai - even too good because our model is well trained in temperature deltas bigger than a few degrees, and the temperature change rate is surprisingly not challenging enough but easy for the populations. Will try harsher situations
+longer kozai was performed, fully adapted. Will run lower vbar dbar to see failure or change the profile to be denser. Need to consult Hagai on the matching cases in the kozai context
 ```
