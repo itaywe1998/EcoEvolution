@@ -36,13 +36,13 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"KozaiTrial"
+  id <-"KozaiLonger"
   seed <- 3690
-  vbar <- 3e-4 # average genetic variance in Celsius squared 
-  dbar <- 1e-6 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 3e-5 # average genetic variance in Celsius squared 
+  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
-S <- 3 # fifty species per trophic level
+S <- 4 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
 file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
@@ -229,7 +229,9 @@ if(mean(temp$n) > 0){ # if ode converged till final time and no significant nega
     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
    # plot_timeseries(dat %>% filter(time %in% c(0,step)))
    plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
-}
+   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
+   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),".png",sep =""), plot = plt)
+   }
 print("Final Runtime")
 print(Sys.time()-start)
 

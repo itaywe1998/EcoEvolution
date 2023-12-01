@@ -147,7 +147,7 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e7 * yr
+  tE <- 1e8 * yr
   step <- tE/500
   
   #---- Differential Equation -------
