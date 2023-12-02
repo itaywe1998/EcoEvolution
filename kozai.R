@@ -142,16 +142,16 @@ kozai <-function(){
   
   #---System data ------
   m1 <- 1.000 * Ms # Star
-  m2 <- 0.2 * Me # solid-planet
+  m2 <- 5 * Me # solid-planet
   m3 <- 0.1 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.4 * AU
   e1 <- 	0.01
-  i1 <- to_radians(37)
+  i1 <- to_radians(31)
   omega1 <- to_radians(40)
   # 2 is for outer binary
-  a2 <- 3.9 * AU
-  e2 <- 0.4
+  a2 <- 6.9 * AU
+  e2 <- 0.7
   i2 <- to_radians(15)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
@@ -174,10 +174,10 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 5e8 * yr
+  tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "First_lowGap_highDelta"
+  workspace_name <- "First_lowGap_highDelta_lowerFreq"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   save.image(file = workspace)
   
@@ -232,6 +232,9 @@ kozai <-function(){
   avg_Tgap <- mean(Tgap)
   min_Tgap <- min(Tgap)
   max_Tgap <- max(Tgap)
+  
+  indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
+  # for a single step - the biggest temprature difference
   
   Tvec
   

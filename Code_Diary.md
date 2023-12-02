@@ -503,5 +503,8 @@ Plus it is comparable to the temperature history we know on earth.
 Until I discuss this with Hagai, let us first try to deal with:
 1. A certain T profile with large T difference over time and smaller Tgap between pole and equtator (already achieved, now need to find a configuration in which ecoevo survives)
 2. The micro-scale comparison (pick a T frequency in which it dies vs one in which it lives)
-# 3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
+3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
+
+A certain difficulty I am having is this - the indicating difference (maximal single step (2 neighboring points on profile) temprature rise/fall) is mostly close to the max - min of the entire profile. that is - the maximal difference in temprature occurs in a single step ! Maybe even in less than that.
+It is not possible to expect the ecosystem to survive a total on-off situation in which the maximal CC occurs in a very short timescale. On the other hand, the ecosystem should be challenged by a bigger max-min difference than the Tgap between the equator and pole in order to show genetic adaptability and not only dispersive. Maybe in a different obliquity it will be simpler to get this cases. 
 ```

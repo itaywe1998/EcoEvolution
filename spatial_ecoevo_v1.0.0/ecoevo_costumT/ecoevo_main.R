@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
     start <- Sys.time()
     require(gridExtra)
     require(deSolve) # solving ordinary differential equations (ODEs)
-    require(tidyverse) # manipulating and visualizing data
+   # require(tidyverse) # manipulating and visualizing data
     require(ggpmisc) # adding statistics to plots
     require(Rcpp) # importing C functions
     library(tidyr)
@@ -38,8 +38,8 @@ if (!is.na(clargs)) { # command-line arguments
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   id <-"Kozai_MainStart"
   seed <- 3690
-  vbar <- 3e-5 # average genetic variance in Celsius squared 
-  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 3e-3 # average genetic variance in Celsius squared 
+  dbar <- 1e-4 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 S <- 4 # fifty species per trophic level
@@ -211,7 +211,7 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              unlink(workspace) # Deleting old name workspace
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
-             during_step <<- 1000
+             step <<- step/4
              tE <<-floor((fail_time-step)/step) * step #alternative for round_any
              # if needed in another place will move to a function
              results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
