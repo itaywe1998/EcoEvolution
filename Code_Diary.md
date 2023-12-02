@@ -469,4 +469,39 @@ Wrote a sketch. Need to be checked.Only ecoevo_main.R and cpp, not all the bash 
 01-02.12.23
 successful kozai - even too good because our model is well trained in temperature deltas bigger than a few degrees, and the temperature change rate is surprisingly not challenging enough but easy for the populations. Will try harsher situations
 longer kozai was performed, fully adapted. Will run lower vbar dbar to see failure or change the profile to be denser. Need to consult Hagai on the matching cases in the kozai context
+
+0.2.12.23
+From the inline documentation of kozai.R to the kozai() function:
+A little "Controls & sensitivities" Guide
+   1.if desired to decrease the gap between the pole and equator - increase obliquity (eps)
+   even possible to revert the relation above eps=45 degrees, making the pole hotter than the equator
+   2. the Jupiter-like perturbuter's mass (m3) affects the order of behavior for the eccentricity (e1)
+    certain values will generate a periodic (ordered) pattern, others will create a rising frequency
+   3. i1 (inclination for planet) heavily impacts - increasing makes the eccentricity much more extreme and hence the temperature difference over time
+   4. lowering i2 as well depresses to a well ordered and low difference eccentricity, so it is the combination of both inclinations who rules  
+   5. Additionally, i1-i2 matters, the larger it is the less moderate the system (e1) is
+   6. As planets' mass tend to be lower compared to the other masses, it is more vulnerable to extreme changes
+   the bigger it is the more ordered behavior occurs. In small masses - rising frequency
+   7. Omegas don't change much (as expected), just the initial point of the same behaviour
+   8. initial e1 changes the stability of the e1 solution, leading to various resulting 
+   trends, not very linearly responding.
+   9. Star mass does not change much of its own, but in order to keep sense,
+   the mass-luminosity relations obliges to increase much of Ls with minor changes to Ms
+   10. In a similar manner - a1 also controls the average heat, similarly to Ls
+   and so both parameters are recommended to stay the same.
+   11. Albedo is a rather straight forward tuning to average heat 
+   12. the more distant (a2) the perturbater is the more ordered behavior 
+   extremely close Jupiter-like breaks the solution (as expected)
+
+
+So now - we have two options to simulate the parralel to "long vs short" adaptation time:
+micro-scale : The frequency of temperature change is high vs low, over the entire profile
+macro-scale : a chirp-like profile, with rising frequency, but a small vs large rate of frequency rise - or in simpler words, starts ok and then gets crazy in both, but for one the crazy part gets much much sooner.
+I believe keeping the 5e8 years is a good amount of time since it is biologically significant and not too slow to compute on its own (just T profile , not the ecoevo model, which is also to be considered when enlarging tE)
+Plus it is comparable to the temperature history we know on earth.
+
+Until I discuss this with Hagai, let us first try to deal with:
+1. A certain T profile with large T difference over time and smaller Tgap between pole and equtator (already achieved, now need to find a configuration in which ecoevo survives)
+2. The micro-scale comparison (pick a T frequency in which it dies vs one in which it lives)
+3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
 ```

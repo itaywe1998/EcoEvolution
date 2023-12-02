@@ -98,6 +98,33 @@ to_deg<-function(rad){
 }
 
 
+
+#* A little "Controls & sensitivities" Guide
+#*   1.if desired to decrease the gap between the pole and equator - increase obliquity (eps)
+#*   even possible to revert the relation above eps=45 degrees, making the pole hotter than the equator
+#*   2. the Jupiter-like perturbuter's mass (m3) affects the order of behavior for the eccentricity (e1)
+#*    certain values will generate a periodic (ordered) pattern, others will create a rising frequency
+#*   3. i1 (inclination for planet) heavily impacts - increasing makes the eccentricity much more extreme and hence the temperature difference over time
+#*   4. lowering i2 as well depresses to a well ordered and low difference eccentricity, so it is the combination of both inclinations who rules  
+#*   5. Additionally, i1-i2 matters, the larger it is the less moderate the system (e1) is
+#*   6. As planets' mass tend to be lower compared to the other masses, it is more vulnerable to extreme changes
+#*   the bigger it is the more ordered behavior occurs. In small masses - rising frequency
+#*   7. Omegas don't change much (as expected), just the initial point of the same behaviour
+#*   8. initial e1 changes the stability of the e1 solution, leading to various resulting 
+#*   trends, not very linearly responding.
+#*   9. Star mass does not change much of its own, but in order to keep sense,
+#*   the mass-luminosity relations obliges to increase much of Ls with minor changes to Ms
+#*   10. In a similar manner - a1 also controls the average heat, similarly to Ls
+#*   and so both parameters are recommended to stay the same.
+#*   11. Albedo is a rather straight forward tuning to average heat 
+#*   12. the more distant (a2) the perturbater is the more ordered behavior 
+#*   extremely close Jupiter-like breaks the solution (as expected)
+#*
+#*
+#*
+#*
+#*
+#*   
 kozai <-function(){
   # -----Global Constants-----
   # working in mks
@@ -110,21 +137,21 @@ kozai <-function(){
   GC <- 6.6743e-11
   sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
   albedo <- 0.29 # Earth's Albedo
-  eps <- to_radians(23) # Earth's Obliquity
+  eps <- to_radians(40) # Earth's Obliquity
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
   m1 <- 1.000 * Ms # Star
-  m2 <- 1 * Me # solid-planet
-  m3 <- 0.3 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m2 <- 0.2 * Me # solid-planet
+  m3 <- 0.1 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.4 * AU
   e1 <- 	0.01
-  i1 <- to_radians(32)
+  i1 <- to_radians(37)
   omega1 <- to_radians(40)
   # 2 is for outer binary
   a2 <- 3.9 * AU
-  e2 <- 0.3
+  e2 <- 0.4
   i2 <- to_radians(15)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
@@ -147,8 +174,8 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e8 * yr
-  step <- tE/500
+  tE <- 5e8 * yr
+  step <- tE/1000
   
   #---- Differential Equation -------
   results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
@@ -160,7 +187,7 @@ kozai <-function(){
   disp_results[,6:7] <-to_deg(acos(results[,6:7]))
   disp_results[,8:9] <-results[,8:9] %% 360
   times <- disp_results[,1]
-  ecc_vec <- disp_results[,2]
+  ecc_vec <- disp_results[,2] #e1
   disp_results <-as.data.frame(disp_results)
   colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
   
@@ -193,6 +220,14 @@ kozai <-function(){
   p1+p2+p3+plot_layout(ncol=1)
   
   Tvec <-cbind(times,T_pole, T_equator)
+  
+  delta_equator <- max(T_equator)-min(T_equator)
+  delta_pole <- max(T_pole) - min(T_pole)
+  
+  Tgap <- T_equator-T_pole
+  avg_Tgap <- mean(Tgap)
+  min_Tgap <- min(Tgap)
+  max_Tgap <- max(Tgap)
   
   Tvec
   
