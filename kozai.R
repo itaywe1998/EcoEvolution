@@ -177,6 +177,10 @@ kozai <-function(){
   tE <- 5e8 * yr
   step <- tE/1000
   
+  workspace_name <- "First_lowGap_highDelta"
+  workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
+  save.image(file = workspace)
+  
   #---- Differential Equation -------
   results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
                 method="bdf", atol  = at, rtol = rt, maxsteps = 5000)

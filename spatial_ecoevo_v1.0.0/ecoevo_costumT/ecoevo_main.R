@@ -36,7 +36,7 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"KozaiLonger"
+  id <-"Kozai_MainStart"
   seed <- 3690
   vbar <- 3e-5 # average genetic variance in Celsius squared 
   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
@@ -47,6 +47,7 @@ replicate <- 1 # replicate number = 1
 file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
+
 # --------------------------------functions ------------------------------------
 
 # return matrix W[i,j], which is nonzero if consumer i eats resource j;
@@ -155,7 +156,18 @@ for (k in 2:L) mig[k-1,k] <- 1 # each species can only migrate to the two
 mig <- mig + t(mig) # nearest-neighbor patches
 
 # Temperatures----
-T_kozai <- kozai()
+old_profile <- TRUE
+if (old_profile){
+  wksp_name <- "First_lowGap_highDelta"
+  kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
+  tmp.env <- new.env() # create a temporary environment
+  load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
+  T_kozai <- tmp.env$Tvec 
+  rm(tmp.env) 
+}else{
+  T_kozai <- kozai()
+}
+
 lT <- length(T_kozai[,1])
 save.image(file = workspace)
 Tmin <- unname(T_kozai[1,2])

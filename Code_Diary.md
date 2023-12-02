@@ -494,7 +494,7 @@ A little "Controls & sensitivities" Guide
    extremely close Jupiter-like breaks the solution (as expected)
 
 
-So now - we have two options to simulate the parralel to "long vs short" adaptation time:
+So now - we have two options to simulate the parallel to "long vs short" adaptation time:
 micro-scale : The frequency of temperature change is high vs low, over the entire profile
 macro-scale : a chirp-like profile, with rising frequency, but a small vs large rate of frequency rise - or in simpler words, starts ok and then gets crazy in both, but for one the crazy part gets much much sooner.
 I believe keeping the 5e8 years is a good amount of time since it is biologically significant and not too slow to compute on its own (just T profile , not the ecoevo model, which is also to be considered when enlarging tE)
@@ -503,5 +503,5 @@ Plus it is comparable to the temperature history we know on earth.
 Until I discuss this with Hagai, let us first try to deal with:
 1. A certain T profile with large T difference over time and smaller Tgap between pole and equtator (already achieved, now need to find a configuration in which ecoevo survives)
 2. The micro-scale comparison (pick a T frequency in which it dies vs one in which it lives)
-3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
+# 3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
 ```
