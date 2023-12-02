@@ -506,5 +506,8 @@ Until I discuss this with Hagai, let us first try to deal with:
 3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
 
 A certain difficulty I am having is this - the indicating difference (maximal single step (2 neighboring points on profile) temprature rise/fall) is mostly close to the max - min of the entire profile. that is - the maximal difference in temprature occurs in a single step ! Maybe even in less than that.
-It is not possible to expect the ecosystem to survive a total on-off situation in which the maximal CC occurs in a very short timescale. On the other hand, the ecosystem should be challenged by a bigger max-min difference than the Tgap between the equator and pole in order to show genetic adaptability and not only dispersive. Maybe in a different obliquity it will be simpler to get this cases. 
+It is not possible to expect the ecosystem to survive a total on-off situation in which the maximal CC occurs in a very short timescale. On the other hand, the ecosystem should be challenged by a bigger max-min difference than the Tgap between the equator and pole in order to show genetic adaptability and not only dispersive. Maybe in a different obliquity it will be simpler to get this cases.
+
+Achieved a rather ok profile for kozai, but still extinct. should modify vbar to find the value which allows survival. 
+Another thing which is annoying - the ggplot save is quenching the plot to be very small and not details can be seen above 2 subplots together, should figure how to improve this.
 ```

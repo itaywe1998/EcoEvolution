@@ -147,7 +147,7 @@ kozai <-function(){
   # 1 is for inner binary
   a1 <- 0.4 * AU
   e1 <- 	0.01
-  i1 <- to_radians(33)
+  i1 <- to_radians(39)
   omega1 <- to_radians(40)
   # 2 is for outer binary
   a2 <- 6.9 * AU
@@ -177,7 +177,7 @@ kozai <-function(){
   tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "First_lowGap_highDelta_SucceedPartially"
+  workspace_name <- "First_lowGap_highDelta_Succeed"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   save.image(file = workspace)
   

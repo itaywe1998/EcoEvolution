@@ -158,7 +158,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "First_lowGap_highDelta"
+  wksp_name <- "First_lowGap_highDelta_Succeed"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -211,7 +211,6 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              unlink(workspace) # Deleting old name workspace
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
-             step <<- step/4
              tE <<-floor((fail_time-step)/step) * step #alternative for round_any
              # if needed in another place will move to a function
              results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
@@ -240,8 +239,8 @@ if(mean(temp$n) > 0){ # if ode converged till final time and no significant nega
   if (outfile!="") { # if data file to save to was not specified as empty (""):
     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
    # plot_timeseries(dat %>% filter(time %in% c(0,step)))
-   plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
-   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
+   plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
+   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=8*step)))
    ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),".png",sep =""), plot = plt)
    }
 print("Final Runtime")
