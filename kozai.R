@@ -137,17 +137,17 @@ kozai <-function(){
   GC <- 6.6743e-11
   sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
   albedo <- 0.29 # Earth's Albedo
-  eps <- to_radians(40) # Earth's Obliquity
+  eps <- to_radians(45) # Earth's Obliquity
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
   m1 <- 1.000 * Ms # Star
-  m2 <- 5 * Me # solid-planet
-  m3 <- 0.1 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m2 <- 1 * Me # solid-planet
+  m3 <- 0.006 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.4 * AU
   e1 <- 	0.01
-  i1 <- to_radians(31)
+  i1 <- to_radians(33)
   omega1 <- to_radians(40)
   # 2 is for outer binary
   a2 <- 6.9 * AU
@@ -177,7 +177,7 @@ kozai <-function(){
   tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "First_lowGap_highDelta_lowerFreq"
+  workspace_name <- "First_lowGap_highDelta_SucceedPartially"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   save.image(file = workspace)
   
