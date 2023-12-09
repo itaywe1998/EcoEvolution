@@ -179,7 +179,6 @@ kozai <-function(){
   
   workspace_name <- "First_lowGap_highDelta_Succeed"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
-  save.image(file = workspace)
   
   #---- Differential Equation -------
   results <-ode(y=ic, times=seq(0, tE, by=step), func=kozai_osc, parms=pars,
@@ -224,6 +223,7 @@ kozai <-function(){
   p1+p2+p3+plot_layout(ncol=1)
   
   Tvec <-cbind(times,T_pole, T_equator)
+  save.image(file = workspace)
   
   delta_equator <- max(T_equator)-min(T_equator)
   delta_pole <- max(T_pole) - min(T_pole)

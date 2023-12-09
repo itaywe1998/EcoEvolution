@@ -470,7 +470,7 @@ Wrote a sketch. Need to be checked.Only ecoevo_main.R and cpp, not all the bash 
 successful kozai - even too good because our model is well trained in temperature deltas bigger than a few degrees, and the temperature change rate is surprisingly not challenging enough but easy for the populations. Will try harsher situations
 longer kozai was performed, fully adapted. Will run lower vbar dbar to see failure or change the profile to be denser. Need to consult Hagai on the matching cases in the kozai context
 
-0.2.12.23
+02.12.23
 From the inline documentation of kozai.R to the kozai() function:
 A little "Controls & sensitivities" Guide
    1.if desired to decrease the gap between the pole and equator - increase obliquity (eps)
@@ -510,4 +510,7 @@ It is not possible to expect the ecosystem to survive a total on-off situation i
 
 Achieved a rather ok profile for kozai, but still extinct. should modify vbar to find the value which allows survival. 
 Another thing which is annoying - the ggplot save is quenching the plot to be very small and not details can be seen above 2 subplots together, should figure how to improve this.
+
+09.12.23
+Hi I'm back again. It was a display problem, see dpi, height and width options for ggsave().
 ```

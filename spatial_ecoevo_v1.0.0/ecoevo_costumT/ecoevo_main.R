@@ -36,7 +36,7 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"Kozai_MainStart"
+  id <-"Kozai_StartingPoint"
   seed <- 3690
   vbar <- 3e-3 # average genetic variance in Celsius squared 
   dbar <- 1e-4 # average dispersal (1e-7 <=> 1 meter per year)
@@ -235,14 +235,15 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
 print(original_tE-max(dat$time))
 temp <-(dat %>% filter(time %in% c(max(dat$time))))
 print(mean(temp$n))
-if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
-  if (outfile!="") { # if data file to save to was not specified as empty (""):
-    suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
-   # plot_timeseries(dat %>% filter(time %in% c(0,step)))
-   plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
-   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=8*step)))
-   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),".png",sep =""), plot = plt)
-   }
+# if data file to save to was not specified as empty (""):
+suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
+# plot_timeseries(dat %>% filter(time %in% c(0,step)))
+plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
+plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
+ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
+                         toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
+       dpi=300, height = 7, width = 10, units = "in")
+
 print("Final Runtime")
 print(Sys.time()-start)
 
