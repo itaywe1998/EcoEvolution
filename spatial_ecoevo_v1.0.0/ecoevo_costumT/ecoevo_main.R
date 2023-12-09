@@ -38,8 +38,8 @@ if (!is.na(clargs)) { # command-line arguments
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   id <-"Kozai_StartingPoint"
   seed <- 3690
-  vbar <- 3e-3 # average genetic variance in Celsius squared 
-  dbar <- 1e-4 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 30 # average genetic variance in Celsius squared 
+  dbar <- 1e-5 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 S <- 4 # fifty species per trophic level
@@ -194,31 +194,34 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-5
-rt <-1e-5
+at <-1e-12
+rt <-1e-11
 tE <-tail(T_kozai, n=1)[1]
 step <- tE/200
 fail_time <- 0
 original_tE <- tE
 tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
-                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)
+},
          error=function(fail_time){
            message("All Species Extinct")
-           fail_time<<-as.numeric(fail_time$message)},
+           fail_time<<-as.numeric(fail_time$message)
+           },
          finally = {
            if (fail_time > 0) {
              outfile <<- paste(outfile,"_FAILED",sep="")
              unlink(workspace) # Deleting old name workspace
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
-             tE <<-floor((fail_time-step)/step) * step #alternative for round_any
+             # lets try without the fail_time - step, to see better what happens
+             tE <<-floor((fail_time)/(step/5)) * (step/5) #alternative for round_any
              # if needed in another place will move to a function
-             results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
+             results <-ode(y=ic, times=seq(tE-10*step, tE, by=step/5), func=eqs, parms=pars,
                              method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
            }
            diagnostics(results)
            results <- results %>% # put during-climate-change solution into tidy tibble:
-             organize_data(times=seq(from=0, to=tE, by=step), pars = pars) #%>%
+             organize_data(times=seq(from=0, to=tE, by=step/5), pars = pars) #%>%
            
            dat <-# add replicate, genetic var., dispersal rate, and structure as new columns
              results%>%mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
@@ -238,12 +241,16 @@ print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 # plot_timeseries(dat %>% filter(time %in% c(0,step)))
-plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
-plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=4*step)))
-ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
-                         toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
-       dpi=300, height = 7, width = 10, units = "in")
-
+plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step/5)))
+toSave <- FALSE
+if (toSave){
+  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
+  ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
+                           toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
+         dpi=300, height = 7, width = 10, units = "in")
+  
+  
+}
 print("Final Runtime")
 print(Sys.time()-start)
 

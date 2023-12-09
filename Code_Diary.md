@@ -513,4 +513,12 @@ Another thing which is annoying - the ggplot save is quenching the plot to be ve
 
 09.12.23
 Hi I'm back again. It was a display problem, see dpi, height and width options for ggsave().
+
+Ok, so for v=300 and d=1e-5 they managed to be not bothered by the kozai CC at all ! (talking about the
+"First_lowGap_highDelta_Succeed" configuration). Proves that this is still only a numeric consideration and not something about the kozai process itself. Now let us lower the bar to find where does the minimal requirement lie.
+The bar is circa 50, but results are boring - constant on the very first step (5 million years in this case)
+
+Well (on v=30) turns out it was a matter of tolerances! Decreased from 1e-5 to 1e-8 each and doubled the fail time from 2.3e8 to 4.6e8! Further tuning will help me yeild proper solutions.
+TODO : Find a reseanable comprimise on performance and tolerances, reached 1e-12 and still got to failtime 9.85e8.
+Make sure there is nothing else, and it is wierd that the major driatives are behind and still the calculation encounters difficulties in the late process.
 ```
