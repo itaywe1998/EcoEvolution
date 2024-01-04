@@ -501,7 +501,7 @@ I believe keeping the 5e8 years is a good amount of time since it is biologicall
 Plus it is comparable to the temperature history we know on earth.
 
 Until I discuss this with Hagai, let us first try to deal with:
-1. A certain T profile with large T difference over time and smaller Tgap between pole and equtator (already achieved, now need to find a configuration in which ecoevo survives)
+1. A certain T profile with large T difference over time and smaller Tgap between pole and equator (already achieved, now need to find a configuration in which ecoevo survives)
 2. The micro-scale comparison (pick a T frequency in which it dies vs one in which it lives)
 3. The macro-scale comparison (slow advancing chirp vs fast advancing chirp)
 
@@ -538,4 +538,14 @@ When I come to think of it, CCmoderateSearch5 is quite interesting. It indicates
 There , the maximal rate is 2.85 deg/Myr. Even when the dT=~60deg, it is manageable by a dbar=1e-7, vbar=1e-5.
 The only way to kill them is to increase dT/dt relatively to vbar,dbar.
 Let us examine the limit of change.
+
+Newsflash:
+Atol and Rtol effect the result, namely the cutoff (fail) time, which is never of the n=0 type, but rather a sharp (non differntiable function) density profile, on high values (order of magnitude 1e1 or 1e2). This is an old issue solved usally by small atol and rtol, but here these small values (1e-10) yeilds a failtime=0.
+Whats interesting is for atol=0,rtol>0 there are 2 species at final frame, but for atol>0 ,rtol=0 there is only one surviving.
+Error log is a bit more specific now, seperating the mean(n)<0 and the max(n)<1e-5 cases.
+
+5.1.24
+So now with the temparature col in dat it is clearer that the species that have significan n in a certain patch follow very well the Tenv, it is just the numerical calculation that stopped at a certain point since the population did not undergo an extinction.
+If not fixed today, TODO : Figure out why the global assignments from the error handling section are not working (fail time not updated to >0, for instance, outfile as well).
+
 ```

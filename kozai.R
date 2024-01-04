@@ -9,6 +9,13 @@ suppressPackageStartupMessages({
   })
 })
 # --- Functions ----
+present_profile <- function(name){
+  folder <-"/home/itay/EcoEvolution/Kozai_parameters/"
+  file <- paste(folder,name,sep = "")
+  dat <- load(file)
+  p1+p2+p3+plot_layout(ncol=1)
+}
+
 kozai_osc <- function(t, state, params){
   # global parameters
   L1 <- unlist(params[1])
@@ -147,7 +154,7 @@ kozai <-function(){
   # 1 is for inner binary
   a1 <- 0.42 * AU
   e1 <- 	0.01
-  i1 <- to_radians(43)
+  i1 <- to_radians(45)
   omega1 <- to_radians(40)
   # 2 is for outer binary
   a2 <- 8.4 * AU
@@ -177,7 +184,7 @@ kozai <-function(){
   tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "ModerateCCSearch6"
+  workspace_name <- "Target2Dead?"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------

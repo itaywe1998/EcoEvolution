@@ -103,6 +103,8 @@ List eqs(double time, NumericVector state, List pars) {
     }
   }
   if(max(n)<1.0e-5 || mean(n)<0){
+    if(max(n)<1.0e-5) cout<<"Population died"<<endl;
+    if(mean(n)<0) cout<<"Negative Profile, Simulation Broke"<<endl;
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 

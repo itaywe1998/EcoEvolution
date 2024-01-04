@@ -5,6 +5,7 @@
 
 # To run, either execute within R or enter the following at the command prompt:
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT")
 suppressPackageStartupMessages({
   suppressWarnings({
     rm(list = ls())
@@ -159,7 +160,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "ModerateCCSearch5"
+  wksp_name <- "Target2Dead?"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -195,18 +196,18 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-6
-rt <-1e-6
+at <-1e-8
+rt <-1e-8
 tE <-tail(T_kozai, n=1)[1]
-step <- tE/200
+step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
 fail_time <- 0
 original_tE <- tE
 tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)
 },
-         error=function(fail_time){
-           message("All Species Extinct")
-           fail_time<<-as.numeric(fail_time$message)
+         error=function(this){
+           message(this$message)
+           fail_time<<-as.numeric(this$message)
            },
          finally = {
            if (fail_time > 0) {
@@ -215,24 +216,27 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
              # lets try without the fail_time - step, to see better what happens
-             tE <<-floor((fail_time-step/5)/(step/5)) * (step/5) #alternative for round_any
+             tE <<-floor((fail_time-step)/(step)) * (step) #alternative for round_any
              # if needed in another place will move to a function
-             results <-ode(y=ic, times=seq(0, tE, by=step/5), func=eqs, parms=pars,
+             results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                              method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
            }
            diagnostics(results)
            results <- results %>% # put during-climate-change solution into tidy tibble:
-             organize_data(times=seq(from=0, to=tE, by=step/5), pars = pars) #%>%
+             organize_data(times=seq(from=0, to=tE, by=step), pars = pars) #%>%
+           
+           temperature<-rep(seq(Tmin, Tmax, l=L),each = S)
+           limit <- nrow(results)/(S*L)
+           for (i in 2:limit){
+             Tlow <- unname(T_kozai[i,2])
+             Thigh <- unname(T_kozai[i,3])
+             temperature<-c(temperature, rep(seq(Tlow, Thigh, l=L),each = S))
+           }
+           
+           
            
            dat <-# add replicate, genetic var., dispersal rate, and structure as new columns
-             results%>%mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
-             # merge average genetic variance and dispersal into a single column
-             mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
-             # create regions
-             mutate(region=case_when(
-               (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
-               (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
-               TRUE                           ~ "temperate")) # the rest are "temperate"
+             results%>%mutate(Tenv=temperature)
            
          })  # integrate from start to end of climate change
 # --------------------------- generate output ----------------------------------
@@ -242,7 +246,7 @@ print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 # plot_timeseries(dat %>% filter(time %in% c(0,step)))
-plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step/5)))
+plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step)))
 toSave <- FALSE
 if (toSave){
   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
