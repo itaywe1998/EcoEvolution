@@ -518,7 +518,24 @@ Ok, so for v=300 and d=1e-5 they managed to be not bothered by the kozai CC at a
 "First_lowGap_highDelta_Succeed" configuration). Proves that this is still only a numeric consideration and not something about the kozai process itself. Now let us lower the bar to find where does the minimal requirement lie.
 The bar is circa 50, but results are boring - constant on the very first step (5 million years in this case)
 
-Well (on v=30) turns out it was a matter of tolerances! Decreased from 1e-5 to 1e-8 each and doubled the fail time from 2.3e8 to 4.6e8! Further tuning will help me yeild proper solutions.
-TODO : Find a reseanable comprimise on performance and tolerances, reached 1e-12 and still got to failtime 9.85e8.
-Make sure there is nothing else, and it is wierd that the major driatives are behind and still the calculation encounters difficulties in the late process.
+Well (on v=30) turns out it was a matter of tolerances! Decreased from 1e-5 to 1e-8 each and doubled the fail time from 2.3e8 to 4.6e8! Further tuning will help me yield proper solutions.
+TODO : Find a reasonable compromise on performance and tolerances, reached 1e-12 and still got to fail time 9.85e8.
+Make sure there is nothing else, and it is wierd that the major derivatives are behind and still the calculation encounters difficulties in the late process.
+
+30.12.23
+
+Hi, this is Itay from late - December here. Sorry for being out for quite long, Prague was nice and required my attention.
+Looking at the last efforts I think the direction of stretching the model into a high vbar model is quite problematic, and it might be better to invest a little bit more time into relevant temperature profile, change it smartly (with regular vbar dbar) until a flip happens (easy success to fast failure) and then it will be feasible to search for the right vbar dbar for a case seperation.
+I am really looking forward to the time this procedure will be automated and not a matter of art, but for a first step in the field I guess it is ok and indeed more complex than it seems with it being an already highly dimensional problem. 
+
+31.12.23
+
+Turns out increasing tolerances actually helps the solution to come, and the failures so far where not for population, but for numeric reasons.
+So far did not manage to kill them all, will keep trying.
+
+4.1.24
+When I come to think of it, CCmoderateSearch5 is quite interesting. It indicates the living creatures on the planet do not care about the total dT over a billion years, but just about the derivative (rate) of change.
+There , the maximal rate is 2.85 deg/Myr. Even when the dT=~60deg, it is manageable by a dbar=1e-7, vbar=1e-5.
+The only way to kill them is to increase dT/dt relatively to vbar,dbar.
+Let us examine the limit of change.
 ```

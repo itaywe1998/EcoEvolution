@@ -36,15 +36,16 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"Kozai_StartingPoint"
+  id <-"Kozai_CCSearchMorechallenging"
   seed <- 3690
-  vbar <- 30 # average genetic variance in Celsius squared 
-  dbar <- 1e-5 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 1e-5 # average genetic variance in Celsius squared 
+  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 S <- 4 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
-file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+run_indicator <- sample(1:20000,1)
+file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),toString(run_indicator),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
 
@@ -158,7 +159,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "First_lowGap_highDelta_Succeed"
+  wksp_name <- "ModerateCCSearch5"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -194,8 +195,8 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-12
-rt <-1e-11
+at <-1e-6
+rt <-1e-6
 tE <-tail(T_kozai, n=1)[1]
 step <- tE/200
 fail_time <- 0
@@ -214,9 +215,9 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
              # lets try without the fail_time - step, to see better what happens
-             tE <<-floor((fail_time)/(step/5)) * (step/5) #alternative for round_any
+             tE <<-floor((fail_time-step/5)/(step/5)) * (step/5) #alternative for round_any
              # if needed in another place will move to a function
-             results <-ode(y=ic, times=seq(tE-10*step, tE, by=step/5), func=eqs, parms=pars,
+             results <-ode(y=ic, times=seq(0, tE, by=step/5), func=eqs, parms=pars,
                              method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
            }
            diagnostics(results)
@@ -245,6 +246,7 @@ plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step/5)))
 toSave <- FALSE
 if (toSave){
   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
+  #plot_timeseries(dat %>% filter(time %in% seq(from=9e8,to=max(dat$time),by=2*step)))
   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
                            toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
          dpi=300, height = 7, width = 10, units = "in")

@@ -136,22 +136,22 @@ kozai <-function(){
   Me <- 5.972e24 #kg
   GC <- 6.6743e-11
   sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
-  albedo <- 0.29 # Earth's Albedo
-  eps <- to_radians(45) # Earth's Obliquity
+  albedo <- 0.59 # Earth's Albedo
+  eps <- to_radians(40) # Earth's Obliquity
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
   m1 <- 1.000 * Ms # Star
-  m2 <- 1 * Me # solid-planet
-  m3 <- 0.006 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m2 <- 0.65 * Me # solid-planet
+  m3 <- 0.003 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
-  a1 <- 0.4 * AU
+  a1 <- 0.42 * AU
   e1 <- 	0.01
-  i1 <- to_radians(39)
+  i1 <- to_radians(43)
   omega1 <- to_radians(40)
   # 2 is for outer binary
-  a2 <- 6.9 * AU
-  e2 <- 0.7
+  a2 <- 8.4 * AU
+  e2 <- 0.8
   i2 <- to_radians(15)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
@@ -177,7 +177,7 @@ kozai <-function(){
   tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "First_lowGap_highDelta_Succeed"
+  workspace_name <- "ModerateCCSearch6"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -234,7 +234,7 @@ kozai <-function(){
   max_Tgap <- max(Tgap)
   
   indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
-  # for a single step - the biggest temprature difference
+  # for a single step - the biggest temperature difference
   
   Tvec
   
