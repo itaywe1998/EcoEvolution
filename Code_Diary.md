@@ -545,7 +545,41 @@ Whats interesting is for atol=0,rtol>0 there are 2 species at final frame, but f
 Error log is a bit more specific now, seperating the mean(n)<0 and the max(n)<1e-5 cases.
 
 5.1.24
-So now with the temparature col in dat it is clearer that the species that have significan n in a certain patch follow very well the Tenv, it is just the numerical calculation that stopped at a certain point since the population did not undergo an extinction.
+So now with the temperature col in dat it is clearer that the species that have significant in a certain patch follow very well the Tenv, it is just the numerical calculation that stopped at a certain point since the population did not undergo an extinction.
 If not fixed today, TODO : Figure out why the global assignments from the error handling section are not working (fail time not updated to >0, for instance, outfile as well).
+
+6.1.24
+I will get to the globals fix shortly, now I am more interested in tolerances search since it became a non-scientific but rather technical obstacle which need to be addressed NOW.
+Plus, for some reason not every run is saved, which is good now, but later needs to be checked.
+
+A little summary:
+For the rather difficult (to calculate!) profile of "Target2Dead?" (Oscillating and ascending eccentricity up to 1, with T ranges from -25 to +70 at Equator over 1Gyr)
+All tolerances over 1e-7 lead to an exploding solution at 7.75e8 yr,
+ and all tolerances under 1e-7 lead to pre-cutting the solution at earlier times, the smaller the tol the sooner our model stops, down to failtime=0 somewhere below tol=1e-12.
+Tried varying the maxsteps around tol=1e-7, did not effect the failtime.
+Maybe the profile itself is so extreme the population really dies? But there is no logic in sharp edges, this is a numerical runaway.
+(when looking a few step before the last time stamp it is clear that there was no unusual change in climate, relatively, but the max population density is unprecedented throughout the entire simulation in an order of magnitude, and the peak is sharp)
+
+There is a way to examine this issue. Increase the dbar, vbar to a bizzare value , and see if the system manages to get along the entire CC, or is it something in the derivatives of the T_kozai itself that won't allow convergence.
+At least with the tol >1e-7 (i.e 1e-6) we have results/dat to look at.With the lower tol we don't even have those.
+When increased vbar:1e-5->1e-2 , failed at exact same point.
+Maybe the dbar was the surviving mechanism all along? Thats odd, but plausible, giving the vbar is sufficient.Will check as well.
+
+Alright, nuliffied the vbar dbar differences between species.
+The reason Species #2 is always winning , up to a final bizarre explosion, is the competition matrix a, which is quite hard to understand without further investigation of rhs_eval, but rho, the resource growth-tolerance tradeoff parameter, indicates a clear discrimination - rho is maximal for #2, then #4 comes second both in density and rho, and so on.
+
+Alright, new conclusions- the explosion occurs on the most competitive species, only at rises to maximal tempratures, and becomes more and more peaky(sharp) and higher when the peak temprature oncreses from cycle to cycle.
+It occurs also between 6.98e8 and 7.12e8, the peak rises and diminishes, and also between 6.27e8 and 6.35e8. In the earlier period peak reached n=40, in the latter crossed n=60, and the last one is around 7.77e8, which is the current fail time. I assume the peak was even higher at the last time (using v=1e-2, for v=1e-5 it was accordingly lower for all, but same principle)
+This has to do with the Tdep model in my opinion, but the rather strange thing is that the peak goes strong where other species are pretty much extinct, temproraily, while in regions where others still live the densities of the dominant species are much more modest, forming a exponential rise towards the more empty regions.
+It might not seem strange at all, but the question is who causes who. Was the absence of other species the one that allowed unproportioal thrive? Or the other way around? And if that is the case, why stop at a sub-equatorial region and not go all the way to the equator where no one else lives? It might be too hot there.
+To answer this I must check the trait of species #2 at those periods, even though it is a fully responsive variable to the density in the patch, and vice-versa. But- maybe it will shed some light anyway.
+
+From the lookup at T_kozai, at the time of the last peak cycle which was completed (circa 7.02e8) the maximal T at equator was 46 deg. At failtime T=50deg, and it was not the maximum of the relevant cycle. So the density runaway is Temprature dependent, when 50 degrees were unprecedented, maybe it can be killed synthetically by a very low vbar, but it will just set the initial conditions a little bit back and purspone the problem, maybe up to full 1Gyr but this is an unwanted effect since it is unreliable to thrive in harsher conditions.
+It should be mentioned that when Tequator=46 or 50 no one was there, only for the earlier cycle, t= 6.27e8 to 6.35e8, there was a species #2 presence in the equator, around 39 degrees at most.
+Throughout the simulation it seems adaptability is not something these creatures are hard dealing with, quite the opposite. Over 1 step , mathematically speaking, the living creatures change their entire nature quite in sync with the environment, in certain patches ofcourse, but still.
+The thing is a weird mechanism which sharpens the density profile as Temperature goes higher up to 50.
+Another way to check if this is an absolute T issue is just raise the entire profile by a couple of Celsius and see if the problem occurs earlier. The complement of lowering and later fail time is possible as well but since fail time is already quite late and intial T is quite cold, I prefer the first direction.
+
+JUst run it, the fail time did come earlier , but it was not at a peak or even an extermum at all , quite ambient T - 8 to 13 degrees, with mild change rate, less than 3deg/Myr. I am not sure what is going on, and so this is a great time to stop.
 
 ```

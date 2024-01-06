@@ -37,14 +37,15 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"Kozai_CCSearchMorechallenging"
+  id <-"Kozai_CCSearchMorechallengingHotterFirst"
   seed <- 3690
-  vbar <- 1e-5 # average genetic variance in Celsius squared 
+  vbar <- 1e-2 # average genetic variance in Celsius squared 
   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 S <- 4 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
+set.seed(NULL) #unsets random seed, it is set again before the important stuff 
 run_indicator <- sample(1:20000,1)
 file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),toString(run_indicator),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
@@ -116,8 +117,8 @@ L <- 20 # number of patches
 
 # scalars----
 set.seed(seed) # set random seed for reproducibility
-v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
-d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
+v <- runif(SR, 1.0*vbar, 1.0*vbar) # resource genetic variances
+d <- runif(SR, 1.0*dbar, 1.0*dbar) # resource dispersal rates
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -160,7 +161,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "Target2Dead?"
+  wksp_name <- "Target2DeadAbitHotterFirst"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -196,14 +197,15 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-8
-rt <-1e-8
+at <-1e-6
+rt <-1e-6
+maxsteps <- 5000
 tE <-tail(T_kozai, n=1)[1]
 step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
 fail_time <- 0
 original_tE <- tE
 tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
-                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps)
 },
          error=function(this){
            message(this$message)
@@ -219,7 +221,7 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              tE <<-floor((fail_time-step)/(step)) * (step) #alternative for round_any
              # if needed in another place will move to a function
              results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
-                             method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
+                             method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps) 
            }
            diagnostics(results)
            results <- results %>% # put during-climate-change solution into tidy tibble:
@@ -232,13 +234,8 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              Thigh <- unname(T_kozai[i,3])
              temperature<-c(temperature, rep(seq(Tlow, Thigh, l=L),each = S))
            }
-           
-           
-           
-           dat <-# add replicate, genetic var., dispersal rate, and structure as new columns
-             results%>%mutate(Tenv=temperature)
-           
-         })  # integrate from start to end of climate change
+           dat <-results%>%mutate(Tenv=temperature)
+         }) 
 # --------------------------- generate output ----------------------------------
 print(original_tE-max(dat$time))
 temp <-(dat %>% filter(time %in% c(max(dat$time))))

@@ -143,7 +143,7 @@ kozai <-function(){
   Me <- 5.972e24 #kg
   GC <- 6.6743e-11
   sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
-  albedo <- 0.59 # Earth's Albedo
+  albedo <- 0.49 # Earth's Albedo
   eps <- to_radians(40) # Earth's Obliquity
   T0 <- -273.15 # Kelvin to Celsius conversion
   
@@ -184,7 +184,7 @@ kozai <-function(){
   tE <- 1e9 * yr
   step <- tE/1000
   
-  workspace_name <- "Target2Dead?"
+  workspace_name <- "Target2DeadAbitHotterFirst"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
