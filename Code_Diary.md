@@ -242,10 +242,10 @@ Several comments:
 Once scaling them both with the vbar and dbar through scale variable `y` , this degree of freedom was utilized.
 2. This config is not the most general one. Competition was reduced as far as possible, dbar and vbar identical across all species, and most of all, the CC (Climate Cahnge) was not equally drstic through the entire planet, and a temprature range which existed at t=0 remained (somewhere else on the planet, but still) up until the end.
 Namely for the first success case:
-```Tmax <- 15.0 # initial mean temperature at equator
+Tmax <- 15.0 # initial mean temperature at equator
 Tmin <- Tmax-30 # initial mean temperature at poles
 Cmax <- 30 # projected temperature increase at poles
-Cmin <- 12 # projected temperature increase at equator```
+Cmin <- 12 # projected temperature increase at equator
 Specifically , for CC duration of 2e6 years, all adaptation times smaller than 1e8 years were extinct
 
 
@@ -408,7 +408,10 @@ Another thing is to pay attention to difference between went extinct but run , v
 When code -1, try to make the tolerances smaller. When too small (slowing down the process considerably) or even too much steps were taken (up to MAXSTEP) consider moderating the CC with ny of the suggestions above.
 
 Even so, sometimes it will not work out, but if you get stuck under many attempts, lower the species number, it will hasten run times and make the process more accessible. 
+```
+#### Towards First Paper & Kozai-Lidov Oscillations
 
+```    
 05.11.23
 Hagai meeting summary:
 1. Define in the introduction what is habitability.
@@ -580,6 +583,10 @@ Throughout the simulation it seems adaptability is not something these creatures
 The thing is a weird mechanism which sharpens the density profile as Temperature goes higher up to 50.
 Another way to check if this is an absolute T issue is just raise the entire profile by a couple of Celsius and see if the problem occurs earlier. The complement of lowering and later fail time is possible as well but since fail time is already quite late and intial T is quite cold, I prefer the first direction.
 
-JUst run it, the fail time did come earlier , but it was not at a peak or even an extermum at all , quite ambient T - 8 to 13 degrees, with mild change rate, less than 3deg/Myr. I am not sure what is going on, and so this is a great time to stop.
+Just run it, the fail time did come earlier , but it was not at a peak or even an extermum at all , quite ambient T - 8 to 13 degrees, with mild change rate, less than 3deg/Myr. I am not sure what is going on, and so this is a great time to stop.
 
+11.1.24
+Hello there 25.11.23 note! I see a certain recreation of Naoz2016 figure 4 was made, but it is still interesting for me to reconstruct another example. I need also to make sure that I do not perhaps have a Sanity check which corresponds to Naoz.
+Got return code -5 for all cases. For starters, I though figure 5 data is causing Inf values and hence the non-convergence , but when shifting to solar scale examples still the convergence problem sticks.
+I am to track the version from November in github and see what is different.Tolerances are always first suspects but I changed them from 1e-2 to 1e-15 with no use.
 ```

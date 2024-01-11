@@ -1,6 +1,8 @@
-# This is a Kozai-Lidov Oscillations Dynamics Solver, for the full Octupole Case (not test particle)
-# as indicated in supplementary text 1 of naoz 2016. 
-
+# Recreating the TPO .Even though here there is no test particle, the full octopule should be close
+# to the aproxiamtions results.
+# There was an attempt on Naoz 2016, Figure 5 [SMBH perturbuter] but due to
+# numeric representations complexities (larger than 1e308 and smaller than 1e-308, intermittently)
+# I chose to go with a solar system scaled configuration, figure 18.
 
 suppressPackageStartupMessages({
   suppressWarnings({
@@ -25,8 +27,9 @@ kozai_osc <- function(t, state, params){
   L1 <- unlist(params[1])
   L2 <- unlist(params[2])
   Gtot <- unlist(params[3])
-  C3_noG <- unlist(params[4])
+  C3_noG_nom3 <- unlist(params[4])
   C2_coeff <-unlist(params[5])
+  m3 <- unlist(params[6])
   
   # state variables
   e1 <- state[1]
@@ -39,7 +42,7 @@ kozai_osc <- function(t, state, params){
   omega2 <-state[8]
   
   # useful parameters per iteration
-  C3 <- C3_noG / G2^5
+  C3 <- m3* C3_noG_nom3 / G2^5 * m3^8
   C2 <- (e2 ^2 -1) * C3 / C2_coeff
   i1 <- acos(cosi1)
   i2 <- acos(cosi2)
@@ -63,17 +66,17 @@ kozai_osc <- function(t, state, params){
   # Rates
   
   omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
-              C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
-                       -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
+    C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
+           -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
   
   omega2_dt <- 3*C2*(2*cit/G1 * (2+e12*(3-5*c2o1)) + 1/G2 * (4+6*e12+(5*cit^2-3)*(2+e12*(3-5*c2o1)))) +
-               C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
+    C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
                       e2*(1/G1 + cit/G2)*(A+10*(3*cit^2-1)*(1-e12))) +
-                      cosphi*(5*B*cit*e2*(1/G1 +cit/G2) + (4*e22+1)/(e2*G2) * A)  
-                        )
+             cosphi*(5*B*cit*e2*(1/G1 +cit/G2) + (4*e22+1)/(e2*G2) * A)  
+    )
   
   e1_dt <- C2 * (1-e12)/G1 * (30*e1*sit^2 * s2o1) + C3*e2*(1-e12)/G1 * (35*cosphi*sit^2 *e12 * s2o1
-            -10*cit*sit^2 * co1 * so2 * (1-e12) - A*(so1*co2-cit*co1*so2))
+                                                                        -10*cit*sit^2 * co1 * so2 * (1-e12) - A*(so1*co2-cit*co1*so2))
   e2_dt <- -C3*e1*(1-e12)/G2 * (10*cit*sit^2 * (1-e12)*so1*co2+ A*(co1*so2-cit*so1*co2))
   G1_dt <- -C2*30*e12*s2o1*sit^2 +C3*e1*e2*(-35*e12*sit^2 *s2o1 * cosphi +A*(so1*co2-cit*co1*so2) + 10*cit*sit^2 * (1-e12)*co1*so2)
   G2_dt <- C3 * e1*e2*(A*(co1*so2-cit*so1*co2) +10*cit*sit^2 * (1-e12)*so1*co2)
@@ -140,6 +143,7 @@ kozai <-function(){
   # -----Global Constants-----
   # working in mks
   AU <- 1.495978707e11 # m
+  pc <- 3.08567758e16 # m
   yr <- 31556926 # s
   Ls <- 3.846e26 # W
   Ms <- 1.989e30 # kg
@@ -152,18 +156,18 @@ kozai <-function(){
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
-  m1 <- 1.000 * Ms # Star
-  m2 <- 0.65 * Me # solid-planet
-  m3 <- 0.003 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m1 <- 1 * Ms # Sun
+  m2 <- 1e-5  * Me # Astroid - "Test Particle" (m--> 0)
+  m3 <- 1 * Mj # Jupiter
   # 1 is for inner binary
-  a1 <- 0.42 * AU
-  e1 <- 	0.01
-  i1 <- to_radians(45)
-  omega1 <- to_radians(40)
+  a1 <- 2 * AU
+  e1 <- 	0.2
+  i1 <- to_radians(35)
+  omega1 <- to_radians(0)
   # 2 is for outer binary
-  a2 <- 8.4 * AU
-  e2 <- 0.8
-  i2 <- to_radians(15)
+  a2 <- 5 * AU
+  e2 <- 0.05
+  i2 <- to_radians(30)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
   rel <- a1/a2
@@ -171,7 +175,7 @@ kozai <-function(){
   # constants
   L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
   L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5
-  C3_noG <-  -15/16 * GC^2 /4 * (m1+m2)^9 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * m3^9
+  C3_noG_nom3<-  -15/16 * GC^2 /4 * (m1+m2)^4 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * (m1+m2)^5 
   C2_coeff <- 15/4 * (m1-m2)/(m1+m2) * (a1/a2)
   # initial values for state vector
   G1 <-L1 * (1-e1^2)^0.5
@@ -182,13 +186,13 @@ kozai <-function(){
   Gtot <- H1 + H2
   
   ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
-  pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
-  at <- 1e-10
-  rt <- 1e-10
-  tE <- 1e9 * yr
+  pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG_nom3 = C3_noG_nom3 , C2_coeff = C2_coeff, m3 = m3)
+  at <- 1e-15
+  rt <- 1e-15
+  tE <- 4e6 * yr
   step <- tE/1000
   
-  workspace_name <- "Target2DeadAbitHotterFirst"
+  workspace_name <- "KozaiSanity_NaozFig5ac"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -201,52 +205,18 @@ kozai <-function(){
   disp_results[,6:7] <-to_deg(acos(results[,6:7]))
   disp_results[,8:9] <-results[,8:9] %% 360
   times <- disp_results[,1]
-  ecc_vec <- disp_results[,2] #e1
+  ecc_vec <- disp_results[,2] # e1
+  itot_vec <-disp_results[,5]+disp_results[,6] # itot
   disp_results <-as.data.frame(disp_results)
   colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
   
-  p1<-ggplot(data = as.data.frame(cbind(times,ecc_vec)))+aes(x= times, y= ecc_vec) +
+  p1 <-ggplot(data = as.data.frame(cbind(times,itot_vec)))+aes(x= times, y= itot) +
+    geom_line()
+  p2<-ggplot(data = as.data.frame(cbind(times,1-ecc_vec)))+aes(x= times, y= 1-e1) +
     geom_line()
   
+  p1+p2+plot_layout(ncol=1)
   
-  
-  
-  #----- Eccentricity to Temperature ----------
-  d <- a1
-  Lum <- 1 * Ls 
-  e <- ecc_vec # This should come from kozai results
-  # sources :
-  #basic calculation :https://web.archive.org/web/20210605120431/https://scied.ucar.edu/earth-system/planetary-energy-balance-temperature-calculate
-  # eccentricity and obliquity addition: https://www.sciencedirect.com/science/article/pii/S1631071310000052
-  # the relation of average energy received over entire orbit to eccentricity
-  E <- (Lum*(1-albedo)/(16*sigma*pi*d^2))*(1-e^2)^(-0.5) 
-  E_pole <- E * sin(eps)/pi
-  E_equator <- E * 2/pi^2 * ellipke(sin(eps))$e
-  T_pole <- (E_pole)^(1/4) + T0
-  T_equator <- (E_equator)^(1/4) + T0
-  
-  p2<-ggplot(data = as.data.frame(cbind(times,T_equator)))+aes(x= times, y= T_equator) +
-    geom_line()
-  
-  p3<-ggplot(data = as.data.frame(cbind(times,T_pole)))+aes(x= times, y= T_pole) +
-    geom_line()
-  
-  p1+p2+p3+plot_layout(ncol=1)
-  
-  Tvec <-cbind(times,T_pole, T_equator)
   save.image(file = workspace)
-  
-  delta_equator <- max(T_equator)-min(T_equator)
-  delta_pole <- max(T_pole) - min(T_pole)
-  
-  Tgap <- T_equator-T_pole
-  avg_Tgap <- mean(Tgap)
-  min_Tgap <- min(Tgap)
-  max_Tgap <- max(Tgap)
-  
-  indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
-  # for a single step - the biggest temperature difference
-  
-  Tvec
   
 }
