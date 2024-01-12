@@ -589,4 +589,11 @@ Just run it, the fail time did come earlier , but it was not at a peak or even a
 Hello there 25.11.23 note! I see a certain recreation of Naoz2016 figure 4 was made, but it is still interesting for me to reconstruct another example. I need also to make sure that I do not perhaps have a Sanity check which corresponds to Naoz.
 Got return code -5 for all cases. For starters, I though figure 5 data is causing Inf values and hence the non-convergence , but when shifting to solar scale examples still the convergence problem sticks.
 I am to track the version from November in github and see what is different.Tolerances are always first suspects but I changed them from 1e-2 to 1e-15 with no use.
+
+12.1.24
+After I thought I had good reconstructions of paper results, e.g Fig4 Blue from Naoz 2016, in the Fig 18 recreation the results where similiar but not identical. Then the dilema of comapring different equations systems arouse, and a simpler example was examined, namlely Fig3 Red, which also appears in Naoz 2013 as Fig4.
+cos(i1) surpasses 1 (like in other cases in the past) and so code -5 occurs. This is normally occuring for inclinations out of range for the Kozai to work, but this time no angle at all managed to yield the correct solution, even when the profile was not cut and ode was succsesful.
+I started to review my equations one by one. My suspicion forst layed on 2 places where I assumed Sin^2(itot) and not Sin(itot^2) where it was written as sinitot^2.
+The alternative did not change at all Nan / fail time.
+I will continue reviewing my equations, and if all correct, then there is not much left for me to do and move on. All verified ones are marked with "#V" on line-end in kozai_SanityRecreate.R.
 ```

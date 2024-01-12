@@ -23,6 +23,7 @@ present_profile <- function(name){
 }
 
 kozai_osc <- function(t, state, params){
+  
   # global parameters
   L1 <- unlist(params[1])
   L2 <- unlist(params[2])
@@ -41,12 +42,17 @@ kozai_osc <- function(t, state, params){
   omega1 <- state[7]
   omega2 <-state[8]
   
+  if(cosi1>1){
+    disp(t/31556926) #for some reason cosi1 is increasing up to >1, which is undefined under acos(), therfore all nans
+    # I would try different itot seperation, since it worked well with previous examples
+  }
   # useful parameters per iteration
   C3 <- m3* C3_noG_nom3 / G2^5 * m3^8
   C2 <- (e2 ^2 -1) * C3 / C2_coeff
   i1 <- acos(cosi1)
   i2 <- acos(cosi2)
   itot <- i1 + i2
+  
   
   cit <- cos(itot)
   co1 <- cos(omega1)
@@ -162,12 +168,13 @@ kozai <-function(){
   # 1 is for inner binary
   a1 <- 2 * AU
   e1 <- 	0.2
-  i1 <- to_radians(35)
+  x <- 52
+  i1 <- to_radians(x)
   omega1 <- to_radians(0)
   # 2 is for outer binary
   a2 <- 5 * AU
   e2 <- 0.05
-  i2 <- to_radians(30)
+  i2 <- to_radians(65-x)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
   rel <- a1/a2
@@ -187,12 +194,12 @@ kozai <-function(){
   
   ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG_nom3 = C3_noG_nom3 , C2_coeff = C2_coeff, m3 = m3)
-  at <- 1e-15
-  rt <- 1e-15
+  at <- 1e-7
+  rt <- 1e-7
   tE <- 4e6 * yr
   step <- tE/1000
   
-  workspace_name <- "KozaiSanity_NaozFig5ac"
+  workspace_name <- "KozaiSanity_NaozFig18"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -205,14 +212,14 @@ kozai <-function(){
   disp_results[,6:7] <-to_deg(acos(results[,6:7]))
   disp_results[,8:9] <-results[,8:9] %% 360
   times <- disp_results[,1]
-  ecc_vec <- disp_results[,2] # e1
-  itot_vec <-disp_results[,5]+disp_results[,6] # itot
+  e1_vec <- disp_results[,2] # e1
+  i1_vec <-disp_results[,6] # i1
   disp_results <-as.data.frame(disp_results)
   colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
   
-  p1 <-ggplot(data = as.data.frame(cbind(times,itot_vec)))+aes(x= times, y= itot) +
+  p1 <-ggplot(data = as.data.frame(cbind(times,i1_vec)))+aes(x= times, y= i1_vec) +
     geom_line()
-  p2<-ggplot(data = as.data.frame(cbind(times,1-ecc_vec)))+aes(x= times, y= 1-e1) +
+  p2<-ggplot(data = as.data.frame(cbind(times,1-e1_vec)))+aes(x= times, y= 1-e1_vec) +
     geom_line()
   
   p1+p2+plot_layout(ncol=1)

@@ -27,7 +27,7 @@ kozai_osc <- function(t, state, params){
   L1 <- unlist(params[1])
   L2 <- unlist(params[2])
   Gtot <- unlist(params[3])
-  C3_noG_nom3 <- unlist(params[4])
+  C3_noG <- unlist(params[4])
   C2_coeff <-unlist(params[5])
   m3 <- unlist(params[6])
   
@@ -41,9 +41,15 @@ kozai_osc <- function(t, state, params){
   omega1 <- state[7]
   omega2 <-state[8]
   
+  if(cosi1>1){
+    disp(t/31556926) #for some reason cosi1 is increasing up to >1, which is undefined under acos(), therfore all nans
+   disp("Y")
+     # I would try different itot seperation, since it worked well with previous examples
+  }
+  
   # useful parameters per iteration
-  C3 <- m3* C3_noG_nom3 / G2^5 * m3^8
-  C2 <- (e2 ^2 -1) * C3 / C2_coeff
+  C3 <-  C3_noG / G2^5  #V
+  C2 <- (e2 ^2 -1) * C3 / C2_coeff #V
   i1 <- acos(cosi1)
   i2 <- acos(cosi2)
   itot <- i1 + i2
@@ -58,16 +64,21 @@ kozai_osc <- function(t, state, params){
   so1 <- sin(omega1)
   so2 <- sin(omega2)
   sit <- sin(itot)
+  sit2 <- sin(itot^2)
   
   B <- 2 +5*e12 - 7 * e12 * c2o1
   A <- 4 + 3*e12 -2.5 * B * sit^2
+  #A <- 4 + 3*e12 -2.5 * B * sit2
   cosphi <- -co1 * co2 - cit*so1*so2
   
   # Rates
   
   omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
     C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
-           -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
+          -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
+  #omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
+  #  C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
+   #        -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
   
   omega2_dt <- 3*C2*(2*cit/G1 * (2+e12*(3-5*c2o1)) + 1/G2 * (4+6*e12+(5*cit^2-3)*(2+e12*(3-5*c2o1)))) +
     C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
@@ -156,40 +167,41 @@ kozai <-function(){
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
-  m1 <- 1 * Ms # main
-  m2 <- 0.5 * Ms # companion
-  m3 <- 0.05 * Ms # small perturber
+  m1 <- 1.4 * Ms # main
+  m2 <- 0.3 * Ms # companion
+  m3 <- 0.01 * Ms # small perturber
   # 1 is for inner binary
-  a1 <- 0.5 * AU
-  e1 <- 	0.01 # THE FULL EQUATION SET IS NOT DEFINED FOR INITIAL ECCENTICITIES ZERO!!!!
-  i1 <- to_radians(25.01)
-  omega1 <- to_radians(90)
+  a1 <- 5 * AU
+  e1 <- 	0.5 # THE FULL EQUATION SET IS NOT DEFINED FOR INITIAL ECCENTICITIES ZERO!!!!
+  x <-6.75
+  i1 <- to_radians(x)
+  omega1 <- to_radians(120)
   # 2 is for outer binary
-  a2 <- 5 * AU
+  a2 <- 50 * AU
   e2 <- 0.01 # THE FULL EQUATION SET IS NOT DEFINED FOR INITIAL ECCENTICITIES ZERO!!!!
-  i2 <- to_radians(64.99)
+  i2 <- to_radians(70-x)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
   rel <- a1/a2
   #-------Kozai Inputs-----------
   # constants
-  L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5
-  L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5
-  C3_noG_nom3<-  -15/16 * GC^2 /4 * (m1+m2)^4 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * (m1+m2)^5 
+  L1 <-m1*m2/(m1+m2) * (GC * (m1+m2) * a1)^0.5 # V
+  L2 <-m3*(m1+m2)/(m1+m2+m3) * (GC * (m1+m2+m3) * a2)^0.5 # V
+  C3_noG<-  -15/16 * GC^2 /4 *  (m1+m2)^9 / (m1+m2+m3)^4 * (m1-m2)/(m1*m2)^5 * L1^6 / L2^3  * m3^9 #V
   C2_coeff <- 15/4 * (m1-m2)/(m1+m2) * (a1/a2)
   # initial values for state vector
-  G1 <-L1 * (1-e1^2)^0.5
-  G2 <-L2 * (1-e2^2)^0.5
-  H1 <- G1 * cos(i1)
-  H2 <- G2 * cos(i2) 
+  G1 <-L1 * (1-e1^2)^0.5 # V
+  G2 <-L2 * (1-e2^2)^0.5 # V
+  H1 <- G1 * cos(i1) # V
+  H2 <- G2 * cos(i2)  # V
   # constant
-  Gtot <- H1 + H2
+  Gtot <- H1 + H2 # V
   
   ic <- c(e1, e2, G1, G2, cos(i1), cos(i2), omega1, omega2)
-  pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG_nom3 = C3_noG_nom3 , C2_coeff = C2_coeff, m3 = m3)
-  at <- 1e-7
-  rt <- 1e-7
-  tE <- 3e5 * yr
+  pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG, C2_coeff = C2_coeff, m3 = m3)
+  at <- 1e-10
+  rt <- 1e-10
+  tE <- 1e6 * yr
   step <- tE/1000
   
   workspace_name <- "KozaiSanity_NaozFig4Blue"
