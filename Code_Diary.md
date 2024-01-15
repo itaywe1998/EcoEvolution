@@ -602,4 +602,9 @@ I will continue reviewing my equations, and if all correct, then there is not mu
 An Error Was found and fixed during verfication! It was cos(w1) instead of the correct cos(2w1) at the (3-5cos(2w1)) term in dw1/dt.
 In code, abrevaited as co1 and c2o1 accordingly.
 Corrected also at sanityCheck and main kozai. Only at Recreate are the #V noted.
+And it did not solve the cos>1 problem...what is going on?
+It also did not effect the regular kozai much, which is positive from the side of not needing to re-run everything, but also odd from the aspect of not knowing the problem's origin.
+It might be that comparing full octupole order with test particle wuatropole and the liking is just not going to work in some cases.
+Then again, if I write all the TPQ equations and test them, that does not prove anything on the FO (full octupole) , just letting me use the TPQ which I am not sure is better than the most general set of equations.
+I will try to look for FO results in other papers tommorow, and hopefully will find and avial to recreate one example with cutting evidence.
 ```
