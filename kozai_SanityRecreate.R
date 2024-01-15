@@ -66,17 +66,17 @@ kozai_osc <- function(t, state, params){
   sit <- sin(itot)
   sit2 <- sin(itot^2)
   
-  B <- 2 +5*e12 - 7 * e12 * c2o1
-  A <- 4 + 3*e12 -2.5 * B * sit^2
+  B <- 2 +5*e12 - 7 * e12 * c2o1 #V
+  A <- 4 + 3*e12 -2.5 * B * sit^2 #V
   #A <- 4 + 3*e12 -2.5 * B * sit2
-  cosphi <- -co1 * co2 - cit*so1*so2
+  cosphi <- -co1 * co2 - cit*so1*so2 #V
   
   # Rates
   
-  omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
+  omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*c2o1)))) -
     C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
-          -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
-  #omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*co1)))) -
+          -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit^2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2))) #V
+  #omega1_dt <-6* C2*(1/G1 * (4*cit^2 + (5*c2o1-1)*(1-e12-cit^2)+cit/G2 * (2+e12* (3-5*c2o1)))) -
   #  C3*e2*(e1*(1/G2 + cit/G1)* (so1 * so2 * (10 * (3*cit^2 - 1)*(1-e12)+A) - 5*B * cit * cosphi)
    #        -(1-e12)/(e1 * G1) * (so1*so2 *10 * cit * sit2 * (1-3*e12) + cosphi*(3*A-10*cit^2 +2)))
   
@@ -84,19 +84,19 @@ kozai_osc <- function(t, state, params){
     C3*e1*(so1*so2*((4*e22+1)/(e2*G2) * 10 * cit * sit^2 *(1-e12)  -
                       e2*(1/G1 + cit/G2)*(A+10*(3*cit^2-1)*(1-e12))) +
              cosphi*(5*B*cit*e2*(1/G1 +cit/G2) + (4*e22+1)/(e2*G2) * A)  
-    )
+    ) #V
   
   e1_dt <- C2 * (1-e12)/G1 * (30*e1*sit^2 * s2o1) + C3*e2*(1-e12)/G1 * (35*cosphi*sit^2 *e12 * s2o1
-                                                                        -10*cit*sit^2 * co1 * so2 * (1-e12) - A*(so1*co2-cit*co1*so2))
-  e2_dt <- -C3*e1*(1-e12)/G2 * (10*cit*sit^2 * (1-e12)*so1*co2+ A*(co1*so2-cit*so1*co2))
-  G1_dt <- -C2*30*e12*s2o1*sit^2 +C3*e1*e2*(-35*e12*sit^2 *s2o1 * cosphi +A*(so1*co2-cit*co1*so2) + 10*cit*sit^2 * (1-e12)*co1*so2)
-  G2_dt <- C3 * e1*e2*(A*(co1*so2-cit*so1*co2) +10*cit*sit^2 * (1-e12)*so1*co2)
+                                                                        -10*cit*sit^2 * co1 * so2 * (1-e12) - A*(so1*co2-cit*co1*so2)) #V
+  e2_dt <- -C3*e1*(1-e12)/G2 * (10*cit*sit^2 * (1-e12)*so1*co2+ A*(co1*so2-cit*so1*co2)) #V
+  G1_dt <- -C2*30*e12*s2o1*sit^2 +C3*e1*e2*(-35*e12*sit^2 *s2o1 * cosphi +A*(so1*co2-cit*co1*so2) + 10*cit*sit^2 * (1-e12)*co1*so2) #V
+  G2_dt <- C3 * e1*e2*(A*(co1*so2-cit*so1*co2) +10*cit*sit^2 * (1-e12)*so1*co2) #V
   ### Not a part of the state vector but yet useful intermediate equations
-  H1_dt <- G1/Gtot * G1_dt - G2/Gtot * G2_dt
-  H2_dt <- -H1_dt
+  H1_dt <- G1/Gtot * G1_dt - G2/Gtot * G2_dt #V
+  H2_dt <- -H1_dt #V
   ####
-  cosi1_dt <- H1_dt/G1 - G1_dt/G1 * cosi1
-  cosi2_dt <- H2_dt/G2 - G2_dt/G2 * cosi2
+  cosi1_dt <- H1_dt/G1 - G1_dt/G1 * cosi1 #V
+  cosi2_dt <- H2_dt/G2 - G2_dt/G2 * cosi2 #V
   
   
   list(c(e1_dt,e2_dt,G1_dt,G2_dt,cosi1_dt,cosi2_dt,omega1_dt,omega2_dt))

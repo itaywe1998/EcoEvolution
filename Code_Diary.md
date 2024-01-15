@@ -596,4 +596,10 @@ cos(i1) surpasses 1 (like in other cases in the past) and so code -5 occurs. Thi
 I started to review my equations one by one. My suspicion forst layed on 2 places where I assumed Sin^2(itot) and not Sin(itot^2) where it was written as sinitot^2.
 The alternative did not change at all Nan / fail time.
 I will continue reviewing my equations, and if all correct, then there is not much left for me to do and move on. All verified ones are marked with "#V" on line-end in kozai_SanityRecreate.R.
+
+
+15.01.23
+An Error Was found and fixed during verfication! It was cos(w1) instead of the correct cos(2w1) at the (3-5cos(2w1)) term in dw1/dt.
+In code, abrevaited as co1 and c2o1 accordingly.
+Corrected also at sanityCheck and main kozai. Only at Recreate are the #V noted.
 ```
