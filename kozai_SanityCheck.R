@@ -1,8 +1,6 @@
 # Recreating the TPO .Even though here there is no test particle, the full octopule should be close
-# to the aproxiamtions results.
-# There was an attempt on Naoz 2016, Figure 5 [SMBH perturbuter] but due to
-# numeric representations complexities (larger than 1e308 and smaller than 1e-308, intermittently)
-# I chose to go with a solar system scaled configuration, figure 18.
+# to the approximations results.
+# Let us try figure 8 from Naoz 2016
 
 suppressPackageStartupMessages({
   suppressWarnings({
@@ -42,12 +40,12 @@ kozai_osc <- function(t, state, params){
   omega1 <- state[7]
   omega2 <-state[8]
   
-  if(cosi1>1){
+  if(is.na(cosi1)){
     disp(t/31556926) #for some reason cosi1 is increasing up to >1, which is undefined under acos(), therfore all nans
     # I would try different itot seperation, since it worked well with previous examples
   }
   # useful parameters per iteration
-  C3 <- m3* C3_noG_nom3 / G2^5 * m3^8
+  C3 <- m3* C3_noG_nom3 / G2^5 * (m3^7) * m3
   C2 <- (e2 ^2 -1) * C3 / C2_coeff
   i1 <- acos(cosi1)
   i2 <- acos(cosi2)
@@ -162,19 +160,19 @@ kozai <-function(){
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
-  m1 <- 1 * Ms # Sun
-  m2 <- 1e-5  * Me # Astroid - "Test Particle" (m--> 0)
-  m3 <- 1 * Mj # Jupiter
+  m1 <- 1e7 * Ms # BH
+  m2 <- 1e-14  * Me # "Test Particle" (m--> 0)
+  m3 <- 1e9 * Ms # BH
   # 1 is for inner binary
-  a1 <- 2 * AU
-  e1 <- 	0.2
-  x <- 52
+  a1 <- 0.05 * pc
+  e1 <- 	0.9
+  x <- 4.9
   i1 <- to_radians(x)
-  omega1 <- to_radians(0)
+  omega1 <- to_radians(51)
   # 2 is for outer binary
-  a2 <- 5 * AU
-  e2 <- 0.05
-  i2 <- to_radians(65-x)
+  a2 <- 1 * pc
+  e2 <- 0.7
+  i2 <- to_radians(5-x)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
   
   rel <- a1/a2
@@ -196,10 +194,10 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG_nom3 = C3_noG_nom3 , C2_coeff = C2_coeff, m3 = m3)
   at <- 1e-7
   rt <- 1e-7
-  tE <- 4e6 * yr
+  tE <- 2e5 * yr
   step <- tE/1000
   
-  workspace_name <- "KozaiSanity_NaozFig18"
+  workspace_name <- "KozaiSanity_NaozFig18bd5"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -213,14 +211,14 @@ kozai <-function(){
   disp_results[,8:9] <-results[,8:9] %% 360
   times <- disp_results[,1]
   e1_vec <- disp_results[,2] # e1
-  i1_vec <-disp_results[,6] # i1
+  itot_vec <-disp_results[,6]+disp_results[,7] # i1
   disp_results <-as.data.frame(disp_results)
   colnames(disp_results) <- c("Time(years)", "e1", "e2", "G1", "G2", "i1", "i2", "omega1", "omega2")
   
-  p1 <-ggplot(data = as.data.frame(cbind(times,i1_vec)))+aes(x= times, y= i1_vec) +
+  p1 <-ggplot(data = as.data.frame(cbind(times,itot_vec)))+aes(x= times, y= itot_vec) +
     geom_line()
   p2<-ggplot(data = as.data.frame(cbind(times,1-e1_vec)))+aes(x= times, y= 1-e1_vec) +
-    geom_line()
+    geom_line()+ scale_y_continuous(trans='log10')
   
   p1+p2+plot_layout(ncol=1)
   

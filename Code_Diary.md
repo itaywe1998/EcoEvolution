@@ -607,4 +607,13 @@ It also did not effect the regular kozai much, which is positive from the side o
 It might be that comparing full octupole order with test particle wuatropole and the liking is just not going to work in some cases.
 Then again, if I write all the TPQ equations and test them, that does not prove anything on the FO (full octupole) , just letting me use the TPQ which I am not sure is better than the most general set of equations.
 I will try to look for FO results in other papers tommorow, and hopefully will find and avial to recreate one example with cutting evidence.
+
+
+19.01.24
+Sanity Check is Complete!
+Turns out My Full Octopule Order yields slightly different results than the paper's Quadropole order, as demonstrated at the small window in Fig18 at Naoz2016.
+Additionally I understood that to get Naoz results , i1 should be very close to itot,(i.e , itot=80, i1=79.9). Only then did things start to look familiar.
+As for understanding the approximations, those are fairly simple - assymetric aprox is just e2 = 0. Test particle approx is m2--> 0.
+Some configurations of the full set I have can get close to these limits' but not all of them. That is why Fig18 was my main proof for eqaution validity, in addition for a second review line-by-line.
+The -5 return code error was avioded with big masses as I rewrote C3 calculation such that no elemnt will exceed e300. (Namely, changing m^8 to m^7 * m3 in the C3 calculation line).
 ```
