@@ -616,4 +616,22 @@ Additionally I understood that to get Naoz results , i1 should be very close to 
 As for understanding the approximations, those are fairly simple - assymetric aprox is just e2 = 0. Test particle approx is m2--> 0.
 Some configurations of the full set I have can get close to these limits' but not all of them. That is why Fig18 was my main proof for eqaution validity, in addition for a second review line-by-line.
 The -5 return code error was avioded with big masses as I rewrote C3 calculation such that no elemnt will exceed e300. (Namely, changing m^8 to m^7 * m3 in the C3 calculation line).
+
+Next step is take any kozai profile, and lower the genetics.
+Even though I have a bountiful of kozai profiles, even the most simple of them all (2 cycles over 1e8 yrs) is failing and succeeding with very exagerated vbars (1e-3 vs 1e-5).
+Tolerances helped a little to lower calc times (down to 3 min with 1e-8) but it still much longer than in the past. What is the reason I am not sure.
+Plus, the deriative is the one failing the population, not the shape of the profile, and so it is not very interesting because there is no periodicity in the failure. Then again, maybe it was never so, but just a barrier deriative.
+
+21-22.01.24
+For comparison, the ecoevo_main.R from original directory is still running on 20 sec scale of time.
+At first I thougth the difference is th timespan, so kozai also produced new prifles in 1e6 instead of 1e9 years.
+Then deriatives were lowered since code -1 kept happening and no ode was solved yet in the old-new t profiles.
+Notably, I dicovered that in nearly circular orbits, the oscilations are well sinusiadal (good point to interface with past runs) and not rising in eccentricity with offset. Jupiter mass\distance  controls the frequency and i1 controls the max e1 and T accordingly.
+This way the "large" vs "small" adaptaiton time is quite straight forward constructed,see examples in kozai_parameters.
+
+v2e-03_d1e-05idLargeAdaptTimeMildAlive13844_FAILED is a very intersting output.
+First of all it represents runs that did not actually failed but only after tE, which is a phenomenon I still do not know the reason for and how to avoid it.
+In peak tempratures the polar population is reduced to almost below threshold and survives the extreme. In later periods the distribution is already fairly sparse and so the middle and eqautorian populations can benefit from the climate change once established. In this output specifically the dbar was small enough so dispersion wont happen too fast, but will eventually succeed.
+Still need to run the SmallAdaptTimeMild and see a big failure (real one), but since the timings arent solved for now, I will start to treat it as an actual complex computation, and so insert parrallelism to my cpp (using fork()), and see if runtimes get better.
+
 ```

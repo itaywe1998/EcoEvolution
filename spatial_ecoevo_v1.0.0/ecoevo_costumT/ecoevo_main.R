@@ -37,10 +37,10 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"Kozai_CCSearchMorechallengingHotterFirst"
+  id <-"LargeAdaptTimeMildAlive"
   seed <- 3690
-  vbar <- 1e-2 # average genetic variance in Celsius squared 
-  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
+  vbar <- 2e-3 # average genetic variance in Celsius squared 
+  dbar <- 1e-5 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 S <- 4 # fifty species per trophic level
@@ -117,8 +117,8 @@ L <- 20 # number of patches
 
 # scalars----
 set.seed(seed) # set random seed for reproducibility
-v <- runif(SR, 1.0*vbar, 1.0*vbar) # resource genetic variances
-d <- runif(SR, 1.0*dbar, 1.0*dbar) # resource dispersal rates
+v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
+d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
 
 kappa <- 0.1 # intrinsic mortality parameter
 venv <- vbar # environmental variance
@@ -161,7 +161,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "Target2DeadAbitHotterFirst"
+  wksp_name <- "LargeAdaptTimeMild"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -197,11 +197,12 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-6
-rt <-1e-6
-maxsteps <- 5000
+at <-1e-8
+rt <-1e-8
+maxsteps <- 7000
 tE <-tail(T_kozai, n=1)[1]
 step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
+#step <-1e5
 fail_time <- 0
 original_tE <- tE
 tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
@@ -246,7 +247,7 @@ suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step)))
 toSave <- FALSE
 if (toSave){
-  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
+  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=100*step)))
   #plot_timeseries(dat %>% filter(time %in% seq(from=9e8,to=max(dat$time),by=2*step)))
   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
                            toString(dbar),"id",toString(id),".png",sep =""), plot = plt,

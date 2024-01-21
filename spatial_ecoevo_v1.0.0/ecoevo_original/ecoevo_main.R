@@ -5,6 +5,7 @@
 
 # To run, either execute within R or enter the following at the command prompt:
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original")
 suppressPackageStartupMessages({
   suppressWarnings({
     rm(list = ls())
