@@ -9,6 +9,8 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
+#include <PASL.h>
+
 
 using namespace std;
 using namespace Rcpp;
@@ -96,20 +98,30 @@ List eqs(double time, NumericVector state, List pars) {
   // Assign state variables into matrices n and m; calculate local temperatures
   for (i=0; i<S; i++) {
     for (k=0; k<L; k++) {
-      x[k]=k/((double)L-1.0); // Patch k's distance from pole
-      n(i,k)=state[i+k*S]; // Density of species i in patch k
-      if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
-      m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
-    }
+      fork2([&] {
+        x[k]=k/((double)L-1.0); // Patch k's distance from pole
+      }, [&] {
+        fork2([&] {
+          n(i,k)=state[i+k*S]; // Density of species i in patch k
+          if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
+        }, [&] {
+          m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
+        });
+      });
   }
-  if(max(n)<1.0e-5 || mean(n)<0){
-    if(max(n)<1.0e-5) {
-      cout<<"Population died"<<endl;
-      cout<<max(n)<<endl;
-    }
-    if(mean(n)<0) cout<<"Negative Profile, Simulation Broke"<<endl;
+  
+
+  
+  fork2([&] {
+    double maxn= max(n);
+  }, [&] {
+    double meann = mean(n);
+  });
+  
+  if(maxn<1.0e-5 || meann<0){
+    if(maxn<1.0e-5) cout<<"Population died"<<endl;
+    if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
     cout<<time<<endl;
-    
     throw range_error(to_string(time));
   } 
   int prev, next;
@@ -159,15 +171,21 @@ List eqs(double time, NumericVector state, List pars) {
       bsumgr=0.0;
       // Species interaction terms in density and then trait evolution equations
       for (j=0; j<S; j++) {
-        sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
-        bsumgr+=beta(i,j)*n(j,k);
+        fork2([&] {
+          sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
+        }, [&] {
+          bsumgr+=beta(i,j)*n(j,k);
+        });
       }
       summig=0.0;
       bsummig=0.0;
       // Dispersal terms in density and then trait evolution equations
       for (l=0; l<L; l++) {
-        summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
-        bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
+        fork2([&] {
+          summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
+        }, [&] {
+          bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
+        });
       }
       // Growth terms in the equations
       summig*=d[i];
@@ -180,8 +198,14 @@ List eqs(double time, NumericVector state, List pars) {
       q=vmat(i,k)*smoothstep(n(i,k)/nmin);
       h2=q/(q+venv); // Heritability
       // Assign calculated rates to vector of derivatives for output
-      dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
-      dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
+      
+      fork2([&] {
+        dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
+      }, [&] {
+        dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
+      });
+      
+      
       // Periodic boundary conditions
       if (k==0) {
         dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));

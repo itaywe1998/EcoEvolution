@@ -634,4 +634,10 @@ First of all it represents runs that did not actually failed but only after tE, 
 In peak tempratures the polar population is reduced to almost below threshold and survives the extreme. In later periods the distribution is already fairly sparse and so the middle and eqautorian populations can benefit from the climate change once established. In this output specifically the dbar was small enough so dispersion wont happen too fast, but will eventually succeed.
 Still need to run the SmallAdaptTimeMild and see a big failure (real one), but since the timings arent solved for now, I will start to treat it as an actual complex computation, and so insert parrallelism to my cpp (using fork()), and see if runtimes get better.
 
+22.01.24
+As you might expect, fork theory is very intersting.
+You have installed the dependencies for pasl library but yet to understand how to include it properly.
+Using the standart unistd.h fork() will be nasty and unsafe, i would prefer thinking about how to integrate pasl or a similiar package succesfully.
+In addition, after a "uname -a" command in terminal, my kernel is indeed supporting SMP (symmetric multiproccesing) which means each new process will be schedule by the kernel to (optionally) different CPU cores, but not mandatory.
+
 ```
