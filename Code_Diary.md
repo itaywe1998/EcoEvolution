@@ -640,4 +640,9 @@ You have installed the dependencies for pasl library but yet to understand how t
 Using the standart unistd.h fork() will be nasty and unsafe, i would prefer thinking about how to integrate pasl or a similiar package succesfully.
 In addition, after a "uname -a" command in terminal, my kernel is indeed supporting SMP (symmetric multiproccesing) which means each new process will be schedule by the kernel to (optionally) different CPU cores, but not mandatory.
 
+23-24.01.24
+So the efforts for threading are progressing.
+Turns out the flag added as comments in the export above Rcpp  function does the work , but for some reason when all RcppThread is included in the cpp file, weird errors about ending paranthesis missing pop up, even though when not including it did not appear (and even without using the parralel code itself) so it is something about the c++11 inclusion? not sure.
+When it is solved, it can be tested on the first loop, and then implemented on all loops in the script, starting from the inner ones creating L=20 threads at a time. Since our OS is SMP supporting, it is supposed to be shared over available proccesors even though I write threads and not procceses. 
+
 ```

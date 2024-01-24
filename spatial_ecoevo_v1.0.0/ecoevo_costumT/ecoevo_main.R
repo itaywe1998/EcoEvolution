@@ -23,7 +23,7 @@ suppressPackageStartupMessages({
     source("./plotting_functions.R") # various functions for plotting final data
   })
 })
-#require(RcppThread)
+require(RcppThread)
 sourceCpp("./rhs_eval.cpp") # compile external C functions
 
 # ---------------------------- input parameters --------------------------------

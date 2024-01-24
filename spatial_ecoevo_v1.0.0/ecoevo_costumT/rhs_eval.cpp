@@ -5,7 +5,7 @@
  see the GNU General Public License Agreement (in the file COPYING.txt).
 */
 
-//#include <RcppThread.h>
+#include <RcppThread.h>
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
@@ -14,7 +14,7 @@
 
 using namespace std;
 using namespace Rcpp;
-//using namespace RcppThread;
+using namespace RcppThread;
 /* Apply twice continuously differentiable smoothed step function to a number x
  Input:
  - x: Distance from pole, measured in units of the pole-to-equator distance
@@ -81,7 +81,8 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
  Output:
  - The derivatives of the densities and trait means, as a vector in a list */
 // [[Rcpp::export]]
-
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::depends(RcppThread)]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
   int S=pars["S"], SR=pars["SR"], L=pars["L"] , lT=pars["lT"];
