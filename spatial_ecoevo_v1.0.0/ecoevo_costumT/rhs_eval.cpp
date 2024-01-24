@@ -5,15 +5,16 @@
  see the GNU General Public License Agreement (in the file COPYING.txt).
 */
 
-
+//#include <RcppThread.h>
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
-#include <PASL.h>
+#include <thread>
 
 
 using namespace std;
 using namespace Rcpp;
+//using namespace RcppThread;
 /* Apply twice continuously differentiable smoothed step function to a number x
  Input:
  - x: Distance from pole, measured in units of the pole-to-equator distance
@@ -80,6 +81,7 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
  Output:
  - The derivatives of the densities and trait means, as a vector in a list */
 // [[Rcpp::export]]
+
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
   int S=pars["S"], SR=pars["SR"], L=pars["L"] , lT=pars["lT"];
@@ -97,26 +99,25 @@ List eqs(double time, NumericVector state, List pars) {
   NumericVector dvdt(2*S*L), x(L), T(L);
   // Assign state variables into matrices n and m; calculate local temperatures
   for (i=0; i<S; i++) {
+  //   parallelFor(0, L, [&x, &S, &n,&m] (int k) {
+  //     x[k]=k/((double)L-1.0); // Patch k's distance from pole
+  //     n(i,k)=state[i+k*S]; // Density of species i in patch k
+  //     if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
+  //     m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
+  //     
+  //   });
+    
     for (k=0; k<L; k++) {
-      fork2([&] {
         x[k]=k/((double)L-1.0); // Patch k's distance from pole
-      }, [&] {
-        fork2([&] {
           n(i,k)=state[i+k*S]; // Density of species i in patch k
           if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
-        }, [&] {
           m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
-        });
-      });
+
+      }
   }
   
-
-  
-  fork2([&] {
-    double maxn= max(n);
-  }, [&] {
-    double meann = mean(n);
-  });
+  double maxn= max(n);
+  double meann = mean(n);
   
   if(maxn<1.0e-5 || meann<0){
     if(maxn<1.0e-5) cout<<"Population died"<<endl;
@@ -124,6 +125,8 @@ List eqs(double time, NumericVector state, List pars) {
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 
+  
+  
   int prev, next;
   for(ki=0; ki<lT-1; ki++){
     prev = T_kozai(ki,0);
@@ -147,6 +150,9 @@ List eqs(double time, NumericVector state, List pars) {
   //cout<<Tmax<<endl;//  cout<<Tmin<<endl;
   T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
+  
+  
+  
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:
     if ((model=="Tdep") || (model=="Tdep_trophic")) {
@@ -171,21 +177,15 @@ List eqs(double time, NumericVector state, List pars) {
       bsumgr=0.0;
       // Species interaction terms in density and then trait evolution equations
       for (j=0; j<S; j++) {
-        fork2([&] {
           sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
-        }, [&] {
           bsumgr+=beta(i,j)*n(j,k);
-        });
       }
       summig=0.0;
       bsummig=0.0;
       // Dispersal terms in density and then trait evolution equations
       for (l=0; l<L; l++) {
-        fork2([&] {
           summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
-        }, [&] {
           bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
-        });
       }
       // Growth terms in the equations
       summig*=d[i];
@@ -199,12 +199,9 @@ List eqs(double time, NumericVector state, List pars) {
       h2=q/(q+venv); // Heritability
       // Assign calculated rates to vector of derivatives for output
       
-      fork2([&] {
         dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
-      }, [&] {
         dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
-      });
-      
+
       
       // Periodic boundary conditions
       if (k==0) {

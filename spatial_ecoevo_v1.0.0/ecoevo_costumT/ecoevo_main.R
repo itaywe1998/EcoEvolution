@@ -21,9 +21,10 @@ suppressPackageStartupMessages({
     library(dplyr)
     source("~/EcoEvolution/kozai.R")
     source("./plotting_functions.R") # various functions for plotting final data
-    sourceCpp("./rhs_eval.cpp") # compile external C functions
   })
 })
+#require(RcppThread)
+sourceCpp("./rhs_eval.cpp") # compile external C functions
 
 # ---------------------------- input parameters --------------------------------
 arg <- commandArgs(trailingOnly=TRUE)
