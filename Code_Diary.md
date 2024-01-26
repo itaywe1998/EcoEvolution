@@ -645,4 +645,14 @@ So the efforts for threading are progressing.
 Turns out the flag added as comments in the export above Rcpp  function does the work , but for some reason when all RcppThread is included in the cpp file, weird errors about ending paranthesis missing pop up, even though when not including it did not appear (and even without using the parralel code itself) so it is something about the c++11 inclusion? not sure.
 When it is solved, it can be tested on the first loop, and then implemented on all loops in the script, starting from the inner ones creating L=20 threads at a time. Since our OS is SMP supporting, it is supposed to be shared over available proccesors even though I write threads and not procceses. 
 
+26.01.24
+End of Multithreading Inquiry.
+This initiative won't work for several causes:
+1. On my computer I had assumed the SMP will divide the threads between cores. In practice the near-100% utilized core changes hands, but never there are 2 or more cores participating at a time. 
+2. Even if it would have act according to my expectations, there is no reason to see it as adaptable to other PCs, while sequential run is available everywhere.
+3. The memory allocation within the R session is not consistent. That is, on the first time a simple parallelLoop is run ithin the rhs_eval, all is well and fast (dvdt==0 for all cells yielded 8 seconds runtime on 50K years), not neccesraly faster than usual becauses I did not check, but it would have made sense to do so if I saw multicore activity.
+When the second time is run for the same code, proper cleanup is not done and allocation errors start to arise. From this point on there is no valid runs for any change of outer paramters (L for instance) or the code itself, so I would guess this method contaminates the memory in a way I am not familiar with.
+4. I do not believe I can afford more time at the moment to explore the alternatives, since it will require me to learn how to install libraries from github, which is educational , but currently I will try to reduce runtime in traditional ways (backtrack a little bit over the code versions, and see where did the change start. I suspect the last month but this could be earlier with just a late problem-revealing input).
+I will save in github the last edited version so I will have remains of the parralel code, but right afterwards will restore to sequintial in order to keep working normally.
+
 ```

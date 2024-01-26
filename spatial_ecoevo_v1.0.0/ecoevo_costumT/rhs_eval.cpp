@@ -6,6 +6,8 @@
 */
 
 #include <RcppThread.h>
+using namespace RcppThread;
+
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
@@ -14,7 +16,6 @@
 
 using namespace std;
 using namespace Rcpp;
-using namespace RcppThread;
 /* Apply twice continuously differentiable smoothed step function to a number x
  Input:
  - x: Distance from pole, measured in units of the pole-to-equator distance
@@ -80,9 +81,9 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
  - pars: Model parameters, given as members of a list
  Output:
  - The derivatives of the densities and trait means, as a vector in a list */
-// [[Rcpp::export]]
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::depends(RcppThread)]]
+// [[Rcpp::export]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
   int S=pars["S"], SR=pars["SR"], L=pars["L"] , lT=pars["lT"];
@@ -96,26 +97,30 @@ List eqs(double time, NumericVector state, List pars) {
   // Variables
   int i, j, k, l, ki, Tmin = 0, Tmax = 0;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
-  NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
+  NumericMatrix n(S,L), m(S,L);
+  // , F(S,S), alpha(S,S), beta(S,S)
   NumericVector dvdt(2*S*L), x(L), T(L);
   // Assign state variables into matrices n and m; calculate local temperatures
-  for (i=0; i<S; i++) {
-  //   parallelFor(0, L, [&x, &S, &n,&m] (int k) {
-  //     x[k]=k/((double)L-1.0); // Patch k's distance from pole
-  //     n(i,k)=state[i+k*S]; // Density of species i in patch k
-  //     if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
-  //     m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
-  //     
-  //   });
-    
-    for (k=0; k<L; k++) {
-        x[k]=k/((double)L-1.0); // Patch k's distance from pole
-          n(i,k)=state[i+k*S]; // Density of species i in patch k
-          if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
-          m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
-
-      }
+  for(i = 0; i < S; i++){
+    parallelFor(0, L, [&x, &S, &n,&m, &i,&state, &L] (int k) {
+      x[k]=k/((double)L-1.0); // Patch k's distance from pole
+      n(i,k)=state[i+k*S]; // Density of species i in patch k
+      if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
+      m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
+    });
+    // for (k=0; k<L; k++) {
+    //     x[k]=k/((double)L-1.0); // Patch k's distance from pole
+    //       n(i,k)=state[i+k*S]; // Density of species i in patch k
+    //       if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
+    //       m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
+    // 
+    //   }
   }
+  
+  
+
+  
+  
   
   double maxn= max(n);
   double meann = mean(n);
@@ -148,73 +153,145 @@ List eqs(double time, NumericVector state, List pars) {
     Tmin = T_kozai(lT-1,1);
     Tmax = T_kozai(lT-1,2);
   }
-  //cout<<Tmax<<endl;//  cout<<Tmin<<endl;
   T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   
-  
-  
-  for (k=0; k<L; k++) {
-    // If we have temperature-dependent competition:
-    if ((model=="Tdep") || (model=="Tdep_trophic")) {
-      for (i=0; i<(SR-1); i++) {
-        alpha(i,i)=eta/sqrt(2.0*V[i]+2.0*V[i]+eta*eta);
-        for (j=i+1; j<SR; j++) {
-          Omega=2.0*V[i]+2.0*V[j]+eta*eta;
-          dm=m(j,k)-m(i,k);
-          alpha(i,j)=eta*exp(-dm*dm/Omega)/sqrt(Omega);
-          alpha(j,i)=alpha(i,j);
-          beta(i,j)=2.0*V[i]*alpha(i,j)*dm/Omega;
-          beta(j,i)=-beta(i,j)*V[j]/V[i];
-        }
-      }
-      alpha(SR-1,SR-1)=eta/sqrt(2.0*V[SR-1]+2.0*V[SR-1]+eta*eta);
-    } else { // If no temperature-dependent competition, it's much simpler:
-      alpha=a;
-    }
-    F=funcresp(n(_,k), Th, arate, W); // Feeding rate of species i on j in patch k
-    for (i=0; i<S; i++) {
-      sumgr=0.0;
-      bsumgr=0.0;
-      // Species interaction terms in density and then trait evolution equations
-      for (j=0; j<S; j++) {
-          sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
-          bsumgr+=beta(i,j)*n(j,k);
-      }
-      summig=0.0;
-      bsummig=0.0;
-      // Dispersal terms in density and then trait evolution equations
-      for (l=0; l<L; l++) {
-          summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
-          bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
-      }
-      // Growth terms in the equations
-      summig*=d[i];
-      bsummig*=d[i];
-      w=bw-aw*m(i,k);
-      sw=w*w+V[i];
-      ef=rho[i]*exp(-(T[k]-m(i,k))*(T[k]-m(i,k))/(2.0*sw))/sqrt(sw);
-      b=ef-kappa;
-      g=ef*V[i]*(T[k]-m(i,k))/sw;
-      q=vmat(i,k)*smoothstep(n(i,k)/nmin);
-      h2=q/(q+venv); // Heritability
-      // Assign calculated rates to vector of derivatives for output
-      
-        dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
-        dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
 
-      
-      // Periodic boundary conditions
-      if (k==0) {
-        dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));
-        dvdt[S*L+i]+=d[i]*h2*mig(0,1)*n(i,1)*(m(i,1)-m(i,0))/(n(i,0)+1.0e-10);
-      }
-      if (k==(L-1)) {
-        dvdt[i+k*S]+=d[i]*(mig(k,k-1)*n(i,k-1)-mig(k-1,k)*n(i,k));
-        dvdt[S*L+i+k*S]+=d[i]*h2*mig(k,k-1)*n(i,k-1)*
-          (m(i,k-1)-m(i,k))/(n(i,k)+1.0e-10);
-      }
-    }
+  
+  // parallelFor(0, L, [&S,&SR,&L,&eta,&nmin, &venv, &aw, &bw,&kappa,
+  //             &d,&V,&Th,&rho,&arate,&eps,&vmat,&W,&mig,&a,&model,
+  //             &n,&m,&x, &T, &dvdt] (int k) {
+  //             
+  //             // int i, j, l;
+  //            //    double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
+  //            //  //  NumericMatrix F(S,S), alpha(S,S), beta(S,S);
+  //            //    // If we have temperature-dependent competition:
+  //            //    if ((model=="Tdep") || (model=="Tdep_trophic")) {
+  //            //      for (i=0; i<(SR-1); i++) {
+  //            //    //    alpha(i,i)=eta/sqrt(2.0*V[i]+2.0*V[i]+eta*eta);
+  //            //        for (j=i+1; j<SR; j++) {
+  //            //          Omega=2.0*V[i]+2.0*V[j]+eta*eta;
+  //            //          dm=m(j,k)-m(i,k);
+  //            //   //       alpha(i,j)=eta*exp(-dm*dm/Omega)/sqrt(Omega);
+  //            //     //     alpha(j,i)=alpha(i,j);
+  //            //     //     beta(i,j)=2.0*V[i]*alpha(i,j)*dm/Omega;
+  //            //    //      beta(j,i)=-beta(i,j)*V[j]/V[i];
+  //            //        }
+  //            //      }
+  //            //    //  alpha(SR-1,SR-1)=eta/sqrt(2.0*V[SR-1]+2.0*V[SR-1]+eta*eta);
+  //            //    } else { // If no temperature-dependent competition, it's much simpler:
+  //            //   //   alpha=a;
+  //            //    }
+  //            // //   F=funcresp(n(_,k), Th, arate, W); // Feeding rate of species i on j in patch k
+  //            //    for (i=0; i<S; i++) {
+  //            //      sumgr=0.0;
+  //            //      bsumgr=0.0;
+  //            //      // Species interaction terms in density and then trait evolution equations
+  //            //      for (j=0; j<S; j++) {
+  //            // //       sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
+  //            //  //      bsumgr+=beta(i,j)*n(j,k);
+  //            //      }
+  //            //      summig=0.0;
+  //            //      bsummig=0.0;
+  //            //      // Dispersal terms in density and then trait evolution equations
+  //            //      for (l=0; l<L; l++) {
+  //            //        summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
+  //            //        bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
+  //            //      }
+  //            //      // Growth terms in the equations
+  //            //      summig*=d[i];
+  //            //      bsummig*=d[i];
+  //            //      w=bw-aw*m(i,k);
+  //            //      sw=w*w+V[i];
+  //            //      ef=rho[i]*exp(-(T[k]-m(i,k))*(T[k]-m(i,k))/(2.0*sw))/sqrt(sw);
+  //            //      b=ef-kappa;
+  //            //      g=ef*V[i]*(T[k]-m(i,k))/sw;
+  //            //      q=vmat(i,k)*smoothstep(n(i,k)/nmin);
+  //            //      h2=q/(q+venv); // Heritability
+  //            //      // Assign calculated rates to vector of derivatives for output
+  //            //      
+  //            //      dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
+  //            //      dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
+  //            //      
+  //            //      
+  //            //      // Periodic boundary conditions
+  //            //      if (k==0) {
+  //            //        dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));
+  //            //        dvdt[S*L+i]+=d[i]*h2*mig(0,1)*n(i,1)*(m(i,1)-m(i,0))/(n(i,0)+1.0e-10);
+  //            //      }
+  //            //      if (k==(L-1)) {
+  //            //        dvdt[i+k*S]+=d[i]*(mig(k,k-1)*n(i,k-1)-mig(k-1,k)*n(i,k));
+  //            //        dvdt[S*L+i+k*S]+=d[i]*h2*mig(k,k-1)*n(i,k-1)*
+  //            //          (m(i,k-1)-m(i,k))/(n(i,k)+1.0e-10);
+  //            //      }
+  //            //    }
+  //             });
+  for(int y=0;y<S*L*2;y++)
+  {
+    dvdt[y] = 0.0;
   }
+  
+  // for (k=0; k<L; k++) {
+  //   // If we have temperature-dependent competition:
+  //   if ((model=="Tdep") || (model=="Tdep_trophic")) {
+  //     for (i=0; i<(SR-1); i++) {
+  //       alpha(i,i)=eta/sqrt(2.0*V[i]+2.0*V[i]+eta*eta);
+  //       for (j=i+1; j<SR; j++) {
+  //         Omega=2.0*V[i]+2.0*V[j]+eta*eta;
+  //         dm=m(j,k)-m(i,k);
+  //         alpha(i,j)=eta*exp(-dm*dm/Omega)/sqrt(Omega);
+  //         alpha(j,i)=alpha(i,j);
+  //         beta(i,j)=2.0*V[i]*alpha(i,j)*dm/Omega;
+  //         beta(j,i)=-beta(i,j)*V[j]/V[i];
+  //       }
+  //     }
+  //     alpha(SR-1,SR-1)=eta/sqrt(2.0*V[SR-1]+2.0*V[SR-1]+eta*eta);
+  //   } else { // If no temperature-dependent competition, it's much simpler:
+  //     alpha=a;
+  //   }
+  //   F=funcresp(n(_,k), Th, arate, W); // Feeding rate of species i on j in patch k
+  //   for (i=0; i<S; i++) {
+  //     sumgr=0.0;
+  //     bsumgr=0.0;
+  //     // Species interaction terms in density and then trait evolution equations
+  //     for (j=0; j<S; j++) {
+  //         sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
+  //         bsumgr+=beta(i,j)*n(j,k);
+  //     }
+  //     summig=0.0;
+  //     bsummig=0.0;
+  //     // Dispersal terms in density and then trait evolution equations
+  //     for (l=0; l<L; l++) {
+  //         summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
+  //         bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
+  //     }
+  //     // Growth terms in the equations
+  //     summig*=d[i];
+  //     bsummig*=d[i];
+  //     w=bw-aw*m(i,k);
+  //     sw=w*w+V[i];
+  //     ef=rho[i]*exp(-(T[k]-m(i,k))*(T[k]-m(i,k))/(2.0*sw))/sqrt(sw);
+  //     b=ef-kappa;
+  //     g=ef*V[i]*(T[k]-m(i,k))/sw;
+  //     q=vmat(i,k)*smoothstep(n(i,k)/nmin);
+  //     h2=q/(q+venv); // Heritability
+  //     // Assign calculated rates to vector of derivatives for output
+  //     
+  //       dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
+  //       dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
+  // 
+  //     
+  //     // Periodic boundary conditions
+  //     if (k==0) {
+  //       dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));
+  //       dvdt[S*L+i]+=d[i]*h2*mig(0,1)*n(i,1)*(m(i,1)-m(i,0))/(n(i,0)+1.0e-10);
+  //     }
+  //     if (k==(L-1)) {
+  //       dvdt[i+k*S]+=d[i]*(mig(k,k-1)*n(i,k-1)-mig(k-1,k)*n(i,k));
+  //       dvdt[S*L+i+k*S]+=d[i]*h2*mig(k,k-1)*n(i,k-1)*
+  //         (m(i,k-1)-m(i,k))/(n(i,k)+1.0e-10);
+  //     }
+  //   }
+  // }
   return(List::create(dvdt));
 }

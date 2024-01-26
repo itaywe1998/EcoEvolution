@@ -5,10 +5,11 @@
 
 # To run, either execute within R or enter the following at the command prompt:
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+rm(list = ls())
+
 setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT")
 suppressPackageStartupMessages({
   suppressWarnings({
-    rm(list = ls())
     start <- Sys.time()
     require(gridExtra)
     require(deSolve) # solving ordinary differential equations (ODEs)
@@ -202,6 +203,7 @@ at <-1e-8
 rt <-1e-8
 maxsteps <- 7000
 tE <-tail(T_kozai, n=1)[1]
+tE <- tE/20
 step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
 #step <-1e5
 fail_time <- 0
@@ -248,7 +250,7 @@ suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step)))
 toSave <- FALSE
 if (toSave){
-  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=100*step)))
+  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=1*step)))
   #plot_timeseries(dat %>% filter(time %in% seq(from=9e8,to=max(dat$time),by=2*step)))
   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
                            toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
