@@ -97,7 +97,7 @@ List eqs(double time, NumericVector state, List pars) {
   // Variables
   int i, j, k, l, ki, Tmin = 0, Tmax = 0;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
-  NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S)
+  NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
   NumericVector dvdt(2*S*L), x(L), T(L);
   // Assign state variables into matrices n and m; calculate local temperatures
   for(i = 0; i < S; i++){
@@ -122,25 +122,22 @@ List eqs(double time, NumericVector state, List pars) {
   
   
   int prev, next;
-  for(ki=0; ki<lT-1; ki++){
+  double fraction;
+  for(ki=0; ki<lT; ki++){
     prev = T_kozai(ki,0);
-    next = T_kozai(ki+1,0);
-    if(time> prev && time<next){
-      if(abs(time-prev) <= abs(time-next)){ //ki is closest
-        Tmin = T_kozai(ki,1);
-        Tmax = T_kozai(ki,2);
-      }
-      else{//ki+1 is closest
-        Tmin = T_kozai(ki+1,1);
-        Tmax = T_kozai(ki+1,2);
-      }
+    if (ki == lT-1){
+      next = prev;
+    }
+    else{
+      next = T_kozai(ki+1,0);
+    }
+    if(time >= prev && time<=next){
+      fraction = (time - prev) / (next-prev);
+      Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
+      Tmin = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2); 
       break;
     }
   } 
-  if(time == T_kozai(lT-1,0)) {
-    Tmin = T_kozai(lT-1,1);
-    Tmax = T_kozai(lT-1,2);
-  }
   T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
 

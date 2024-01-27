@@ -624,10 +624,10 @@ Plus, the deriative is the one failing the population, not the shape of the prof
 
 21-22.01.24
 For comparison, the ecoevo_main.R from original directory is still running on 20 sec scale of time.
-At first I thougth the difference is th timespan, so kozai also produced new prifles in 1e6 instead of 1e9 years.
-Then deriatives were lowered since code -1 kept happening and no ode was solved yet in the old-new t profiles.
-Notably, I dicovered that in nearly circular orbits, the oscilations are well sinusiadal (good point to interface with past runs) and not rising in eccentricity with offset. Jupiter mass\distance  controls the frequency and i1 controls the max e1 and T accordingly.
-This way the "large" vs "small" adaptaiton time is quite straight forward constructed,see examples in kozai_parameters.
+At first I thougth the difference is the timespan, so kozai also produced new profiles in 1e6 instead of 1e9 years.
+Then deriatives were lowered since code -1 kept happening and no ode was solved yet in the old-new T profiles.
+Notably, I discovered that in nearly circular orbits, the oscilations are well sinusiadal (good point to interface with past runs) and not rising in eccentricity with offset. Jupiter mass\distance  controls the frequency and i1 controls the max e1 and T accordingly.
+This way the "large" vs "small" adaptation time is quite straight forward constructed,see examples in kozai_parameters.
 
 v2e-03_d1e-05idLargeAdaptTimeMildAlive13844_FAILED is a very intersting output.
 First of all it represents runs that did not actually failed but only after tE, which is a phenomenon I still do not know the reason for and how to avoid it.
@@ -654,5 +654,94 @@ This initiative won't work for several causes:
 When the second time is run for the same code, proper cleanup is not done and allocation errors start to arise. From this point on there is no valid runs for any change of outer paramters (L for instance) or the code itself, so I would guess this method contaminates the memory in a way I am not familiar with.
 4. I do not believe I can afford more time at the moment to explore the alternatives, since it will require me to learn how to install libraries from github, which is educational , but currently I will try to reduce runtime in traditional ways (backtrack a little bit over the code versions, and see where did the change start. I suspect the last month but this could be earlier with just a late problem-revealing input).
 I will save in github the last edited version so I will have remains of the parralel code, but right afterwards will restore to sequintial in order to keep working normally.
+
+27.01.24
+
+
+Several runtime checks (with cpp pre-run sourced):
+
+Tested On kozai profile LargeAdaptTimeMildExtendedSpan . Taken for being approxiamtly sinusoidal.
+My suspicion is since for the general kozai profile I have to pass the entire kozai profile as a parameter to the rhs_eval function , the memory readtime may make the difference.
+The elegant way to check this is to make much more steps into the T_kozai, but keep the integration step of the ODE, so only the memory size increases.
+If true, may check the options for pass by reference, even though I am not very optimistic since the R ode interface is very strict.
+If not the dominant change, try to re-implement the inherent T calculation withing the cpp (past function which can be found in ~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original/rhs_eval.cpp)
+For saving the memory issue at all.
+If that is also not the case, try to rerun the same test series on the ecoevo_original/evoevo_main.R, and document time scales there. Maybe it will give you an idea for the difference source.
+It will be noted that if the Kozai profile memory is itself the issue, there is not much that can be done beside passing-by -reference since it is the main point of having this version of the script.
+
+timespan (kyrs)    R total runtime (sec)        cpp total runtime (sec)
+
+50                  0.72                        1.56
+200                 0.86                         22.36
+500                 1.49                        48.27
+1000                2.6                         2.44 * 60
+2000                5.09                        4.01 * 60
+4000                10.52                       9.52 * 60     
+5000                14.89                       11.85 * 60
+
+So from the fitting and plotting the realtion is very much linear both for R and cpp parts runtime, which is very convinient.This is ofcourse for a specific input which was earlier described as a near-sinusoidal kozai profile.
+It will be noted that once tE extended, the problem around the smaller tE dissapeard even though the deriatives and data are comletly identical, which means there is some technical missfunction in the last kozai point. A temporal workaround is to determine a tE which is different from the full kozai (namely, when tE_kozai = 1e6, run failed at t=1e6 and rerun under label FAILED, but when tE_kozai = 1e7, the simulation runs up to 5e6 with no problems, 1e7 was not checked due to long runtime (expected 20 min))
+
+Now, with LargeAdaptTimeMildExtendedSpanMemHeavy (10 times more steps, related kozai workspace gone from 2.3 to currently 20.8 MB)
+
+
+timespan (kyrs)    R total runtime (sec)        cpp total runtime (sec)
+
+50                  1.08                        1.69
+200                 1.31                        28.7
+500                 1.92                        1.07 * 60
+1000                3.05                        3.82 * 60
+2000                6.62                        7.71 * 60
+4000                13.27                       21.5 * 60      
+5000                -                       -  # this is long enough for me
+
+
+
+There is a step that could be taken in order to improve the cpp runtimes, and that is to segment the run just like it used to have at the original script (from Nornberg) segemnts for beforeCC and during and after, but this time it will be a purely computational, in order to decrease the memory size each rhs_eval call carries. In order to do it efficiently there is need in a function in R that can run and concatenate the results of all segments in the end. For substantial difference I would like to aim for 10 segments and see the difference.
+Ofcourse pass-by-refernce will be tried out first, but if not, this suggestion, assuming the memory hypothesis is true, will benefit runtime.
+ different solution will be to keep the steps number constant over large tEs, so the memory size is constant, and performance should stay the same. 
+ That might have been the problem of kozai all along, since the R script took the step from kozai, and in kozai I kept (for n reason but smmothness and detailes of the T profile itself)
+ the same step size - 1000 years.
+ When going to tE = 1e8, was it also the case? I am not sure, let us review the relevant workspaces.
+ Ok, so for ModerateCCSearch3 profile , which had tE=1e9, step was 1e6, as in step number was 1k.
+ When did it start to go off? This workspace size is 765kB. Let us follow the other names to see where did step number start to vary. If this is the entire error than it is very easy to fix.
+ 
+ For some reason I can't really find heavy workspaces before this check, so we will continue from here and see if any problems occur.
+ 
+ 
+ Kozai indicating_diff checks (step size = tE/stepNum [years]):
+ All this checks are ofcourse on the LargeAdaptTimeMild configuration, that is, these numbers have meaning only relativly to certain astronomical parameters. It is obvious that the time delta identity does not matter to the code. If the system will have slower deriatives, for instance, changing the perturber's mass or distance from the inner orbit, similar results can be yielded on large tE (1e9) to those currently designed on smaller ones. this checks should give the feeling for future use of how much mess the calculator here is willing to take.
+ 
+                          maxDiff Summary Table (celsius)
+ 
+stepNum \tE(yr)   |     1e7     |      3e7    |       1e9           
+__________________|_______________________________________________
+1e2               |     41.39   |     40.46   |      FAILED 
+                  |             |             |
+1e3               |     11.02   |     27.95   |      41.65
+                  |             |             |
+1e4               |     1.12    |     3.38    |      41.45
+                  |             |             |
+1e5               |     0.11    |     0.339   |      11.02
+__________________________________________________________________
+
+I would have resumed to stepNum= 1e6 if not for the very large metrices.
+
+So the immidiate conclusion is that for this particular planetary configuration, the ciritical integration step is 1e4 years.
+Over larger steps the system fails to capture the real process.
+
+Since the translation to temprature is through planetary parmaeters such as obliquity and distance from the sun (Lsun as well, but rarely modified) I will translate all the above values to eccentricity, since this is where the kozai integration is measured:
+(tE/stepNum): ecc_diff - 
+1e9/1e5 : 0.115         1e7/1e3 : 0.114
+1e9/1e4 : 0.74          1e7/1e4 : 0.0115
+So in e1 terms, the simulation is broken when the eccentricity difference is supposidly attempting to exceed 1 (0.115*10 here). So the eccentricity change rate should be less than 1 per step.
+
+That is solely a kozai numerical consideration.Pay attention to non-linearity in ecc or T diffs to see where the integration de-facto fails, not only when it aborts R session or returns an error code.
+
+I advise that for the next sitting I will try to be exact about the specs - how long should tE be? What will be the matrix size?
+Pay attention to the kozai profile diffs validity.
+than get the critical T change rate, set vbar accordingly, and expect good results.
+
+
 
 ```

@@ -161,7 +161,7 @@ kozai <-function(){
   i1 <- to_radians(64.9)
   omega1 <- to_radians(0)
   # 2 is for outer binary
-  a2 <- 10* AU
+  a2 <- 14* AU
   e2 <- 0.01
   i2 <- to_radians(0.1)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
@@ -185,10 +185,11 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e6 * yr
-  step <- tE/1000
+  tE <- 1e7 * yr
+  stepNum <- 1e3
+  step <- tE/stepNum
   
-  workspace_name <- "LargeAdaptTimeMild"
+  workspace_name <- "shorttESlower"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -196,10 +197,11 @@ kozai <-function(){
                 method="bdf", atol  = at, rtol = rt, maxsteps = 5000)
   diagnostics(results)
   
-  disp_results <- results
-  disp_results[,1] <- results[,1]/yr
-  disp_results[,6:7] <-to_deg(acos(results[,6:7]))
-  disp_results[,8:9] <-results[,8:9] %% 360
+  sampled_results <- results[seq(0, stepNum, by=1), ]
+  disp_results <- sampled_results
+  disp_results[,1] <- sampled_results[,1]/yr
+  disp_results[,6:7] <-to_deg(acos(sampled_results[,6:7]))
+  disp_results[,8:9] <-sampled_results[,8:9] %% 360
   times <- disp_results[,1]
   ecc_vec <- disp_results[,2] #e1
   disp_results <-as.data.frame(disp_results)
@@ -246,7 +248,7 @@ kozai <-function(){
   
   indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
   # for a single step - the biggest temperature difference
-  
+  ecc_diff <- max(abs(diff(ecc_vec)))
   Tvec
   
 }

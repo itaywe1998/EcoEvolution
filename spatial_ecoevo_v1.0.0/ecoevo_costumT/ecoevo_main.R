@@ -39,7 +39,7 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"LargeAdaptTimeMildAlive"
+  id <-"LargeAdaptTimeMildExtendedSpanMemHeavyAlive"
   seed <- 3690
   vbar <- 2e-3 # average genetic variance in Celsius squared 
   dbar <- 1e-5 # average dispersal (1e-7 <=> 1 meter per year)
@@ -163,7 +163,7 @@ mig <- mig + t(mig) # nearest-neighbor patches
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "LargeAdaptTimeMild"
+  wksp_name <- "LargeAdaptTimeMildExtendedSpanMemHeavy"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -203,11 +203,16 @@ at <-1e-8
 rt <-1e-8
 maxsteps <- 7000
 tE <-tail(T_kozai, n=1)[1]
-tE <- tE/20
-step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
-#step <-1e5
+tE <- 4e6
+#step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
+step <-1e3
 fail_time <- 0
 original_tE <- tE
+add <- Sys.time()-start
+print(add)
+start <- Sys.time()
+
+
 tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps)
 },
@@ -227,6 +232,9 @@ tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
              results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                              method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps) 
            }
+           print(Sys.time()-start)
+           start <- Sys.time()
+           
            diagnostics(results)
            results <- results %>% # put during-climate-change solution into tidy tibble:
              organize_data(times=seq(from=0, to=tE, by=step), pars = pars) #%>%
@@ -258,6 +266,6 @@ if (toSave){
   
   
 }
-print("Final Runtime")
-print(Sys.time()-start)
+print("R total Runtime")
+print(Sys.time()-start + add)
 
