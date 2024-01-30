@@ -148,7 +148,7 @@ kozai <-function(){
   GC <- 6.6743e-11
   sigma <- 5.670373e-8 # Stephan-Boltzmann constant [W m^-2 K^-4]
   albedo <- 0.29 # Earth's Albedo
-  eps <- to_radians(19) # Earth's Obliquity
+  eps <- to_radians(24) # Earth's Obliquity
   T0 <- -273.15 # Kelvin to Celsius conversion
   
   #---System data ------
@@ -156,12 +156,12 @@ kozai <-function(){
   m2 <- 1 * Me # solid-planet
   m3 <- 7.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
-  a1 <- 0.54 * AU
+  a1 <- 0.51 * AU
   e1 <- 	0.01
   i1 <- to_radians(64.9)
   omega1 <- to_radians(0)
   # 2 is for outer binary
-  a2 <- 14* AU
+  a2 <- 50* AU
   e2 <- 0.01
   i2 <- to_radians(0.1)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
@@ -185,11 +185,11 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e7 * yr
+  tE <- 1e9 * yr
   stepNum <- 1e3
   step <- tE/stepNum
   
-  workspace_name <- "shorttESlower"
+  workspace_name <- "KozaiPreciseDesign"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------

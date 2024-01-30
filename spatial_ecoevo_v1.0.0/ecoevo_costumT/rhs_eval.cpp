@@ -5,14 +5,9 @@
  see the GNU General Public License Agreement (in the file COPYING.txt).
 */
 
-#include <RcppThread.h>
-using namespace RcppThread;
-
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
-#include <thread>
-
 
 using namespace std;
 using namespace Rcpp;
@@ -81,8 +76,6 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
  - pars: Model parameters, given as members of a list
  Output:
  - The derivatives of the densities and trait means, as a vector in a list */
-// [[Rcpp::plugins(cpp11)]]
-// [[Rcpp::depends(RcppThread)]]
 // [[Rcpp::export]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
@@ -112,32 +105,55 @@ List eqs(double time, NumericVector state, List pars) {
   
   double maxn= max(n);
   double meann = mean(n);
+  double threshold = nmin;
   
-  if(maxn<1.0e-5 || meann<0){
-    if(maxn<1.0e-5) cout<<"Population died"<<endl;
+  if(maxn<threshold || meann<0){
+    if(maxn< threshold) cout<<"Population died"<<endl;
     if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
-    cout<<time<<endl;
+    cout<<maxn<<endl;
     throw range_error(to_string(time));
   } 
   
   
-  int prev, next;
-  double fraction;
-  for(ki=0; ki<lT; ki++){
+  // int prev, next;
+  // double fraction;
+  // for(ki=0; ki<lT; ki++){
+  //   prev = T_kozai(ki,0);
+  //   if (ki == lT-1){
+  //     next = prev;
+  //   }
+  //   else{
+  //     next = T_kozai(ki+1,0);
+  //   }
+  //   if(time >= prev && time<=next){
+  //     fraction = (time - prev) / (next-prev);
+  //     Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
+  //     Tmax = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2); 
+  //     break;
+  //   }
+  // } 
+  
+  
+  int prev, next; //Older round T format
+  for(ki=0; ki<lT-1; ki++){
     prev = T_kozai(ki,0);
-    if (ki == lT-1){
-      next = prev;
-    }
-    else{
-      next = T_kozai(ki+1,0);
-    }
-    if(time >= prev && time<=next){
-      fraction = (time - prev) / (next-prev);
-      Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
-      Tmin = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2); 
+    next = T_kozai(ki+1,0);
+    if(time> prev && time<next){
+      if(abs(time-prev) <= abs(time-next)){ //ki is closest
+        Tmin = T_kozai(ki,1);
+        Tmax = T_kozai(ki,2);
+      }
+      else{//ki+1 is closest
+        Tmin = T_kozai(ki+1,1);
+        Tmax = T_kozai(ki+1,2);
+      }
       break;
     }
   } 
+  if(time == T_kozai(lT-1,0)) {
+    Tmin = T_kozai(lT-1,1);
+    Tmax = T_kozai(lT-1,2);
+  }
   T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
 
@@ -174,7 +190,7 @@ List eqs(double time, NumericVector state, List pars) {
       // Dispersal terms in density and then trait evolution equations
       for (l=0; l<L; l++) {
           summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
-          bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
+          bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+nmin);
       }
       // Growth terms in the equations
       summig*=d[i];

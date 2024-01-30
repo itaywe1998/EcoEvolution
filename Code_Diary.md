@@ -742,6 +742,30 @@ I advise that for the next sitting I will try to be exact about the specs - how 
 Pay attention to the kozai profile diffs validity.
 than get the critical T change rate, set vbar accordingly, and expect good results.
 
+30.01.24
+Let us aim for matrix size = 1e3 for speed aims.
+Let us aim for tE = 1e9 for evolutional purposes.
+so we can't have more than 1 eccentricity diff per step.
+For good measures let us start the kozai design with a stricter e1 diff, no more than 0.1 per step
+which is 1 million years in this case.
+The evolutional vbar will be calculated according to the related T diff, controlable by the obliquity.
+
+For design speed purposes, let us start with the near-sinusoidal pattern we already obtained , but fit it to the requested e1 diff limitation.
+
+Done. Now let us take the current T diff - 8 celsius per step (1e6 yrs), so the corrosponding first order critical vbar will be 8e-6.
+The gap between pole and equator is in the range [46,54], roughly avg is 50 celsius gap over entire profile.
+
+8/50 = 0.16 is the dispersal ratio to compensate for the difference in terms of first order migration. 0.16 per step (1e6yrs) is critical dbar = 1.6e-7.
+
+Let us start with bringing the model to this approximated critical values. From there modifications will be explored.
+
+Even though operating near theoretical first-order critical values, model is yet to succeed.
+Plus runtime is increased when the vbar is spread over a wide range.
+Maybe it is preferable to run same vbar to all in seperate runs.
+
+If things will continue to be unclear in the future, I will follow Hagai's reccomendation to fallback to the very first smoothstep, and exaimine this vbar/dbar logic over a much simpler profile, even though I can not really see the difference. 
+
+Not sure why the early failure, will try to find the real crit point and find out why it is very diffferent from computed one.
 
 
 ```
