@@ -787,5 +787,15 @@ When I come to think of it, factor variable can be used for the survive vs extin
 
 I think this is a good place to stop, so i will have tommorow some cherry picked examples for the article.
 
+one last thing that can be done is to find the dbar limitation along the feasable vbar.Maybe the border is more complex and while I low dbar the critcal vbar will shift, which complicates but now with 1 minute runs it is more reasonable.
+
+Pa attention that when setting vbar=1e-2 then dbar fails even in the hight it was in before (just to be absolutly clear, Precise fails with both vbar,dbar set to 0.01!) so there is a thing of too much vbar (maybe the species get too comfy and won't be rewarded by the equations to move? It needs to be verified)
+
+So yeh, for Precise2 factor=500 breaks the simulation (I can see no physical reason to it, but I will check the behaviour of the results more closly). In practical terms, vbar can't be indecisvly high.
+Nothing that can be realed to an extreme shift in temprature or population gradually decreasing happened, so I will have to conclude the upper limit to vbar dbar is solely computational at the moment.
+
+Tried to keep vbar * dbar const over different divider/multiplier values. Once exceeded the lower limit for factor failed, so vbar means something on its own.
+As for dbar, for simplicity we will look at it as an enabling property, and maybe later investigate for its relation to T . I expect it to be dependent of my choice for patches number L, but needs to be checked.
+
 
 ```
