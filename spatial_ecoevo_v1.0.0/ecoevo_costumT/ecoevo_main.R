@@ -38,7 +38,7 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"KozaiLessPeriods"
+  id <-"KozaiSinglePeriods"
   seed <- 3690
  # vbar <- 8e-6 # average genetic variance in Celsius squared 
   vbar <- 8.4e-6 * 5 
@@ -50,7 +50,7 @@ if (!is.na(clargs)) { # command-line arguments
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiLessPeriods"
+  wksp_name <- "KozaiSinglePeriods"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -61,10 +61,10 @@ if (old_profile){
 }else{
   T_kozai <- kozai()
 }
-factor <- 20
+factor <- 4
 vbar <- crit_diff * factor
 
-S <- 4 # fifty species per trophic level
+S <- 3 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
 set.seed(NULL) #unsets random seed, it is set again before the important stuff 
 run_indicator <- sample(1:20000,1)
@@ -179,19 +179,6 @@ mig <- matrix(0, L, L) # initialize dispersal matrix
 for (k in 2:L) mig[k-1,k] <- 1 # each species can only migrate to the two
 mig <- mig + t(mig) # nearest-neighbor patches
 
-# Temperatures----
-old_profile <- TRUE
-if (old_profile){
-  wksp_name <- "KozaiPreciseDesign"
-  kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
-  tmp.env <- new.env() # create a temporary environment
-  load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
-  T_kozai <- tmp.env$Tvec 
-  rm(tmp.env) 
-}else{
-  T_kozai <- kozai()
-}
-
 lT <- length(T_kozai[,1])
 save.image(file = workspace)
 Tmin <- unname(T_kozai[1,2])
@@ -230,7 +217,7 @@ print(add)
 start <- Sys.time()
 
 
-tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
+tryCatch({results <-ode(y=ic, times=seq(0, tE-step, by=step), func=eqs, parms=pars,
                           method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps)
 },
          error=function(this){

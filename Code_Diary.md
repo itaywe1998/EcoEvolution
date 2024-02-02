@@ -778,7 +778,14 @@ I will examine the relation between period number to the factor, it might be tha
 From periodic, unsurprisingly, the more cycles there are on the same tE, the simulation runs longer. For instance, for 40 cycles on tE=2e7 the run was 4.5 minutes
 So adding adittional complexity, no wonder the 19 periods is quite long.
 Plus, there was no factor alteration from 5, 10 and 40 cycles on periodic.The beforeCC period is negligible since after 10 years it became stable, so it might be though as an alternative start point and thats all.No need for it on kozai runs since the population density stabilizes after the first integration step anyway.
-It might be smart to adapt the lesser settings from kozai back to where it works in original directory ecoevo, e.g v <- runif(SR, 1.0*vbar, 2.0*vbar).
+The lesser settings are fairly the same between the costumT and original directories (kappa, aw bw and so on)
+
+So, major speed difference was that the other directories run on 200 steps. Now precise is run in 1 minute. In the 200 steps setting, Precise takes a facotr=3, LessPeriods takes factor =5, and single takes 4. So this is a period independent problem, as long as we are adressing the critical deriative problem.
+
+Compared S=3 to S=7, for identical vbar to all, only one species dominates at the end, so it does not matter. For runtime purposes 3 or 4 is fine.
+When I come to think of it, factor variable can be used for the survive vs extinct examples.
+
+I think this is a good place to stop, so i will have tommorow some cherry picked examples for the article.
 
 
 ```

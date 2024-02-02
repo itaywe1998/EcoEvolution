@@ -154,7 +154,7 @@ kozai <-function(){
   #---System data ------
   m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
-  m3 <- 2.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m3 <- 0.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.51 * AU
   e1 <- 	0.01
@@ -185,11 +185,11 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1.001e9 * yr
-  stepNum <- 1.001e3
+  tE <- 1e9 * yr
+  stepNum <- 2e2
   step <- tE/stepNum
   
-  workspace_name <- "KozaiLessPeriods"
+  workspace_name <- "KozaiSinglePeriods"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
