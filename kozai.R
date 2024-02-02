@@ -154,7 +154,7 @@ kozai <-function(){
   #---System data ------
   m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
-  m3 <- 7.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m3 <- 2.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.51 * AU
   e1 <- 	0.01
@@ -185,11 +185,11 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e9 * yr
-  stepNum <- 1e3
+  tE <- 1.001e9 * yr
+  stepNum <- 1.001e3
   step <- tE/stepNum
   
-  workspace_name <- "KozaiPreciseDesign"
+  workspace_name <- "KozaiLessPeriods"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -236,8 +236,6 @@ kozai <-function(){
   p1+p2+p3+plot_layout(ncol=1)
   
   Tvec <-cbind(times,T_pole, T_equator)
-  save.image(file = workspace)
-  
   delta_equator <- max(T_equator)-min(T_equator)
   delta_pole <- max(T_pole) - min(T_pole)
   
@@ -249,6 +247,8 @@ kozai <-function(){
   indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
   # for a single step - the biggest temperature difference
   ecc_diff <- max(abs(diff(ecc_vec)))
+  save.image(file = workspace)
+  
   Tvec
   
 }

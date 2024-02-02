@@ -24,7 +24,6 @@ suppressPackageStartupMessages({
     source("./plotting_functions.R") # various functions for plotting final data
   })
 })
-require(RcppThread)
 sourceCpp("./rhs_eval.cpp") # compile external C functions
 
 # ---------------------------- input parameters --------------------------------
@@ -39,14 +38,32 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"KozaiPrecise"
+  id <-"KozaiLessPeriods"
   seed <- 3690
  # vbar <- 8e-6 # average genetic variance in Celsius squared 
-  vbar <- 8e-6 
+  vbar <- 8.4e-6 * 5 
   # dbar <- 1.6e-7 # average dispersal (1e-7 <=> 1 meter per year)
-  dbar <- 1.6e-7 
+  dbar <- 1e-2 
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
+
+# Temperatures----
+old_profile <- TRUE
+if (old_profile){
+  wksp_name <- "KozaiLessPeriods"
+  kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
+  tmp.env <- new.env() # create a temporary environment
+  load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
+  T_kozai <- tmp.env$Tvec
+  step <- tmp.env$step / tmp.env$yr
+  crit_diff <-tmp.env$indicating_diff / step 
+  rm(tmp.env) 
+}else{
+  T_kozai <- kozai()
+}
+factor <- 20
+vbar <- crit_diff * factor
+
 S <- 4 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
 set.seed(NULL) #unsets random seed, it is set again before the important stuff 

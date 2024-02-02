@@ -43,18 +43,19 @@ if (!is.na(clargs)) { # command-line arguments
   tE <-as.numeric(clargs[12])
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-FALSE
-  id <-"PeriodicSSuccess"
+  small <-TRUE
+  id <-"VbarSanity"
   seed <- 3690
-  vbar <- 3e-4 # average genetic variance in Celsius squared 
-  dbar <- 1e-6 # average dispersal (1e-7 <=> 1 meter per year)
+  dbar <- 1e-2 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 5
-  updown <- FALSE
+  cycles <- 40
+  updown <- TRUE
   Cmax <- 25 # projected temperature increase at poles
   Cmin <- 10 # projected temperature increase at equator
-  tstart <- if (small) -1e5 else -1e8 
-  tE <- 2.5e6
+  tstart <- if (small) -1e2 else -1e8 
+  tE <- 2e7
+  crit_v <- Cmax / tE
+  vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
 }
 S <- 3 # fifty species per trophic level
 str <- if (small) "small" else "large"
@@ -256,18 +257,18 @@ print(original_tE-max(during_cc$time))
 temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
 print(mean(temp$n))
 #print(min(dat$time[dat$n < 0]))
-req_times <- seq(from=0,to=tE,l=2*cycles+1)
-obs_times <- seq(from=0,to=2*cycles)
-for (i in seq(from=1,to=2*cycles+1)) {
-  obs_times[i] <-during_cc$time[which.min(abs(during_cc$time - req_times[i]))]
-}
-if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
-  if (outfile!="") { # if data file to save to was not specified as empty (""):
-    suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
-  plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
-  #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
-  #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
-}
+# req_times <- seq(from=0,to=tE,l=2*cycles+1)
+# obs_times <- seq(from=0,to=2*cycles)
+# for (i in seq(from=1,to=2*cycles+1)) {
+#   obs_times[i] <-during_cc$time[which.min(abs(during_cc$time - req_times[i]))]
+# }
+# if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
+#   if (outfile!="") { # if data file to save to was not specified as empty (""):
+#     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
+#   plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
+#   #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
+#   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
+# }
 print("Final Runtime")
 print(Sys.time()-start)
 
