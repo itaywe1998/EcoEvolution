@@ -38,38 +38,40 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"KozaiPreciseDesign2dbarSearch"
+  id <-"KozaiPreciseDesign2_ForPaper"
   seed <- 3690
  # vbar <- 8e-6 # average genetic variance in Celsius squared 
   vbar <- 8.4e-6 * 5 
   # dbar <- 1.6e-7 # average dispersal (1e-7 <=> 1 meter per year)
-  weight <-1e3
-  dbar <- 1e-3*weight
+  dbar <- 1e-3
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
 }
 
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiPreciseDesign2"
+  wksp_name <- "KozaiPreciseDesign3"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
   T_kozai <- tmp.env$Tvec
   step <- tmp.env$step / tmp.env$yr
   crit_diff <-tmp.env$indicating_diff / step 
+  min_times <- tmp.env$min_times
+  max_times <-tmp.env$max_times
   rm(tmp.env) 
 }else{
   T_kozai <- kozai()
 }
-factor <- 500/weight
+factor <- 2.5
 vbar <- crit_diff * factor
 
-S <- 3 # fifty species per trophic level
+S <- 4 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
 set.seed(NULL) #unsets random seed, it is set again before the important stuff 
 run_indicator <- sample(1:20000,1)
-file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),toString(run_indicator),sep ="")
+#file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),toString(run_indicator),sep ="")
+file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
 
@@ -260,10 +262,11 @@ print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 # plot_timeseries(dat %>% filter(time %in% c(0,step)))
-plot_timeseries(dat %>% filter(time %in% seq(from=tE-step,to=tE,by=step)))
+ctimes <- c(min_times[c(TRUE, FALSE)],max_times[c(TRUE, FALSE)])
+plot_timeseries(dat %>% filter(time %in% c(0,ctimes[c(TRUE, FALSE)])))
 toSave <- FALSE
 if (toSave){
-  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=20*step)))
+  plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=41*step)))
   #plot_timeseries(dat %>% filter(time %in% seq(from=9e8,to=max(dat$time),by=2*step)))
   ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
                            toString(dbar),"id",toString(id),".png",sep =""), plot = plt,

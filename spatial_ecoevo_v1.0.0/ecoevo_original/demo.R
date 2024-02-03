@@ -1,4 +1,4 @@
-
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original")
 
 suppressPackageStartupMessages({
   suppressWarnings({
@@ -21,18 +21,18 @@ if (length(clargs)>0) { # command-line arguments
   cycles<-as.numeric(clargs[5])
 } else { # sample input parameters, if no command line arguments are given
   dual <-TRUE
-  id <-"PeriodicCC_Factory"
+  id <-"PeriodicCC11093_FullSin_23_11"
   vbar <-3e-5
   dbar <-1e-7
-  cycles<-3
+  cycles<-5
 }
-
+#large_time_v3e-05_d1e-07id
 #--- large time plot----
 large_dat <-suppressMessages(read_csv(paste("outputs/large_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")))
 tstart <- min(large_dat$time)
 final_time <-max(large_dat$time)
 during_step <- final_time/200
-before_step <- -tstart/1000
+before_step <- 0#-tstart/1000
 
 if(cycles>0){
   req_times <- seq(from=0,to=final_time,l=2*cycles+1)
@@ -55,14 +55,14 @@ if (dual){
 }else{ small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep =""))}
 tstart <- min(small_dat$time)
 final_time<- max(small_dat$time)
-before_step <- -tstart/1000
+before_step <- 0#-tstart/1000
 if(cycles>0){
   plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart,tstart+before_step, seq(from=0,to=final_time,l=2*cycles+1))))
 }else{
-  plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart, tstart+before_step,seq(from=0,to=final_time,by=25*during_step))))+ggtitle("Short Adaptation Period")
+  plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart, tstart+before_step,seq(from=0,to=final_time,by=final_time/2))))+ggtitle("Short Adaptation Period")
 }
 
 #---Combined plot----
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)
-ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),".png",sep ="")
-       , plot = plotCombined)
+ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_Paper.png",sep ="")
+       , plot = plotCombined, width = 15, height = 8, units = "in")

@@ -17,7 +17,15 @@ present_profile <- function(name){
   folder <-"/home/itay/EcoEvolution/Kozai_parameters/"
   file <- paste(folder,name,sep = "")
   dat <- load(file)
-  p1+p2+p3+plot_layout(ncol=1)
+  p <-p1+p2+p3+plot_layout(ncol=1)
+  print(p)
+  save <- FALSE
+  if(save){
+    plot_path <- paste(folder,"plots/",name,sep = "")
+    ggsave(filename =  paste(plot_path,".png",sep ="")
+           , plot = p, width = 6, height = 4, units = "in")
+  }
+
 }
 
 kozai_osc <- function(t, state, params){
@@ -120,7 +128,7 @@ to_deg<-function(rad){
 #*   5. Additionally, i1-i2 matters, the larger it is the less moderate the system (e1) is
 #*   6. As planets' mass tend to be lower compared to the other masses, it is more vulnerable to extreme changes
 #*   the bigger it is the more ordered behavior occurs. In small masses - rising frequency
-#*   7. Omegas don't change much (as expected), just the initial point of the same behaviour
+#*   7. Omegas don't change much (as expected), just the initial point of the same behavior
 #*   8. initial e1 changes the stability of the e1 solution, leading to various resulting 
 #*   trends, not very linearly responding.
 #*   9. Star mass does not change much of its own, but in order to keep sense,
@@ -154,7 +162,7 @@ kozai <-function(){
   #---System data ------
   m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
-  m3 <- 0.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m3 <- 7.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.51 * AU
   e1 <- 	0.01
@@ -185,11 +193,11 @@ kozai <-function(){
   pars <- list(L1 = L1 , L2 = L2, Gtot = Gtot, C3_noG = C3_noG , C2_coeff = C2_coeff)
   at <- 1e-10
   rt <- 1e-10
-  tE <- 1e9 * yr
-  stepNum <- 2e2
+  tE <- 1.01e9 * yr
+  stepNum <- 202
   step <- tE/stepNum
   
-  workspace_name <- "KozaiSinglePeriods"
+  workspace_name <- "KozaiPreciseDesign3"
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -247,6 +255,12 @@ kozai <-function(){
   indicating_diff <- max(abs(diff(T_equator))) # the bottleneck of evolution
   # for a single step - the biggest temperature difference
   ecc_diff <- max(abs(diff(ecc_vec)))
+  
+  max_indices <- which(diff(sign(diff(ecc_vec)))==-2)+1
+  min_indices <- which(diff(sign(diff(ecc_vec)))==2)+1
+  max_times <- times[max_indices]
+  min_times <- times[min_indices]
+  
   save.image(file = workspace)
   
   Tvec

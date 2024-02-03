@@ -43,8 +43,8 @@ if (!is.na(clargs)) { # command-line arguments
   tE <-as.numeric(clargs[12])
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-TRUE
-  id <-"VbarSanity"
+  small <-FALSE
+  id <-"ForPaper"
   seed <- 3690
   dbar <- 1e-2 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)

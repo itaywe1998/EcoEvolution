@@ -275,7 +275,7 @@ Very good progress. For article we also need
 2. start technical description in overleaf. Introduction text and mainly the equations behind the code.
 Nice!
 
-Let is start with periodic CC.
+Let us start with periodic CC.
 Periodic CC first attempt, needs to configure a successful survival scenario for long adaptation since now for fully CC shifts (30 degrees) the CC is effectively cycles*2 faster, so needs to answer this time dependencies.
 
 First successful (16.10.23) periodic CC! Survival at long adaptation, mediate CC shift (Cmin=7 and Cmax=15) and cycles=3.
@@ -796,6 +796,10 @@ Nothing that can be realed to an extreme shift in temprature or population gradu
 
 Tried to keep vbar * dbar const over different divider/multiplier values. Once exceeded the lower limit for factor failed, so vbar means something on its own.
 As for dbar, for simplicity we will look at it as an enabling property, and maybe later investigate for its relation to T . I expect it to be dependent of my choice for patches number L, but needs to be checked.
+
+03.02.24
+
+Prepared some neaty graphs for the paper (see Ecoevo Paper Examples folder)
 
 
 ```
