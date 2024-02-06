@@ -64,5 +64,5 @@ if(cycles>0){
 
 #---Combined plot----
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)
-ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_Paper.png",sep ="")
-       , plot = plotCombined, width = 15, height = 8, units = "in")
+# ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_Paper.png",sep ="")
+#        , plot = plotCombined, width = 15, height = 8, units = "in")
