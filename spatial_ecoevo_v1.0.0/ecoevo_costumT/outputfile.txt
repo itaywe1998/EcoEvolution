@@ -1,0 +1,129 @@
+Time difference of 4.497679 secs
+[1] NA
+Time difference of 4.199113 secs
+Time difference of 12.33809 secs
+
+--------------------
+lsode return code
+--------------------
+
+  return code (idid) =  2 
+  Integration was successful.
+
+--------------------
+INTEGER values
+--------------------
+
+  1 The return code : 2 
+  2 The number of steps taken for the problem so far: 2077 
+  3 The number of function evaluations for the problem so far: 66924 
+  5 The method order last used (successfully): 3 
+  6 The order of the method to be attempted on the next step: 3 
+  7 If return flag =-4,-5: the largest component in error vector 0 
+  8 The length of the real work array actually required: 27062 
+  9 The length of the integer work array actually required: 180 
+ 14 The number of Jacobian evaluations and LU decompositions so far: 400 
+ 
+--------------------
+RSTATE values
+--------------------
+
+  1 The step size in t last used (successfully): 41194.53 
+  2 The step size to be attempted on the next step: 41194.53 
+  3 The current value of the independent variable which the solver has reached: 20003860 
+  4 Tolerance scale factor > 1.0 computed when requesting too much accuracy: 0 
+ 
+[1] 9.75e+08
+[1] 0.1333154
+[1mwrote[0m [32m456.00B[0m in [36m 0s[0m, [32m25.17MB/s[0m[1mwrote[0m [32m1.00TB[0m in [36m 0s[0m, [32m170.59TB/s[0m                                                                                 [1] "R total Runtime"
+Time difference of 4.621865 secs
+/usr/bin/g++ -I"/usr/share/R/include" -DNDEBUG   -I"/home/itay/R/x86_64-pc-linux-gnu-library/3.6/Rcpp/include" -I"/home/itay/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT"   -fpic  -g0 -O2 -Wall -pedantic -c rhs_eval.cpp -o rhs_eval.o
+make: *** [/usr/lib/R/etc/Makeconf:177: rhs_eval.o] Interrupt
+[1] NA
+Time difference of 4.157161 secs
+Time difference of 7.333744 secs
+
+--------------------
+lsode return code
+--------------------
+
+  return code (idid) =  2 
+  Integration was successful.
+
+--------------------
+INTEGER values
+--------------------
+
+  1 The return code : 2 
+  2 The number of steps taken for the problem so far: 2077 
+  3 The number of function evaluations for the problem so far: 66924 
+  5 The method order last used (successfully): 3 
+  6 The order of the method to be attempted on the next step: 3 
+  7 If return flag =-4,-5: the largest component in error vector 0 
+  8 The length of the real work array actually required: 27062 
+  9 The length of the integer work array actually required: 180 
+ 14 The number of Jacobian evaluations and LU decompositions so far: 400 
+ 
+--------------------
+RSTATE values
+--------------------
+
+  1 The step size in t last used (successfully): 41194.53 
+  2 The step size to be attempted on the next step: 41194.53 
+  3 The current value of the independent variable which the solver has reached: 20003860 
+  4 Tolerance scale factor > 1.0 computed when requesting too much accuracy: 0 
+ 
+[1] 9.75e+08
+[1] 0.1333154
+[1mwrote[0m [32m456.00B[0m in [36m 0s[0m, [32m51.69MB/s[0m[1mwrote[0m [32m1.00TB[0m in [36m 0s[0m, [32m180.90TB/s[0m                                                                                                [1] "R total Runtime"
+Time difference of 4.956918 secs
+[1] NA
+Time difference of 4.266255 secs
+Time difference of 3.839529 secs
+[1] NA
+Time difference of 0.1009133 secs
+Time difference of 7.422415 secs
+
+--------------------
+lsode return code
+--------------------
+
+  return code (idid) =  2 
+  Integration was successful.
+
+--------------------
+INTEGER values
+--------------------
+
+  1 The return code : 2 
+  2 The number of steps taken for the problem so far: 2077 
+  3 The number of function evaluations for the problem so far: 66924 
+  5 The method order last used (successfully): 3 
+  6 The order of the method to be attempted on the next step: 3 
+  7 If return flag =-4,-5: the largest component in error vector 0 
+  8 The length of the real work array actually required: 27062 
+  9 The length of the integer work array actually required: 180 
+ 14 The number of Jacobian evaluations and LU decompositions so far: 400 
+ 
+--------------------
+RSTATE values
+--------------------
+
+  1 The step size in t last used (successfully): 41194.53 
+  2 The step size to be attempted on the next step: 41194.53 
+  3 The current value of the independent variable which the solver has reached: 20003860 
+  4 Tolerance scale factor > 1.0 computed when requesting too much accuracy: 0 
+ 
+[1] 9.75e+08
+[1] 0.1333154
+[1mwrote[0m [32m456.00B[0m in [36m 0s[0m, [32m41.58MB/s[0m[1mwrote[0m [32m1.00TB[0m in [36m 0s[0m, [32m132.17TB/s[0m                                                                                                [1] "R total Runtime"
+Time difference of 0.4743493 secs
+[1] NA
+Time difference of 4.088606 secs
+Time difference of 22.51648 secs
+[1] NA
+Time difference of 4.330135 secs
+Time difference of 7.794871 secs
+[1] NA
+Time difference of 4.253917 secs
+Time difference of 5.626257 secs

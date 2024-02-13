@@ -206,7 +206,13 @@ List eqs(double time, NumericVector state, List pars) {
 
         dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
         dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
-
+        if(k==2 && time>5e6){
+          double expr = g+bsumgr+bsummig;
+          double gr = g/expr, cr=bsumgr/expr, mr=bsummig;
+          cout<<"time is " <<time<<" ratios: g-"<<g/g<<" competition- "<<bsumgr/g<<" mig-"<<bsummig/g<<endl;
+          
+        }
+        
 
       // Periodic boundary conditions
       if (k==0) {

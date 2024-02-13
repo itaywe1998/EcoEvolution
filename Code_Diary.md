@@ -806,5 +806,24 @@ Added the continuos time display.
 Needs more aestatic touchups with the horizontal axis lables in "original" directory.
 For some reason the population starts to vibrate before CC just the same as afterwards? Please make sure the CC is 0 before t=0, and if so, find out why this behaviour is present.
 
+11.02.24
+Been adding thought section to the overleaf.
+Let us demonstrate the claimed linear relation between max(dT/dt) and critical vbar.
+Since the first is a max on a function of time and the second a condition results which is yet to be refined, one must simplify and demonstrate the result in the simplified frame.
+Since I claimed the dispersive element can be neglected since it is a short term dynamic, I also though that there might be an attemp to quickly fill holes (since the term is basicly dN * dbar).Maybe the fast density gap response is diminishing a succeful site for neighboring patches which cannot support the newcomers, even with the trait mixing/stress which comes with migration.
+So, in order to remove one layer of complexity , I will run 1 patch and see if the runtimes are cut.
+
+Afterwards , I would like to examine different values for aw,bw since their part is better understood.
+
+14.02.24
+Been working today and yesterday on establishing simplifications on the dm/dt formula.
+From main Kozai simulation (the one presented in plots, PreciseDesign)
+It can be realized that survivng and failing with more than one dominant species is a fact.
+Plus, d=0.01 does not have the same effect as d=1000 (which flats the profile to uniform and thus lead to early failure), so d=0.01 is big but not necccesarily means intant equilibrium.
+
+From printing the terms from dm/dt equation in rhs_eval.cpp, it is hard to say there is any consistent dominant term w.r.t the others. Too much info currently in stdout format so only one time point can be seen. Consider other ways to present the data (redirecting cpp?)
+
+It is advised to re-check the trend suggested for linear relation between crit_v and dT/dt max. It may seem as a waste of time, but it will be even bigger waste of time if this turns to be not true. Take your time to make the check reliable and documented well enough.
+
 
 ```

@@ -1,3 +1,4 @@
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT")
 
 suppressPackageStartupMessages({
   suppressWarnings({
@@ -13,6 +14,7 @@ suppressPackageStartupMessages({
 #--- large time plot----
 folder <-"/home/itay/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT/parameters/"
 file <- "v3.225165e-05_d0.001idKozaiPreciseDesign2_ForPaper"
+#file <- "v3.225165e-05_d0.01idKozaiPreciseDesign2_ForPaper"
 load(paste(folder,file,sep = ""))
 large_dat <-suppressMessages(read_csv(outfile))
 tstart <- min(large_dat$time)
@@ -24,6 +26,7 @@ plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(0,ctimes[c(TRUE, FALSE
 #--- small time plot----
 # if small has failed (no way of knowing before reading the correct file)
 file <- "v1.612582e-05_d0.001idKozaiPreciseDesign2_ForPaper_FAILED"
+#file <- "v3.225165e-05_d1000idKozaiPreciseDesign2_ForPaper_FAILED"
 load(paste(folder,file,sep = ""))
 small_dat <-read_csv(outfile)
 tstart <- min(small_dat$time)
@@ -35,5 +38,9 @@ plot2 <- plot_timeseries(small_dat %>% filter(time %in% seq(from=0,to=final_time
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)
 print(plotCombined)
 png_fold <- "/home/itay/EcoEvolution/spatial_ecoevo_v1.0.0/Ecoevo Paper Examples/Plots/"
-ggsave(filename =  paste(png_fold,"KozaiPreciseDesign_Paper.png",sep="")
-       , plot = plotCombined, width = 15, height = 8, units = "in")
+
+
+s_dat <- small_dat %>% filter(n > 1e-5)
+l_dat <- large_dat %>% filter(n > 1e-5)
+# ggsave(filename =  paste(png_fold,"KozaiPreciseDesign_Paper.png",sep="")
+#        , plot = plotCombined, width = 15, height = 8, units = "in")
