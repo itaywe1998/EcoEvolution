@@ -197,7 +197,7 @@ kozai <-function(){
   stepNum <- 202
   step <- tE/stepNum
   
-  workspace_name <- "KozaiPreciseDesign3"
+  workspace_name <- "KozaiPreciseDesign3" #design3 is extra points at the end so failtime=1e9
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------

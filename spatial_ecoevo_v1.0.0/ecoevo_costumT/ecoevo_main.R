@@ -38,19 +38,18 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  id <-"deriativeCheck"
+  id <-"tryForMaxDiff"
   seed <- 3690
- # vbar <- 8e-6 # average genetic variance in Celsius squared 
-  vbar <- 8.4e-6 * 5 
-  # dbar <- 1.6e-7 # average dispersal (1e-7 <=> 1 meter per year)
-  dbar <- 1e-3
+  vbar <- 1e-5 # dummy, being runoff later
+  # dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
+  dbar <- 1e-3 #stick with the dbar run for PreciseDesign2 runs
 }
 
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiPreciseDesign2"
+  wksp_name <- "KozaiPreciseDesign3"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -158,8 +157,9 @@ bw <- 4 # intercept of trait-dependence of tolerance width
 rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
-aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.9), SR, SR) # resource comp coeffs
-diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.9) # resource intraspecific comp coeffs
+# V2 : upper was 0.15*0.9, not 0.15*0.4
+aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.4), SR, SR) # resource comp coeffs 
+diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.4) # resource intraspecific comp coeffs
 a[1:SR,1:SR] <- aP # top left block: resources
 W <- matrix(0, S, S) # create feeding network: nothing if no consumers
 Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)

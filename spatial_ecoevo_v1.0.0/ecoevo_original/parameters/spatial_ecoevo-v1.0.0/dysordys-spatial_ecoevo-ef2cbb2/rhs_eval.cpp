@@ -5,12 +5,12 @@
  see the GNU General Public License Agreement (in the file COPYING.txt).
 */
 
+
 #include <Rcpp.h>
 #include <math.h>
-#include <iostream>
-
-using namespace std;
 using namespace Rcpp;
+
+
 /* Apply twice continuously differentiable smoothed step function to a number x
  Input:
  - x: Distance from pole, measured in units of the pole-to-equator distance
@@ -38,8 +38,9 @@ double smoothstep(double x) {
  Output:
  - Vector of temperatures at each location x */
 // [[Rcpp::export]]
-NumericVector Temp(NumericVector x,double Tmax, double Tmin) {
-    return((Tmax-Tmin)*x+Tmin);
+NumericVector Temp(NumericVector x, double t, double tE,
+                   double Cmax, double Cmin, double Tmax, double Tmin) {
+  return((Tmax-Tmin)*x+Tmin+((Cmin-Cmax)*x+Cmax)*smoothstep(t/tE));
 }
 
 
@@ -52,7 +53,6 @@ NumericVector Temp(NumericVector x,double Tmax, double Tmin) {
  Output:
  - A matrix F(i,j), the feeding rate of consumer i on resource j
  */
-// all zeroes if only consumers
 // [[Rcpp::export]]
 NumericMatrix funcresp(NumericVector n, NumericVector Th,
                        NumericVector arate, NumericMatrix W) {
@@ -79,85 +79,30 @@ NumericMatrix funcresp(NumericVector n, NumericVector Th,
 // [[Rcpp::export]]
 List eqs(double time, NumericVector state, List pars) {
   // Parameters
-  int S=pars["S"], SR=pars["SR"], L=pars["L"] , lT=pars["lT"];
+  int S=pars["S"], SR=pars["SR"], L=pars["L"];
   double eta=pars["eta"], nmin=pars["nmin"], venv=pars["venv"];
-  double aw=pars["aw"], bw=pars["bw"], kappa=pars["kappa"];
+  double tE=pars["tE"], Cmax=pars["Cmax"], Cmin=pars["Cmin"], Tmax=pars["Tmax"];
+  double Tmin=pars["Tmin"], aw=pars["aw"], bw=pars["bw"], kappa=pars["kappa"];
   NumericVector d=pars["d"], V=pars["s"], Th=pars["Th"], rho=pars["rho"];
   NumericVector arate=pars["arate"], eps=pars["eps"];
   NumericMatrix vmat=pars["vmat"], W=pars["W"], mig=pars["mig"], a=pars["a"];
-  NumericMatrix T_kozai=pars["T_kozai"];
   String model=pars["model"];
   // Variables
-  int i, j, k, l, ki, Tmin = 0, Tmax = 0;
+  int i, j, k, l;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
   NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
   NumericVector dvdt(2*S*L), x(L), T(L);
   // Assign state variables into matrices n and m; calculate local temperatures
-  for(i = 0; i < S; i++){
+  for (i=0; i<S; i++) {
     for (k=0; k<L; k++) {
-        x[k]=k/((double)L-1.0); // Patch k's distance from pole
-          n(i,k)=state[i+k*S]; // Density of species i in patch k
-          if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
-          m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
-
-      }
-  }
-  
-  double maxn= max(n);
-  double meann = mean(n);
-  double threshold = nmin;
-  
-  if(maxn<threshold || meann<0){
-    if(maxn< threshold) cout<<"Population died"<<endl;
-    if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
-    cout<<maxn<<endl;
-    throw range_error(to_string(time));
-  } 
-  
-  
-  // int prev, next;
-  // double fraction;
-  // for(ki=0; ki<lT; ki++){
-  //   prev = T_kozai(ki,0);
-  //   if (ki == lT-1){
-  //     next = prev;
-  //   }
-  //   else{
-  //     next = T_kozai(ki+1,0);
-  //   }
-  //   if(time >= prev && time<=next){
-  //     fraction = (time - prev) / (next-prev);
-  //     Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
-  //     Tmax = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2); 
-  //     break;
-  //   }
-  // } 
-  
-  
-  int prev, next; //Older round T format
-  for(ki=0; ki<lT-1; ki++){
-    prev = T_kozai(ki,0);
-    next = T_kozai(ki+1,0);
-    if(time> prev && time<next){
-      if(abs(time-prev) <= abs(time-next)){ //ki is closest
-        Tmin = T_kozai(ki,1);
-        Tmax = T_kozai(ki,2);
-      }
-      else{//ki+1 is closest
-        Tmin = T_kozai(ki+1,1);
-        Tmax = T_kozai(ki+1,2);
-      }
-      break;
+      x[k]=k/((double)L-1.0); // Patch k's distance from pole
+      n(i,k)=state[i+k*S]; // Density of species i in patch k
+      if (n(i,k)<1.0e-10) n(i,k)=0.0; // Extinction threshold
+      m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
     }
-  } 
-  if(time == T_kozai(lT-1,0)) {
-    Tmin = T_kozai(lT-1,1);
-    Tmax = T_kozai(lT-1,2);
   }
-  T=Temp(x,  Tmax, Tmin); // Vector of temperatures
+  T=Temp(x, time, tE, Cmax, Cmin, Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
-
-  
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:
     if ((model=="Tdep") || (model=="Tdep_trophic")) {
@@ -182,15 +127,15 @@ List eqs(double time, NumericVector state, List pars) {
       bsumgr=0.0;
       // Species interaction terms in density and then trait evolution equations
       for (j=0; j<S; j++) {
-          sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
-          bsumgr+=beta(i,j)*n(j,k);
+        sumgr+=-n(i,k)*alpha(i,j)*n(j,k)+eps[i]*n(i,k)*F(i,j)-n(j,k)*F(j,i);
+        bsumgr+=beta(i,j)*n(j,k);
       }
       summig=0.0;
       bsummig=0.0;
       // Dispersal terms in density and then trait evolution equations
       for (l=0; l<L; l++) {
-          summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
-          bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+nmin);
+        summig+=mig(k,l)*n(i,l)-n(i,k)*mig(l,k);
+        bsummig+=mig(k,l)*n(i,l)*(m(i,l)-m(i,k))/(n(i,k)+1.0e-10);
       }
       // Growth terms in the equations
       summig*=d[i];
@@ -203,17 +148,8 @@ List eqs(double time, NumericVector state, List pars) {
       q=vmat(i,k)*smoothstep(n(i,k)/nmin);
       h2=q/(q+venv); // Heritability
       // Assign calculated rates to vector of derivatives for output
-
-        dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
-        dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
-        // if(k==2 && time>5e6){
-        //   double expr = g+bsumgr+bsummig;
-        //   double gr = g/expr, cr=bsumgr/expr, mr=bsummig;
-        //   cout<<"time is " <<time<<" ratios: g-"<<g/g<<" competition- "<<bsumgr/g<<" mig-"<<bsummig/g<<endl;
-        //   
-        // }
-        
-
+      dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
+      dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
       // Periodic boundary conditions
       if (k==0) {
         dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));

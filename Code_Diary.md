@@ -825,5 +825,13 @@ From printing the terms from dm/dt equation in rhs_eval.cpp, it is hard to say t
 
 It is advised to re-check the trend suggested for linear relation between crit_v and dT/dt max. It may seem as a waste of time, but it will be even bigger waste of time if this turns to be not true. Take your time to make the check reliable and documented well enough.
 
+17.02.24
+Been having difficulties if to keep trying to define properly the linear coffiecient for the dT/dt - vbar_critical relation, or if to methodically re-test this assumption based on few number of measurents not well documented.
+In order to decide on a strategy, information better displayed might be helpful.
+Therfore will implement a plotting scheme of m-Tenv across time and space. In adittion to the standart n plotting will be interseting to see if acting as expected.
+
+Turns out failing in PreciseDesign was not at all at the max-diff point but rather at the first peak.
+Investigating more if there is a point to look for a dependence on the max diff. For start let us see if the failing point was just not found precisly. If for some reason the phase transition will be from this point to complete success, I will need to address the matter.
+
 
 ```
