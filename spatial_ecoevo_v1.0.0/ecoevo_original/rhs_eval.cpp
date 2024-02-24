@@ -130,7 +130,7 @@ List eqs(double time, NumericVector state, List pars) {
       m(i,k)=state[S*L+i+k*S]; // Trait mean of species i in patch k
     }
   }
-  if(max(n)<1.0e-5 || mean(n)<0){
+  if(max(n)<1.0e-5){
     cout<<time<<endl;
     throw range_error(to_string(time));
   } 
@@ -183,9 +183,9 @@ List eqs(double time, NumericVector state, List pars) {
       // Assign calculated rates to vector of derivatives for output
       dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
       dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
-      double expr = g-bsumgr+bsummig;
-      double gr = g/expr, cr=bsumgr/expr, mr=bsummig;
-      cout<<"time is " <<time<<" ratios: g-"<<gr<<" competition- "<<cr<<" mig-"<<mr<<endl;
+ //     double expr = g-bsumgr+bsummig;
+   //   double gr = g/expr, cr=bsumgr/expr, mr=bsummig;
+//  cout<<"time is " <<time<<" ratios: g-"<<gr<<" competition- "<<cr<<" mig-"<<mr<<endl;
       // Periodic boundary conditions
       if (k==0) {
         dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));

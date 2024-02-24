@@ -833,5 +833,28 @@ Therfore will implement a plotting scheme of m-Tenv across time and space. In ad
 Turns out failing in PreciseDesign was not at all at the max-diff point but rather at the first peak.
 Investigating more if there is a point to look for a dependence on the max diff. For start let us see if the failing point was just not found precisly. If for some reason the phase transition will be from this point to complete success, I will need to address the matter.
 
+I found out why the critical condition was apperntly a cutoff.
+It was because of my failure condition : if all n<nmin.
+It originally was suppose to be a more efficient way to save calculation or even give meaning so very low numbers won't actually count, but the choice of nmin is arbitrary, and so may prevent a slightly lower minimal density dynamic.
 
+Without this limitation, we yield negative densities, and positive ones as low as 1e-117.
+nmnin on the other hand coul be choosen to be smaller, but now it is clear that the fail condition is all n<nmin as defined by me.
+In this case factor crit = 2.57 with limit condition.
+Without limit condition, factor=2 gives zero population from an early point and onward (probably the same fail point as before) 
+
+True fail vcrit is a bit lower than I had the chance to see with the pre-limiting error I throw from cpp. 2.1< factor_crit <2.105 ,
+the run cant really handle the critical point itself, runnable at bounds mentioned (lower for failure, upper for success, around t=7.5e7)
+for this failing point diff = 32.16, while max_diff=32.25, I will call it close enough for linear relation such that the true failing point (7.5e7 and not 2.5e7) truly represents max_diff.
+
+
+For "KozaiLessPeriods" 2.25<factor_crit <2.3
+
+For "KozaiAnother" 2.85<factor_crit<2.95
+
+Nw that I think of it, maybe the 200 points yield a too steep gradients which are not true? Each timepoint there is a linear interpolaiton between the two nearest data points and so the gradient is being averaged over the range.Necceserally some points in the higher resolution on the same range will have bigger and others smaller deriative.
+
+25.02.24
+Been working on the paper last couple of days.
+A peculiar pattern was understood - the reason in Periodic the equator exhibits the largest density growth over the CC can be explained by the choice to have Cmin there, while Cmax is in the pole. But before CC, after eaching equailibrium, the starting density at t=0 is 5 times larger than in the pole, why is that ?
+It can be related to the temprature dependent competiton matrix alpha, which contributes to growth or rather the decay of other species. If for dbar and vbar variations a certain species is dominant globally, than the larger gap that can be made between the adapting and the non-adapting species is the equator, since the trait at the less adapters is much further than the trait of the adpating species. In other words - competition is more fair in the pole rather than in the equator.Once tempratures drop back towards the old trait of the dorming species in the equator, certain populatoin rise appears shortly.
 ```

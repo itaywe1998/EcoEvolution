@@ -49,7 +49,7 @@ if (!is.na(clargs)) { # command-line arguments
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiPreciseDesign3"
+  wksp_name <- "KozaiAnother"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -62,7 +62,7 @@ if (old_profile){
 }else{
   T_kozai <- kozai()
 }
-factor <- 5
+factor <- 2.95
 vbar <- crit_diff * factor
 
 S <- 4 # fifty species per trophic level
@@ -261,9 +261,9 @@ temp <-(dat %>% filter(time %in% c(max(dat$time))))
 print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
-# plot_timeseries(dat %>% filter(time %in% c(0,step)))
-ctimes <- c(min_times[c(TRUE, FALSE)],max_times[c(TRUE, FALSE)])
-plot_timeseries(dat %>% filter(time %in% c(0,ctimes[c(TRUE, FALSE)])))
+plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
+#plot_timeseries(dat %>% filter(time %in% c(0,ctimes[c(TRUE, FALSE)])))
+
 toSave <- FALSE
 if (toSave){
   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=41*step)))

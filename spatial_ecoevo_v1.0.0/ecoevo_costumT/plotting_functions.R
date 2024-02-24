@@ -6,6 +6,17 @@
 
 require(tidyverse) # manipulating and visualizing data
 require(ggpmisc) # adding statistics to plots
+#library(ggallin)
+#library(scales)
+
+
+reverselog_trans <- function(base = exp(1)) {
+  trans <- function(x) -log(x, base)
+  inv <- function(x) base^(-x)
+  trans_new(paste0("reverselog-", format(base)), trans, inv, 
+            log_breaks(base = base), 
+            domain = c(1e-100, Inf))
+}
 
 # show densities across the landscape through time; works for data with
 # a single model and parameterization
@@ -67,7 +78,8 @@ plot_landscape <- function(dat) {
     facet_grid(tl~patch, labeller=label_bquote(col=.(patch))) +
     coord_flip() +
     scale_x_continuous(name="density", expand=c(0.02, 0.02)) +
-    scale_y_continuous(name="time (years)", labels=abbreviate) +
+    scale_y_continuous(name="time (years)")+
+   # scale_y_continuous(name="time (years)", labels=trans_format("identity", function(x) -x),trans = reverselog_trans(base=10)) +
     scale_colour_manual(values=color_pal(S)) +
     scale_fill_manual(values=color_pal(S)) %>%
     #+theme_bw() 

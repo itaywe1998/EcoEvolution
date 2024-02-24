@@ -27,7 +27,7 @@ if (length(clargs)>0) { # command-line arguments
 # Assuming always dual display
 #--- large time plot----
 large_dat <-suppressMessages(read_csv(paste("outputs/large_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")))
-plot1 <- plot_landscape(large_dat %>% filter(patch %in% c(1,11,20)))+ggtitle("Long Adaptation Period")
+plot1 <- plot_landscape(large_dat %>% filter(patch %in% c(1,11,20)) %>% filter(time>=-1e5))+ggtitle("Long Adaptation Period")
 #--- small time plot----
 suppressMessages(small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_FAILED",sep ="")))
 plot2 <- plot_landscape(small_dat %>% filter(patch %in% c(1,11,20)))+ggtitle("Short Adaptation Period")
@@ -36,5 +36,5 @@ plot2 <- plot_landscape(small_dat %>% filter(patch %in% c(1,11,20)))+ggtitle("Sh
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)
 print(plotCombined)
 png_fold <- "/home/itay/EcoEvolution/spatial_ecoevo_v1.0.0/Ecoevo Paper Examples/Plots/"
-# ggsave(filename =  paste(png_fold,"v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"contTime_Paper.png",sep ="")
-#        , plot = plotCombined, width = 20, height = 8, units = "in")
+ ggsave(filename =  paste(png_fold,"v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"contTime_Paper_ZoomIn.png",sep ="")
+         , plot = plotCombined, width = 20, height = 8, units = "in")

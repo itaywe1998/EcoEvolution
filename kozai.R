@@ -169,7 +169,7 @@ kozai <-function(){
   i1 <- to_radians(64.9)
   omega1 <- to_radians(0)
   # 2 is for outer binary
-  a2 <- 50* AU
+  a2 <- 90* AU
   e2 <- 0.01
   i2 <- to_radians(0.1)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
@@ -197,7 +197,7 @@ kozai <-function(){
   stepNum <- 202
   step <- tE/stepNum
   
-  workspace_name <- "KozaiPreciseDesign3" #design3 is extra points at the end so failtime=1e9
+  workspace_name <- "KozaiAnother2" #design3 is extra points at the end so failtime=1e9
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------

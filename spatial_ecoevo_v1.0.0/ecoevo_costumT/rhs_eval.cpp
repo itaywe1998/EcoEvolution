@@ -107,12 +107,12 @@ List eqs(double time, NumericVector state, List pars) {
   double meann = mean(n);
   double threshold = nmin;
   
-  if(maxn<threshold || meann<0){
-    if(maxn< threshold) cout<<"Population died"<<endl;
-    if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
-    cout<<maxn<<endl;
-    throw range_error(to_string(time));
-  } 
+  // if(maxn<threshold || meann<0){
+  //   if(maxn< threshold) cout<<"Population died"<<endl;
+  //   if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
+  //   cout<<maxn<<endl;
+  //   throw range_error(to_string(time));
+  // } 
   
   
   // int prev, next;

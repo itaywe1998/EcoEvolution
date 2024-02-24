@@ -44,18 +44,19 @@ if (!is.na(clargs)) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   small <-FALSE
-  id <-"ForPaper"
-  seed <- 3690
-  dbar <- 1e-2 # average dispersal (1e-7 <=> 1 meter per year)
+  id <-"reCheckPaper"
+  seed <- 11093
+  vbar <- 3e-5
+  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 40
+  cycles <- 5
   updown <- TRUE
-  Cmax <- 25 # projected temperature increase at poles
-  Cmin <- 10 # projected temperature increase at equator
+  Cmax <- 23 # projected temperature increase at poles
+  Cmin <- 11 # projected temperature increase at equator
   tstart <- if (small) -1e2 else -1e8 
   tE <- 2e7
-  crit_v <- Cmax / tE
-  vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
+  #crit_v <- Cmax / tE
+ # vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
 }
 S <- 3 # fifty species per trophic level
 str <- if (small) "small" else "large"
@@ -214,8 +215,8 @@ print("Before CC")
 print(Sys.time()-start)
 
 during_step <- tE/200
-at <-1e-12
-rt <-1e-12
+at <-1e-10
+rt <-1e-10
 fail_time <- 0
 original_tE <- tE
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
