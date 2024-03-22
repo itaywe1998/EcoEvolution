@@ -1,0 +1,211 @@
+# Copyright (C) 2021 György Barabás ----
+# This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
+# you are welcome to redistribute it under certain conditions. for details,
+# see the GNU General Public License Agreement (in the file COPYING.txt).
+
+# To run, either execute within R or enter the following at the command prompt:
+# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_checkRelation")
+suppressPackageStartupMessages({
+  suppressWarnings({
+    rm(list = ls())
+    start <- Sys.time()
+    require(gridExtra)
+    require(deSolve) # solving ordinary differential equations (ODEs)
+    require(tidyverse) # manipulating and visualizing data
+    require(ggpmisc) # adding statistics to plots
+    require(Rcpp) # importing C functions
+    library(tidyr)
+    library(ggplot2)
+    library(readr)
+    library(dplyr)
+    sourceCpp("rhs_eval.cpp") # compile external C functions
+    source("./plotting_functions.R") # various functions for plotting final data
+  })
+})
+
+# ---------------------------- input parameters --------------------------------
+arg <- commandArgs(trailingOnly=TRUE)
+clargs = unlist(strsplit(arg[1], "#"))
+print(clargs)
+if (!is.na(clargs)) { # command-line arguments
+  model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
+  small <- as.logical(clargs[2]) # true for short adaptation time, false for long
+  seed <- as.numeric(clargs[3]) # for seeding random number generator
+  id <- clargs[4] # current run name
+  vbar <- as.numeric(clargs[5]) 
+  dbar <- as.numeric(clargs[6]) 
+  cycles <- as.numeric(clargs[7])
+  updown <- as.logical(clargs[8])
+  Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
+  Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
+  tstart <-as.numeric(clargs[11])
+  tE <-as.numeric(clargs[12])
+} else { # sample input parameters, if no command line arguments are given
+  small <-TRUE
+  id <-"Relation"
+  cycles <- -1
+  updown <- TRUE
+  C <- 23 # projected temperature increase at poles
+  tstart <- if (small) -1e5 else -1e8 
+  tE <- 2e7
+  crit_v <- 1.875 *Cmax / tE 
+  v <- 1.1 * crit_v
+}
+S <- 1 # fifty species per trophic level
+str <- if (small) "small" else "large"
+periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
+replicate <- 1 # replicate number = 1
+file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+outfile <- paste("outputs/",file, sep = "") 
+workspace <-paste("parameters/",file, sep="")
+# --------------------------------functions ------------------------------------
+
+# return matrix W[i,j], which is nonzero if consumer i eats resource j;
+# SR is the number of resource, SC the number of consumer species
+generate_network <- function(SR, SC) {
+  w <- matrix(0, SR+SC, SR+SC) # initialize adjacency matrix
+  for (i in 1:SR) { # determine which resources each consumer eats: it must eat
+    indices <- sort(c(i, sample((1:SC)[-i], 1))) # the one with
+    w[i+SR,indices] <- 1 # matching trait value, plus a fixed number of
+  } # randomly assigned ones (in this case 4 more, for 5 resources per consumer)
+  omega <- numeric(0) # initialize matrix of consumption efforts
+  rsum <- rowSums(w) # omega[i,j] is the proportion of i's consumption rate,
+  for (i in 1:(SR+SC)) omega <- cbind(omega, rsum) # targeted at consuming j
+  omega[omega!=0] <- 1/omega[omega!=0] # if not 0, set to proportion
+  W <- unname(w*omega) # only the product of w and omega is used
+  return(W)
+}
+
+# put the results of the numerical integration into a tidy table
+organize_data <- function(dat, times, pars) {
+  dat <- dat %>%
+    as.data.frame() %>% # convert to data frame (needed for next step)
+    as_tibble() %>% # convert to tibble (tidyverse's improved data frame)
+    filter(time %in% times) # only keep specified time points
+  names(dat)[1] <- "time" # name the first column "time"
+  index <- 2 # keep track of which column we are naming with this counter
+  for (k in 1:pars$L) {
+    for (i in 1:pars$S) { # name columns for densities
+      names(dat)[index] <- paste0("n_", i, "_", k) # naming convention:
+      index <- index + 1 # "type_species_patch" - type is either m (trait),
+    } # or n (density)
+  }
+  for (k in 1:pars$L) {
+    for (i in 1:pars$S) { # name columns for trait values
+      names(dat)[index] <- paste0("m_", i, "_", k) # (same naming convention)
+      index <- index + 1
+    }
+  }
+  dat %>%
+    # normalize table by collapsing columns into a key-value column pair
+    pivot_longer(cols=2:ncol(.), names_to="variable", values_to="v") %>%
+    # split "variable" into value type (density or trait), species, and patch
+    separate(variable, c("type", "species", "patch"), sep="_") %>%
+    # convert species & patch from string ("1","2",...) to integer (1,2,...)
+    mutate(species=as.integer(species), patch=as.integer(patch)) %>%
+    # split trait and abundance values into two columns
+    pivot_wider(names_from="type", values_from="v") %>%
+    # trophic level (tl): species with index greater than SR are consumers ("C"),
+    # the rest are resources ("R")
+    mutate(tl=ifelse(species>SR, "C", "R")) %>%
+    # return tidy table
+    return()
+}
+
+
+# ------------------------------- parameters -----------------------------------
+
+# number of species and number of patches----
+L <- 1 # number of patches
+kappa <- 0.1 # intrinsic mortality parameter
+nmin <- 1e-5 # below this threshold density, genetic variances are reduced
+T0 <- 25.0 # initial mean temperature at equator
+save.image(file = workspace)
+
+# matrices----
+rho <- 1 # resource growth-tolerance tradeoff parameter
+ninit <- 1 # reserve memory for initial densities
+ic <- c(ninit, muinit) # merge initial conditions into a vector
+
+# coerce parameters into a list----
+pars <- list(rho=rho, kappa=kappa, v=v, nmin=nmin,T0=T0, C=C, tE=tE,periodic=periodic, cycles=cycles, updown=updown)
+
+
+# --------------------------- integrate ODEs -----------------------------------
+#consider changing rtol and atol
+at <-1e-5
+rt <-1e-5
+before_step <- -tstart/1000
+tryCatch({before_cc <-ode(y=ic, times=seq(tstart, 0, by=before_step), func=eqs, parms=pars,
+                          method="bdf", atol  = at, rtol = rt, maxsteps = 10000)},
+         error=function(e){message("All Species Extinct")
+           return(NA)}) # integrate ODEs before climate change starts
+diagnostics(before_cc)
+ic <- as.numeric(before_cc[nrow(before_cc),-1]) # final state -> new initial cond.
+before_cc <- before_cc %>% # put before-climate-change solution into tidy tibble:
+  organize_data(times=seq(from=tstart, to=0, by=before_step), pars = pars) %>%
+  filter(time!=0) # remove time point 0 (will be starting point of during_cc)
+
+print("Before CC")
+print(Sys.time()-start)
+
+during_step <- tE/200
+at <-1e-2
+rt <-1e-2
+fail_time <- 0
+original_tE <- tE
+tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = 10000)},
+         error=function(fail_time){
+           message("All Species Extinct")
+           fail_time<<-as.numeric(fail_time$message)},
+         finally = {
+           if (fail_time > 0) {
+             outfile <<- paste(outfile,"_FAILED",sep="")
+             unlink(workspace) # Deleting old name workspace
+             workspace <<- paste(workspace,"_FAILED",sep="")
+             save.image(file = workspace)
+             during_step <<- 1000
+             tE <<-floor((fail_time-during_step)/during_step) * during_step #alternative for round_any
+             # if needed in another place will move to a function
+             during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
+                             method = "bdf",atol  = at, rtol = rt, maxsteps = 10000) 
+           }
+           diagnostics(during_cc)
+           during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
+             organize_data(times=seq(from=0, to=tE, by=during_step), pars = pars) #%>%
+           
+           # merge data from before, during, and after climate change
+           dat <- bind_rows(before_cc, during_cc) %>%
+             # add replicate, genetic var., dispersal rate, and structure as new columns
+             mutate(replicate=replicate, vbar=vbar, dbar=dbar, model=model) %>%
+             # merge average genetic variance and dispersal into a single column
+             mutate(parameterization=paste0("V=", vbar, " d=", dbar)) %>%
+             # create regions
+             mutate(region=case_when(
+               (patch<=round(max(patch)/3))   ~ "polar", # top third of patches are "polar"
+               (patch>=round(2*max(patch)/3)) ~ "tropical", # bottom third are "tropical"
+               TRUE                           ~ "temperate")) # the rest are "temperate"
+           
+         })  # integrate from start to end of climate change
+# --------------------------- generate output ----------------------------------
+print(original_tE-max(during_cc$time))
+temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))
+print(mean(temp$n))
+#print(min(dat$time[dat$n < 0]))
+# req_times <- seq(from=0,to=tE,l=2*cycles+1)
+# obs_times <- seq(from=0,to=2*cycles)
+# for (i in seq(from=1,to=2*cycles+1)) {
+#   obs_times[i] <-during_cc$time[which.min(abs(during_cc$time - req_times[i]))]
+# }
+# if(mean(temp$n) > 0){ # if ode converged till final time and no significant negative n
+#   if (outfile!="") { # if data file to save to was not specified as empty (""):
+#     suppressWarnings(write_csv(dat, path=outfile)) }# save data to specified file
+#   plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
+#   #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
+#   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
+# }
+print("Final Runtime")
+print(Sys.time()-start)
+
