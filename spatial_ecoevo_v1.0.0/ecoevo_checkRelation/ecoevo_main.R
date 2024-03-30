@@ -40,16 +40,23 @@ if (!is.na(clargs)) { # command-line arguments
   id <-"Relation"
   cycles <- -1
   updown <- TRUE
-  C <- 30 # projected temperature increase at poles
-  tE <- 1
 }
+nmin <- 1e-5 # below this threshold density, genetic variances are reduced
+tE <- 1e7
+C <- 50 # projected temperature increase at poles
+magnitude <-4
+kappa <- 1*10^(ceiling(log10(-log(nmin)/tE))+magnitude) # intrinsic mortality parameter
+
+
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 replicate <- 1 # replicate number = 1
-kappa <- 0.1 # intrinsic mortality parameter
 rho <- 1 # resource growth-tolerance tradeoff parameter
-crit_v <- max((rho/kappa)^2 ,1.875*C/tE)
-v <- 0.9 * crit_v
+b <- 4 
+a <- 0.1
+#crit_v <- max((rho/kappa)^2 ,1.875*C/tE)
+#crit_v <- (rho/kappa)^2
+v <- 1000
 file <- paste(str,"_time_v",toString(format(v, scientific = TRUE)),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
@@ -72,7 +79,6 @@ organize_data <- function(dat, times, pars) {
 # ------------------------------- parameters -----------------------------------
 
 # number of species and number of patches----
-nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 T0 <- 25.0 # initial mean temperature at equator
 save.image(file = workspace)
 
@@ -82,18 +88,18 @@ muinit <- T0
 ic <- c(ninit, muinit) # merge initial conditions into a vector
 
 # coerce parameters into a list----
-pars <- list(rho=rho, kappa=kappa, v=v, nmin=nmin,T0=T0, C=C, tE=tE,periodic=periodic, cycles=cycles, updown=updown)
+pars <- list(rho=rho, kappa=kappa, b=b,a=a,v=v, nmin=nmin,T0=T0, C=C, tE=tE,periodic=periodic, cycles=cycles, updown=updown)
 
 
 # --------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
-at <-1e-5
-rt <-1e-5
-during_step <- tE/200
+at <-1e-2
+rt <-1e-2
+during_step <- tE/1000
 fail_time <- 0
 original_tE <- tE
 tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
-                          method = "ode45",atol  = at, rtol = rt, maxsteps = 1000)},
+                          method = "bdf",atol  = at, rtol = rt, maxsteps = 1000)},
          error=function(fail_time){
            message("All Species Extinct")
            fail_time<<-as.numeric(fail_time$message)},
@@ -103,10 +109,11 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
              unlink(workspace) # Deleting old name workspace
              workspace <<- paste(workspace,"_FAILED",sep="")
              save.image(file = workspace)
-             tE <<-fail_time-during_step #alternative for round_any
+             tE <<-fail_time*0.9 #alternative for round_any
+             during_step <<- tE/200
              # if needed in another place will move to a function
              during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parms=pars,
-                             method = "ode45",atol  = at, rtol = rt, maxsteps = 1000) 
+                             method = "bdf",atol  = at, rtol = rt, maxsteps = 1000) 
            }
            diagnostics(during_cc)
            during_cc <- during_cc %>% # put during-climate-change solution into tidy tibble:
@@ -114,7 +121,7 @@ tryCatch({during_cc <-ode(y=ic, times=seq(0, tE, by=during_step), func=eqs, parm
            
            # merge data from before, during, and after climate change
            dat <- during_cc
-         })  # integrate from start to end of climate change
+         }) 
 # --------------------------- generate output ----------------------------------
 print(original_tE-max(during_cc$time))
 temp <-(during_cc %>% filter(time %in% c(max(during_cc$time))))

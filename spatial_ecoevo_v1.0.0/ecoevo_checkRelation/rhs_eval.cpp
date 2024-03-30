@@ -52,6 +52,7 @@ List eqs(double time, NumericVector state, List pars) {
   double tE=pars["tE"], C=pars["C"],T0=pars["T0"];
   double kappa=pars["kappa"];
   double V=pars["v"], rho=pars["rho"];
+  double b=pars["b"],a=pars["a"],sigma;
   bool periodic=pars["periodic"],updown=pars["updown"];
   int cycles=pars["cycles"];
   // Variables
@@ -65,11 +66,15 @@ List eqs(double time, NumericVector state, List pars) {
     throw range_error(to_string(time));
   } 
   T=Temp(time, tE, C, T0,  periodic, cycles , updown); // Vector of temperatures
-  f=rho*exp(-(T-m)*(T-m)/(2.0*V))/sqrt(V);
-  g=f*(T-m);
+  sigma = (b-a*m)*(b-a*m)+V;
+  f=rho*exp(-(T-m)*(T-m)/(2.0*sigma))/sqrt(sigma);
+  g=f*(T-m)*V/(sigma);
   h2=0.5; // Heritability
   // Assign calculated rates to vector of derivatives for output
   dvdt[0]=n*(f-kappa);
   dvdt[1]=h2*g;
+  //cout<<"n "<<n<<endl;
+ // cout<<"f "<<f<<endl;
+ // cout<<"g "<<g<<endl;
   return(List::create(dvdt));
 }

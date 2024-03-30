@@ -162,14 +162,14 @@ kozai <-function(){
   #---System data ------
   m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
-  m3 <- 7.5 * Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m3 <- 1.75* Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
-  a1 <- 0.51 * AU
+  a1 <- 0.41 * AU
   e1 <- 	0.01
-  i1 <- to_radians(64.9)
+  i1 <- to_radians(63.7)
   omega1 <- to_radians(0)
   # 2 is for outer binary
-  a2 <- 90* AU
+  a2 <- 30* AU
   e2 <- 0.01
   i2 <- to_radians(0.1)
   omega2 <- to_radians(0) # NOT GIVEN , will have to play with until stable or reasonable results occur
@@ -197,7 +197,7 @@ kozai <-function(){
   stepNum <- 202
   step <- tE/stepNum
   
-  workspace_name <- "KozaiAnother2" #design3 is extra points at the end so failtime=1e9
+  workspace_name <- "KozaiNextGen16" #design3 is extra points at the end so failtime=1e9
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------
@@ -264,5 +264,6 @@ kozai <-function(){
   save.image(file = workspace)
   
   Tvec
+  indicating_diff
   
 }

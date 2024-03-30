@@ -8,6 +8,7 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
 using namespace Rcpp;
@@ -107,53 +108,58 @@ List eqs(double time, NumericVector state, List pars) {
   double meann = mean(n);
   double threshold = nmin;
   
-  // if(maxn<threshold || meann<0){
-  //   if(maxn< threshold) cout<<"Population died"<<endl;
-  //   if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
-  //   cout<<maxn<<endl;
-  //   throw range_error(to_string(time));
-  // } 
+  if(maxn<threshold || meann<0){
+    if(maxn< threshold) cout<<"Population died"<<endl;
+    if(meann<0) cout<<"Negative Profile, Simulation Broke"<<endl;
+    cout<<maxn<<endl;
+    throw range_error(to_string(time));
+  }
+
+
+  int prev, next;
+  double fraction;
+  for(ki=0; ki<lT; ki++){
+    prev = T_kozai(ki,0);
+    if (ki == lT-1){
+      next = prev;
+    }
+    else{
+      next = T_kozai(ki+1,0);
+    }
+    if(time >= prev && time<=next){
+      fraction = (time - prev) / (next-prev);
+      Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
+      Tmax = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2);
+      break;
+    }
+  }
+  string loop(getenv("loop")); 
+  int nl = stoi(loop);
+  nl = nl+1;
+  loop = to_string(nl);
+  setenv("loop", loop.c_str(),1);
   
   
-  // int prev, next;
-  // double fraction;
-  // for(ki=0; ki<lT; ki++){
+  // int prev, next; //Older round T format
+  // for(ki=0; ki<lT-1; ki++){
   //   prev = T_kozai(ki,0);
-  //   if (ki == lT-1){
-  //     next = prev;
-  //   }
-  //   else{
-  //     next = T_kozai(ki+1,0);
-  //   }
-  //   if(time >= prev && time<=next){
-  //     fraction = (time - prev) / (next-prev);
-  //     Tmin = (T_kozai(ki+1,1)-T_kozai(ki,1))*fraction + T_kozai(ki,1); //linear interpolation
-  //     Tmax = (T_kozai(ki+1,2)-T_kozai(ki,2))*fraction + T_kozai(ki,2); 
+  //   next = T_kozai(ki+1,0);
+  //   if(time> prev && time<next){
+  //     if(abs(time-prev) <= abs(time-next)){ //ki is closest
+  //       Tmin = T_kozai(ki,1);
+  //       Tmax = T_kozai(ki,2);
+  //     }
+  //     else{//ki+1 is closest
+  //       Tmin = T_kozai(ki+1,1);
+  //       Tmax = T_kozai(ki+1,2);
+  //     }
   //     break;
   //   }
   // } 
-  
-  
-  int prev, next; //Older round T format
-  for(ki=0; ki<lT-1; ki++){
-    prev = T_kozai(ki,0);
-    next = T_kozai(ki+1,0);
-    if(time> prev && time<next){
-      if(abs(time-prev) <= abs(time-next)){ //ki is closest
-        Tmin = T_kozai(ki,1);
-        Tmax = T_kozai(ki,2);
-      }
-      else{//ki+1 is closest
-        Tmin = T_kozai(ki+1,1);
-        Tmax = T_kozai(ki+1,2);
-      }
-      break;
-    }
-  } 
-  if(time == T_kozai(lT-1,0)) {
-    Tmin = T_kozai(lT-1,1);
-    Tmax = T_kozai(lT-1,2);
-  }
+  // if(time == T_kozai(lT-1,0)) {
+  //   Tmin = T_kozai(lT-1,1);
+  //   Tmax = T_kozai(lT-1,2);
+  // }
   T=Temp(x,  Tmax, Tmin); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
 
@@ -204,8 +210,8 @@ List eqs(double time, NumericVector state, List pars) {
       h2=q/(q+venv); // Heritability
       // Assign calculated rates to vector of derivatives for output
 
-        dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
-        dvdt[S*L+i+k*S]=h2*(g-bsumgr+bsummig);
+        dvdt[i+k*S]=0;//(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;
+        dvdt[S*L+i+k*S]=0;//h2*(g-bsumgr+bsummig);
         // if(k==2 && time>5e6){
         //   double expr = g+bsumgr+bsummig;
         //   double gr = g/expr, cr=bsumgr/expr, mr=bsummig;
@@ -215,15 +221,15 @@ List eqs(double time, NumericVector state, List pars) {
         
 
       // Periodic boundary conditions
-      if (k==0) {
-        dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));
-        dvdt[S*L+i]+=d[i]*h2*mig(0,1)*n(i,1)*(m(i,1)-m(i,0))/(n(i,0)+1.0e-10);
-      }
-      if (k==(L-1)) {
-        dvdt[i+k*S]+=d[i]*(mig(k,k-1)*n(i,k-1)-mig(k-1,k)*n(i,k));
-        dvdt[S*L+i+k*S]+=d[i]*h2*mig(k,k-1)*n(i,k-1)*
-          (m(i,k-1)-m(i,k))/(n(i,k)+1.0e-10);
-      }
+      // if (k==0) {
+      //   dvdt[i]+=d[i]*(mig(0,1)*n(i,1)-mig(1,0)*n(i,0));
+      //   dvdt[S*L+i]+=d[i]*h2*mig(0,1)*n(i,1)*(m(i,1)-m(i,0))/(n(i,0)+1.0e-10);
+      // }
+      // if (k==(L-1)) {
+      //   dvdt[i+k*S]+=d[i]*(mig(k,k-1)*n(i,k-1)-mig(k-1,k)*n(i,k));
+      //   dvdt[S*L+i+k*S]+=d[i]*h2*mig(k,k-1)*n(i,k-1)*
+      //     (m(i,k-1)-m(i,k))/(n(i,k)+1.0e-10);
+      // }
     }
   }
   return(List::create(dvdt));

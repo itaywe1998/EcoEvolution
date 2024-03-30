@@ -49,7 +49,7 @@ if (!is.na(clargs)) { # command-line arguments
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiAnother"
+  wksp_name <- "KozaiNextGen12"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -62,7 +62,7 @@ if (old_profile){
 }else{
   T_kozai <- kozai()
 }
-factor <- 2.95
+factor <- 4
 vbar <- crit_diff * factor
 
 S <- 4 # fifty species per trophic level
@@ -130,7 +130,7 @@ organize_data <- function(dat, times, pars) {
 
 
 # ------------------------------- parameters -----------------------------------
-
+Sys.setenv(loop = "0")
 # number of species and number of patches----
 SR <- S # number of resource species
 SC <- 0 # number of consumer species: 0, unless we have...
@@ -276,4 +276,5 @@ if (toSave){
 }
 print("R total Runtime")
 print(Sys.time()-start + add)
+print(Sys.getenv("loop"))
 

@@ -857,4 +857,12 @@ Nw that I think of it, maybe the 200 points yield a too steep gradients which ar
 Been working on the paper last couple of days.
 A peculiar pattern was understood - the reason in Periodic the equator exhibits the largest density growth over the CC can be explained by the choice to have Cmin there, while Cmax is in the pole. But before CC, after eaching equailibrium, the starting density at t=0 is 5 times larger than in the pole, why is that ?
 It can be related to the temprature dependent competiton matrix alpha, which contributes to growth or rather the decay of other species. If for dbar and vbar variations a certain species is dominant globally, than the larger gap that can be made between the adapting and the non-adapting species is the equator, since the trait at the less adapters is much further than the trait of the adpating species. In other words - competition is more fair in the pole rather than in the equator.Once tempratures drop back towards the old trait of the dorming species in the equator, certain populatoin rise appears shortly.
+
+29.03.24
+Odd NextGen12 during relation expirementals.
+There is a low factor vcrit, but if getting to higher than vcrit enough, popultion starts to diminish again, so to the point that for a large enough factor (100) the population dies right after t=0. this model is exptremy messed up in this context.Shoul be verified evne though it make some sense through the normalization by sqrt(v).
+30.03.24
+Planning to fairly characterise the basic model as well , even though elready expirienced its v dependency. It will be much shorter runtime though.
+
+Might need to reevaluate all with the linear interpolation temprature profile since the actual step rise can be in an arbitrary determined time step decided by the ode solver. To not make it fail computationaly but in an authentic manner, T should be continuis as possible.
 ```
