@@ -162,7 +162,7 @@ kozai <-function(){
   #---System data ------
   m1 <- 1.000 * Ms # Star
   m2 <- 1 * Me # solid-planet
-  m3 <- 1.75* Mj# gas-planet , can change back to 1 to see more dense repetitions
+  m3 <- 4* Mj# gas-planet , can change back to 1 to see more dense repetitions
   # 1 is for inner binary
   a1 <- 0.41 * AU
   e1 <- 	0.01
@@ -197,7 +197,7 @@ kozai <-function(){
   stepNum <- 202
   step <- tE/stepNum
   
-  workspace_name <- "KozaiNextGen16" #design3 is extra points at the end so failtime=1e9
+  workspace_name <- "KozaiNextGen18" #design3 is extra points at the end so failtime=1e9
   workspace <- paste("~/EcoEvolution/Kozai_parameters/",workspace_name, sep="")
   
   #---- Differential Equation -------

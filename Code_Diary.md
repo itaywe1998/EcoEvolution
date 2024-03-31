@@ -860,9 +860,33 @@ It can be related to the temprature dependent competiton matrix alpha, which con
 
 29.03.24
 Odd NextGen12 during relation expirementals.
-There is a low factor vcrit, but if getting to higher than vcrit enough, popultion starts to diminish again, so to the point that for a large enough factor (100) the population dies right after t=0. this model is exptremy messed up in this context.Shoul be verified evne though it make some sense through the normalization by sqrt(v).
+There is a low factor vcrit, but if getting to higher than vcrit enough, popultion starts to diminish again, so to the point that for a large enough factor (100) the population dies right after t=0. this model is exptremy messed up in this context.Shoul be verified even though it make some sense through the normalization by sqrt(v).
 30.03.24
 Planning to fairly characterise the basic model as well , even though elready expirienced its v dependency. It will be much shorter runtime though.
 
 Might need to reevaluate all with the linear interpolation temprature profile since the actual step rise can be in an arbitrary determined time step decided by the ode solver. To not make it fail computationaly but in an authentic manner, T should be continuis as possible.
-```
+
+For a shortened (!!) run of tenth the full time (1e8 instead of 1e9, still steps of 5e6), so 20 steps, 1.6 minutes, 2M calls of eqs() function [2062220 to be exact].
+Since the chosen profile KozaiNextGen12 is a troublesome (large diff  =42.32) but on the other hand quite simple (sinusiodal with sharp edges on 200 steps, smoother on 1K steps) it is of interest. 1e8 is roughtly one period of the profile.
+For 2.5e8 yielded 4.2M loops.
+So the actual time step now has to be derived as the quotient between total loop number and the calls per certain timepoint.
+
+162 calls were recurring maximum.
+Taking this assesments will result in timestep =~ 8000, but when printed steps are much smaller.
+Maybe the fair test is to print timesteps around the crossing point from one edge of the major diff to the other.It will help to find a large diff early on the profile instead of waiting for the entire 1e9 to pass.
+
+100 interpolation points did not change a thing, just added several seconds.
+Lets try 10.Yielded 6 instead of 11-12 minutes.
+4 interpolation points give 3 minutes.Not good enought. Lets check if 2 gives the original time.
+2 sample points gives 2 minutes, no interpolation gives 1.4 miuntes.
+
+Re-checking PreciseDesign3, vcrit stays approx as it is, but for speed purposes it should be noticed f fail is fast for all profiles or a special case.
+So the main thing missed is that dropping the nmin condition just allows success when sampling over certain time points.
+It is preferable to use the nmin at all times and finding the real condition.
+
+31.3-1.4.24
+Pay Attention!
+rhs_eval recieves both V <- s and vmat <- vmat.
+When assigning an outer v <- 1 * vbar, the actual value used for variance is s (V in inner context), which in this case is 2*vbar since s <- v+venv, which both equal vbar.
+It means that all factors that were yielded so far are actually half of the real relation between dT/dt and the v in use.
+It does not really matter since only the realtion pattern is of interest and not the specific constant, but just for your future knowledge that it is the case for the recent runs on Kozai nextGen profiles.
