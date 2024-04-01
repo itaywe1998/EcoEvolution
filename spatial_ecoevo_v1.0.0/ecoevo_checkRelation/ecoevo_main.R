@@ -7,7 +7,7 @@
 # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
 rm(list = ls())
 
-setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_costumT")
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_checkRelation")
 suppressPackageStartupMessages({
   suppressWarnings({
     start <- Sys.time()
@@ -41,12 +41,18 @@ if (!is.na(clargs)) { # command-line arguments
   id <-"tryForMaxDiff"
   dbar <- 0 
 }
-C <- 20
+nmin <- 1e-5 # below this threshold density, genetic variances are reduced
+C <- 1
 tE <-1e7
-
+magnitude <-0
+kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 crit_diff <- 1.875 * C / tE
-factor <- 1
+factor <- 1e5
 vbar <- crit_diff * factor
+
+aw <- 0 # (negative) slope of trait-dependence of tolerance width
+bw <- 0 # intercept of trait-dependence of tolerance width
+Tmin <- 15
 
 S <- 1 # fifty species per trophic level
 file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
@@ -113,14 +119,10 @@ venv <- vbar # environmental variance
 s <- v + venv # species' total phenotypic variances
 d <- rep(dbar,S)# resource dispersal rates
 
-kappa <- 0.1 # intrinsic mortality parameter
 vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
 eta <- 0 # competition width (centigrade; only for Tdep and Tdep_trophic)
 eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
-nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
-bw <- 4 # intercept of trait-dependence of tolerance width
-Tmin <- 15
+
 
 # matrices----
 rho <- 1 # resource growth-tolerance tradeoff parameter
@@ -168,7 +170,7 @@ ic <- c(ninit, muinit) # merge initial conditions into a vector
 # coerce parameters into a list----
 pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
              eps=eps, W=W, venv=venv, vmat=vmat, s=s, nmin=nmin, aw=aw, bw=bw,
-             Th=Th, arate=arate,d=d, mig=mig, model=model,Tmin=Tmin,tE=tE)
+             Th=Th, arate=arate,d=d, mig=mig, model=model,Tmin=Tmin,tE=tE,C=C)
 
 
 # --------------------------- integrate ODEs -----------------------------------
@@ -199,7 +201,6 @@ finally = {
     save.image(file = workspace)
     # lets try without the fail_time - step, to see better what happens
     tE <<-floor((fail_time-step)/(step)) * (step) #alternative for round_any
-    step <<-tE/200
     # if needed in another place will move to a function
     results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                   method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps) 
@@ -208,7 +209,7 @@ finally = {
   start <- Sys.time()
   
   diagnostics(results)
-  results <- results %>% # put during-climate-change solution into tidy tibble:
+  dat <- results %>% # put during-climate-change solution into tidy tibble:
     organize_data(times=seq(from=0, to=tE, by=step), pars = pars) 
 }) 
 # --------------------------- generate output ----------------------------------

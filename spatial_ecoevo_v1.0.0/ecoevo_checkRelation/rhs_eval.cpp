@@ -87,10 +87,9 @@ List eqs(double time, NumericVector state, List pars) {
   NumericVector d=pars["d"], V=pars["s"], Th=pars["Th"], rho=pars["rho"];
   NumericVector arate=pars["arate"], eps=pars["eps"];
   NumericMatrix vmat=pars["vmat"], W=pars["W"], mig=pars["mig"], a=pars["a"];
-  NumericMatrix T_kozai=pars["T_kozai"];
   String model=pars["model"];
   // Variables
-  int i, j, k, l, ki;
+  int i, j, k, l;
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
   NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
   NumericVector dvdt(2*S*L), x(L), T(L);
@@ -104,8 +103,7 @@ List eqs(double time, NumericVector state, List pars) {
       
     }
   }
-  cout<<"got 108"<<endl;
-  
+
   double maxn= max(n);
   double meann = mean(n);
   double threshold = nmin;
@@ -118,8 +116,7 @@ List eqs(double time, NumericVector state, List pars) {
   }
   T=Temp(time,  Tmin, C, tE); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
-  cout<<"got 119"<<endl;
-  
+
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:
     if ((model=="Tdep") || (model=="Tdep_trophic")) {
@@ -138,7 +135,6 @@ List eqs(double time, NumericVector state, List pars) {
     } else { // If no temperature-dependent competition, it's much simpler:
       alpha=a;
     }
-    cout<<"got 139"<<endl;
     F=funcresp(n(_,k), Th, arate, W); // Feeding rate of species i on j in patch k
     for (i=0; i<S; i++) {
       sumgr=0.0;
