@@ -93,7 +93,7 @@ List eqs(double time, NumericVector state, List pars) {
   double sumgr, summig, w, sw, ef, b, bsumgr, bsummig, g, q, Omega, dm, h2;
   NumericMatrix n(S,L), m(S,L), F(S,S), alpha(S,S), beta(S,S);
   NumericVector dvdt(2*S*L), x(L), T(L);
-
+  
   // Assign state variables into matrices n and m; calculate local temperatures
   for(i = 0; i < S; i++){
     for (k=0; k<L; k++) {
@@ -103,7 +103,7 @@ List eqs(double time, NumericVector state, List pars) {
       
     }
   }
-
+  
   double maxn= max(n);
   double meann = mean(n);
   double threshold = nmin;
@@ -116,7 +116,7 @@ List eqs(double time, NumericVector state, List pars) {
   }
   T=Temp(time,  Tmin, C, tE); // Vector of temperatures
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
-
+  
   for (k=0; k<L; k++) {
     // If we have temperature-dependent competition:
     if ((model=="Tdep") || (model=="Tdep_trophic")) {
