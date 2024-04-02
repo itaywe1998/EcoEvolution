@@ -42,14 +42,15 @@ if (!is.na(clargs)) { # command-line arguments
   dbar <- 0 
 }
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-C <- 1
+C <- 30
 tE <-1e7
-magnitude <-0
+magnitude <-3
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 crit_diff <- 1.875 * C / tE
 factor <- 1e5
 vbar <- crit_diff * factor
 
+rho <- 1 # resource growth-tolerance tradeoff parameter
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
 bw <- 0 # intercept of trait-dependence of tolerance width
 Tmin <- 15
@@ -114,9 +115,9 @@ S <- SR + SC # set S to be the total number of species
 L <- 1 # number of patches
 
 # scalars----
-v <- rep(0,S)# resource genetic variances
+v <- rep(vbar,S)# resource genetic variances
 venv <- vbar # environmental variance
-s <- v + venv # species' total phenotypic variances
+s <- vbar # species' total phenotypic variances
 d <- rep(dbar,S)# resource dispersal rates
 
 vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
@@ -125,7 +126,6 @@ eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
 
 
 # matrices----
-rho <- 1 # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
 # V2 : upper was 0.15*0.9, not 0.15*0.4
@@ -178,7 +178,7 @@ pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
 at <-1e-8
 rt <-1e-8
 maxsteps <- 10000
-step <- tE/200
+step <- tE/2000
 fail_time <- 0
 original_tE <- tE
 add <- Sys.time()-start
