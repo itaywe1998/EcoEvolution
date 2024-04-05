@@ -29,54 +29,29 @@ sourceCpp("./rhs_eval.cpp") # compile external C functions
 # ---------------------------- input parameters --------------------------------
 arg <- commandArgs(trailingOnly=TRUE)
 clargs = unlist(strsplit(arg[1], "#"))
-print(clargs)
 if (!is.na(clargs)) { # command-line arguments
-  model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
-  seed <- as.numeric(clargs[2]) # for seeding random number generator
-  id <- clargs[3] # current run name
-  vbar <- as.numeric(clargs[4]) 
-  dbar <- as.numeric(clargs[5]) 
 } else { # sample input parameters, if no command line arguments are given
-  model <- "Tdep" # 2 trophic levels & temperature-dependent competition
   id <-"tryForMaxDiff"
-  dbar <- 0 
 }
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 C <- 30
 tE <-1e7
-magnitude <-3
+magnitude <-1
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 crit_diff <- 1.875 * C / tE
 factor <- 1e5
-vbar <- crit_diff * factor
+v <- crit_diff * factor
 
 rho <- 1 # resource growth-tolerance tradeoff parameter
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
 bw <- 0 # intercept of trait-dependence of tolerance width
 Tmin <- 15
 
-S <- 1 # fifty species per trophic level
-file <- paste("v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+file <- paste("v",toString(format(vbar, scientific = TRUE)),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
 
 # --------------------------------functions ------------------------------------
-
-# return matrix W[i,j], which is nonzero if consumer i eats resource j;
-# SR is the number of resource, SC the number of consumer species
-generate_network <- function(SR, SC) {
-  w <- matrix(0, SR+SC, SR+SC) # initialize adjacency matrix
-  for (i in 1:SR) { # determine which resources each consumer eats: it must eat
-    indices <- sort(c(i, sample((1:SC)[-i], 1))) # the one with
-    w[i+SR,indices] <- 1 # matching trait value, plus a fixed number of
-  } # randomly assigned ones (in this case 4 more, for 5 resources per consumer)
-  omega <- numeric(0) # initialize matrix of consumption efforts
-  rsum <- rowSums(w) # omega[i,j] is the proportion of i's consumption rate,
-  for (i in 1:(SR+SC)) omega <- cbind(omega, rsum) # targeted at consuming j
-  omega[omega!=0] <- 1/omega[omega!=0] # if not 0, set to proportion
-  W <- unname(w*omega) # only the product of w and omega is used
-  return(W)
-}
 
 # put the results of the numerical integration into a tidy table
 organize_data <- function(dat, times, pars) {
@@ -107,70 +82,14 @@ organize_data <- function(dat, times, pars) {
 
 # ------------------------------- parameters -----------------------------------
 #Sys.setenv(loop = "0")
-# number of species and number of patches----
-SR <- S # number of resource species
-SC <- 0 # number of consumer species: 0, unless we have...
-if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
-S <- SR + SC # set S to be the total number of species
-L <- 1 # number of patches
-
-# scalars----
-v <- rep(vbar,S)# resource genetic variances
-venv <- vbar # environmental variance
-s <- vbar # species' total phenotypic variances
-d <- rep(dbar,S)# resource dispersal rates
-
-vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
-eta <- 0 # competition width (centigrade; only for Tdep and Tdep_trophic)
-eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
-
-
-# matrices----
-a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
-# assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
-# V2 : upper was 0.15*0.9, not 0.15*0.4
-aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.4), SR, SR) # resource comp coeffs 
-diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.4) # resource intraspecific comp coeffs
-a[1:SR,1:SR] <- aP # top left block: resources
-W <- matrix(0, S, S) # create feeding network: nothing if no consumers
-Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
-arate <- rep(1, S) # attack rates in type II f.r. (dummy value if no consumers)
-if (model %in% c("trophic", "Tdep_trophic")) {
-  v <- c(v, runif(SC, 0.5*vbar, 1.5*vbar)) # add consumer genetic variances
-  d <- c(d, runif(SC, 0.1*dbar, 10.0*dbar)) # add consumer dispersal rates
-  rho <- c(rho, runif(SC, 0.9*0.1, 1.1*0.1)) # add consumer tradeoff parameters
-  aH <- matrix(0, SC, SC) # initialize competition matrix (consumers)
-  a[(SR+1):S,(SR+1):S] <- aH # bottom right: consumers
-  W <- generate_network(SR, SC) # trophic feeding network
-  Th[(SR+1):S] <- runif(S-SR, 0.5, 1) # handling times in type II f.r.
-  arate[(SR+1):S] <- runif(S-SR, 1, 10) # attack rates in type II f.r.
-}
-
-
-
-# dispersal matrix----
-mig <- matrix(0, L, L) # initialize dispersal matrix
-mig <- mig + t(mig) # nearest-neighbor patches
-
 save.image(file = workspace)
 # initial conditions----
-ninit <- matrix(0, S, L) # reserve memory for initial densities
-muinit <- matrix(seq(Tmin, Tmin, l=SR), SR, L) # initial trait means
-# Edit ! all initial species start with same location controlled de-facto by muninit 
-# initial temperatures
-Tempinit <- Tmin
-for (i in 1:SR) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
-# initial traits and densities for consumers
-if (model %in% c("trophic", "Tdep_trophic")) {
-  muinit <- rbind(muinit, matrix(seq(Tmin, Tmin, l=SC), SC, L))
-  for (i in (SR+1):S) ninit[i,] <- exp(-(muinit[i,1]-Tempinit)^2/(2*2^2))
-}
+ninit <- 1 # reserve memory for initial densities
+muinit <- Tmin # initial trait means
 ic <- c(ninit, muinit) # merge initial conditions into a vector
 
 # coerce parameters into a list----
-pars <- list(SR=SR, SC=SC, S=S, L=L, rho=rho, kappa=kappa, a=a, eta=eta,
-             eps=eps, W=W, venv=venv, vmat=vmat, s=s, nmin=nmin, aw=aw, bw=bw,
-             Th=Th, arate=arate,d=d, mig=mig, model=model,Tmin=Tmin,tE=tE,C=C)
+pars <- list(rho=rho, kappa=kappa,v=v, nmin=nmin, aw=aw, bw=bw,Tmin=Tmin,tE=tE,C=C)
 
 
 # --------------------------- integrate ODEs -----------------------------------
