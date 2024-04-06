@@ -38,7 +38,8 @@ C <- 1
 tE <-10
 magnitude <- 0.1 
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
-crit_diff <- 1.875 * C / tE
+#crit_diff <- 1.875 * C / tE
+crit_diff <- C/tE
 factor <- 1
 v <- crit_diff * factor
 diminish_mag <- 1

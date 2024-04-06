@@ -40,7 +40,7 @@ double smoothstep(double x) {
  - Vector of temperatures at each location x */
 // [[Rcpp::export]]
 double Temp(double t,double Tmin,double C, double tE) {
-  return(Tmin+C*smoothstep(t/tE));
+   return Tmin+C*smoothstep(t/tE);
 }
 
 
