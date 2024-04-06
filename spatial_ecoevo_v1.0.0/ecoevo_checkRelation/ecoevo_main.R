@@ -4,7 +4,7 @@
 # see the GNU General Public License Agreement (in the file COPYING.txt).
 
 # To run, either execute within R or enter the following at the command prompt:
-# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+# Rscript ecoevo.R [v] [dbar] [model] [replicate] [outfile]---- 
 rm(list = ls())
 
 setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_checkRelation")
@@ -34,20 +34,21 @@ if (!is.na(clargs)) { # command-line arguments
   id <-"tryForMaxDiff"
 }
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-C <- 30
-tE <-1e7
-magnitude <-1
+C <- 1
+tE <-10
+magnitude <- 0.1 
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 crit_diff <- 1.875 * C / tE
-factor <- 1e5
+factor <- 1
 v <- crit_diff * factor
-
-rho <- 1 # resource growth-tolerance tradeoff parameter
+diminish_mag <- 1
+diminish_factor <- 10^diminish_mag
+rho <- kappa/diminish_factor # resource growth-tolerance tradeoff parameter
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
 bw <- 0 # intercept of trait-dependence of tolerance width
 Tmin <- 15
 
-file <- paste("v",toString(format(vbar, scientific = TRUE)),"id",toString(id),sep ="")
+file <- paste("v",toString(format(v, scientific = TRUE)),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
 
@@ -72,10 +73,6 @@ organize_data <- function(dat, times, pars) {
     mutate(species=as.integer(species), patch=as.integer(patch)) %>%
     # split trait and abundance values into two columns
     pivot_wider(names_from="type", values_from="v") %>%
-    # trophic level (tl): species with index greater than SR are consumers ("C"),
-    # the rest are resources ("R")
-    mutate(tl=ifelse(species>SR, "C", "R")) %>%
-    # return tidy table
     return()
 }
 
@@ -144,7 +141,7 @@ toSave <- FALSE
 if (toSave){
   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=41*step)))
   #plot_timeseries(dat %>% filter(time %in% seq(from=9e8,to=max(dat$time),by=2*step)))
-  ggsave(filename =  paste("plots/v",toString(format(vbar, scientific = TRUE)),"_d",
+  ggsave(filename =  paste("plots/v",toString(format(v, scientific = TRUE)),"_d",
                            toString(dbar),"id",toString(id),".png",sep =""), plot = plt,
          dpi=300, height = 7, width = 10, units = "in")
   

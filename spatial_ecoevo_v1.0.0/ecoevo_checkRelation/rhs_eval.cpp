@@ -62,7 +62,6 @@ List eqs(double time, NumericVector state, List pars) {
   double Tmin=pars["Tmin"],tE=pars["tE"], C=pars["C"];
   double rho=pars["rho"],v = pars["v"];
   // Variables
-  int i, j, k, l;
   double sw,w, ef, b, g, h2;
   double n,m,T;
   NumericVector dvdt(2);
@@ -78,18 +77,16 @@ List eqs(double time, NumericVector state, List pars) {
   T=Temp(time,  Tmin, C, tE); // Vector of temperatures
   cout<<T<<"is T ";
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
-      w=bw-aw*m;
-      sw=w*w+v;
-      ef=rho*exp(-(T-m)*(T-m)/(2.0*sw))/sqrt(sw);
-      b=ef-kappa;
-      cout<<ef<<" is f"<<endl;
-      g=ef*v*(T-m)/sw;
-      h2=0.5; // Heritability
-      // Assign calculated rates to vector of derivatives for output
-      
-      dvdt[0]=n*b;
-      dvdt[1]=h2*g;
-    }
-  }
+  w=bw-aw*m;
+  sw=w*w+v;
+  ef=rho*exp(-(T-m)*(T-m)/(2.0*sw))/sqrt(sw);
+  b=ef-kappa;
+  cout<<ef<<" is f  ";
+  g=ef*v*(T-m)/sw;
+  h2=0.5; // Heritability
+  // Assign calculated rates to vector of derivatives for output
+  
+  dvdt[0]=n*b;
+  dvdt[1]=h2*g;
   return(List::create(dvdt));
 }
