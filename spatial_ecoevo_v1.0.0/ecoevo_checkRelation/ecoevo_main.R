@@ -31,23 +31,22 @@ arg <- commandArgs(trailingOnly=TRUE)
 clargs = unlist(strsplit(arg[1], "#"))
 if (!is.na(clargs)) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
-  id <-"tryForMaxDiff"
+  id <-"demonstrationSimpleModel"
 }
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-C <- 1
-tE <-10
-magnitude <- 0.1 
+C <- 10
+tE <-1e6
+magnitude <- 1
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 #crit_diff <- 1.875 * C / tE
-crit_diff <- C/tE
-factor <- 1
-v <- crit_diff * factor
-diminish_mag <- 1
-diminish_factor <- 10^diminish_mag
-rho <- kappa/diminish_factor # resource growth-tolerance tradeoff parameter
+rho <- kappa*2 # resource growth-tolerance tradeoff parameter
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
-bw <- 0 # intercept of trait-dependence of tolerance width
+bw <- 2 # intercept of trait-dependence of tolerance width
+ratio <- 1
+v <- ratio * bw^2
 Tmin <- 15
+
+
 
 file <- paste("v",toString(format(v, scientific = TRUE)),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
@@ -56,7 +55,7 @@ workspace <-paste("parameters/",file, sep="")
 # --------------------------------functions ------------------------------------
 
 # put the results of the numerical integration into a tidy table
-organize_data <- function(dat, times, pars) {
+organize_data <- function(dat, times, pars,Tenv) {
   dat <- dat %>%
     as.data.frame() %>% # convert to data frame (needed for next step)
     as_tibble() %>% # convert to tibble (tidyverse's improved data frame)
@@ -74,6 +73,7 @@ organize_data <- function(dat, times, pars) {
     mutate(species=as.integer(species), patch=as.integer(patch)) %>%
     # split trait and abundance values into two columns
     pivot_wider(names_from="type", values_from="v") %>%
+    mutate(Tenv=Tenv[1:nrow(.)])%>%
     return()
 }
 
@@ -95,15 +95,19 @@ pars <- list(rho=rho, kappa=kappa,v=v, nmin=nmin, aw=aw, bw=bw,Tmin=Tmin,tE=tE,C
 at <-1e-8
 rt <-1e-8
 maxsteps <- 10000
-step <- tE/2000
+step <- tE/200
 fail_time <- 0
 original_tE <- tE
 add <- Sys.time()-start
 print(add)
 start <- Sys.time()
 
-
-tryCatch({results <-ode(y=ic, times=seq(0, tE-step, by=step), func=eqs, parms=pars,
+ts <-seq(0, tE, by=step)
+Tenv <- ts
+for (i in 1:length(ts)) {
+  Tenv[i] <- Temp(ts[i],Tmin,C,tE)
+}
+tryCatch({results <-ode(y=ic, times=seq(0, tE, by=step), func=eqs, parms=pars,
                         method = "bdf",atol  = at, rtol = rt, maxsteps = maxsteps)
 },
 error=function(this){
@@ -126,8 +130,8 @@ finally = {
   start <- Sys.time()
   
   diagnostics(results)
-  dat <- results %>% # put during-climate-change solution into tidy tibble:
-    organize_data(times=seq(from=0, to=tE, by=step), pars = pars) 
+  dat <- results %>%# put during-climate-change solution into tidy tibble:
+    organize_data(times=seq(from=0, to=tE, by=step), pars = pars,Tenv) 
 }) 
 # --------------------------- generate output ----------------------------------
 print(original_tE-max(dat$time))
@@ -136,8 +140,9 @@ print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 #plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
-plot_landscape(dat %>% filter(patch %in% c(1)))
-
+pn<-plot_landscape(dat %>% filter(patch %in% c(1)))
+pm<-plot_traitLag(dat %>% filter(patch %in% c(1)),nmin)
+grid.arrange(pn, pm, ncol=2)
 toSave <- FALSE
 if (toSave){
   plt <- plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=41*step)))

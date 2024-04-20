@@ -75,13 +75,13 @@ List eqs(double time, NumericVector state, List pars) {
     throw range_error(to_string(time));
   }
   T=Temp(time,  Tmin, C, tE); // Vector of temperatures
-  cout<<T<<"is T ";
+  //cout<<T<<"is T ";
   // Assign competition coeffs alpha_ij^k and selection pressures beta_ij^k
   w=bw-aw*m;
-  sw=w*w+v;
+  sw=w*w;
   ef=rho*exp(-(T-m)*(T-m)/(2.0*sw))/sqrt(sw);
   b=ef-kappa;
-  cout<<ef<<" is f  ";
+  cout<<b<<" is f  ";
   g=ef*v*(T-m)/sw;
   h2=0.5; // Heritability
   // Assign calculated rates to vector of derivatives for output

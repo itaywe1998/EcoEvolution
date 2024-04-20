@@ -34,7 +34,8 @@ plot_landscape <- function(dat) {
     scale_y_continuous(name="time (years)")+
     # scale_y_continuous(name="time (years)", labels=trans_format("identity", function(x) -x),trans = reverselog_trans(base=10)) +
     scale_colour_manual(values=color_pal(S)) +
-    scale_fill_manual(values=color_pal(S)) %>%
+    scale_fill_manual(values=color_pal(S))+
+    theme(legend.position = "none")%>%
     #+theme_bw() 
     #+theme(legend.position="none")
     return()
@@ -43,22 +44,28 @@ plot_landscape <- function(dat) {
 
 plot_traitLag <- function(dat,nmin) {
   # define color gradient from cold to warm colors:
-  color_pal <- colorRampPalette(c("#56B4E9", "#009E73", "#E69F00"))
+  color_pal <- colorRampPalette(c( "#009E73","#56B4E9", "#E69F00"))
   S <- 1
-  dat %>%
-    # calculate mean densities at each time and patch for each species:
+  # calculate mean densities at each patch and time for each species:
+  
+  dat  %>% mutate(patch=case_when(
+    (patch<=round(max(patch)/3))   ~ "Pole",
+    (patch>=round(2*max(patch)/3)) ~ "Equator", 
+    TRUE                           ~ "Mid")) %>%
     group_by(time, species, patch) %>%
-    summarise(avg_n=m-Tenv, .groups="drop") %>%
-    mutate(species=as.factor(species)) %>%
+    summarise(avg_n=Tenv-m, .groups="drop") %>%
+    mutate(species=as.factor(species))%>%
     ggplot() + # create plot
-    aes(x=patch, ymin=0, y=avg_n ,ymax=avg_n, colour=species, fill=species) +
+    aes(x=avg_n , xmin=0,xmax=avg_n,y=time, colour=species, fill=species) +
     geom_ribbon(alpha=0.3) +
-    # panel rows: trophic level; panel columns: time
+    # panel rows: trophic level; panel columns: patch
     coord_flip() +
-    scale_x_reverse(name="habitat patch number", expand=c(0.02, 0.02)) +
-    scale_y_continuous(name="trait lag (°C)", labels=abbreviate) +
+    scale_x_continuous(name="trait lag(°C)", expand=c(0.02, 0.02)) +
+    scale_y_continuous(name="time (years)")+
+    # scale_y_continuous(name="time (years)", labels=trans_format("identity", function(x) -x),trans = reverselog_trans(base=10)) +
     scale_colour_manual(values=color_pal(S)) +
-    scale_fill_manual(values=color_pal(S)) %>%
+    scale_fill_manual(values=color_pal(S))+
+    theme(legend.position = "none")%>%
     #+theme_bw() 
     #+theme(legend.position="none")
     return()
