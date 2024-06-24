@@ -31,7 +31,7 @@ arg <- commandArgs(trailingOnly=TRUE)
 clargs = unlist(strsplit(arg[1], "#"))
 if (!is.na(clargs)) { # command-line arguments
 } else { # sample input parameters, if no command line arguments are given
-  id <-"demonstrationSimpleModel"
+  id <-"redoS25"
 }
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
 C <- 10
@@ -39,11 +39,11 @@ tE <-1e6
 magnitude <- 1
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
 #crit_diff <- 1.875 * C / tE
-rho <- kappa*2 # resource growth-tolerance tradeoff parameter
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
-bw <- 2 # intercept of trait-dependence of tolerance width
-ratio <- 1
-v <- ratio * bw^2
+ # intercept of trait-dependence of tolerance width
+v <- 0
+bw <- 25 #sqrt(sigma)
+rho <- kappa*bw*1.01 # resource growth-tolerance tradeoff parameter
 Tmin <- 15
 
 
@@ -142,6 +142,7 @@ suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
 #plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
 pn<-plot_landscape(dat %>% filter(patch %in% c(1)))
 pm<-plot_traitLag(dat %>% filter(patch %in% c(1)),nmin)
+#print(pn)
 grid.arrange(pn, pm, ncol=2)
 toSave <- FALSE
 if (toSave){

@@ -31,11 +31,12 @@ plot_landscape <- function(dat) {
     # panel rows: trophic level; panel columns: patch
     coord_flip() +
     scale_x_continuous(name="density", expand=c(0.02, 0.02)) +
-    scale_y_continuous(name="time (years)")+
+    scale_y_continuous(name="time (years)",labels = function(x) format(x, scientific = TRUE))+
     # scale_y_continuous(name="time (years)", labels=trans_format("identity", function(x) -x),trans = reverselog_trans(base=10)) +
     scale_colour_manual(values=color_pal(S)) +
     scale_fill_manual(values=color_pal(S))+
-    theme(legend.position = "none")%>%
+    theme(legend.position = "none",axis.text = element_text(size = 12)
+          ,axis.title = element_text(size = 18))%>%
     #+theme_bw() 
     #+theme(legend.position="none")
     return()
@@ -61,11 +62,12 @@ plot_traitLag <- function(dat,nmin) {
     # panel rows: trophic level; panel columns: patch
     coord_flip() +
     scale_x_continuous(name="trait lag(°C)", expand=c(0.02, 0.02)) +
-    scale_y_continuous(name="time (years)")+
     # scale_y_continuous(name="time (years)", labels=trans_format("identity", function(x) -x),trans = reverselog_trans(base=10)) +
     scale_colour_manual(values=color_pal(S)) +
+    scale_y_continuous(name="time (years)",labels = function(x) format(x, scientific = TRUE))+
     scale_fill_manual(values=color_pal(S))+
-    theme(legend.position = "none")%>%
+    theme(legend.position = "none",axis.text = element_text(size = 12)
+          ,axis.title = element_text(size = 18))%>%
     #+theme_bw() 
     #+theme(legend.position="none")
     return()
