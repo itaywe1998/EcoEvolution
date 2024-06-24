@@ -208,6 +208,7 @@ List eqs(double time, NumericVector state, List pars) {
       g=ef*V[i]*(T[k]-m(i,k))/sw;
       q=vmat(i,k)*smoothstep(n(i,k)/nmin);
       h2=q/(q+venv); // Heritability
+      cout<<ef<<" is f ";
       // Assign calculated rates to vector of derivatives for output
 
         dvdt[i+k*S]=(n(i,k)*b+sumgr)*smoothstep(n(i,k)/1.0e-6)+summig;

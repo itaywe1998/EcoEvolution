@@ -43,7 +43,7 @@ if (!is.na(clargs)) { # command-line arguments
   vbar <- 1e-5 # dummy, being runoff later
   # dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  dbar <- 1e-3 #stick with the dbar run for PreciseDesign2 runs
+  dbar <- 0 #stick with the dbar run for PreciseDesign2 runs
 }
 
 # Temperatures----
@@ -65,7 +65,7 @@ if (old_profile){
 factor <- 3.2
 vbar <- crit_diff * factor
 
-S <- 4 # fifty species per trophic level
+S <- 1 # fifty species per trophic level
 replicate <- 1 # replicate number = 1
 set.seed(NULL) #unsets random seed, it is set again before the important stuff 
 run_indicator <- sample(1:20000,1)
@@ -136,31 +136,34 @@ SR <- S # number of resource species
 SC <- 0 # number of consumer species: 0, unless we have...
 if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
 S <- SR + SC # set S to be the total number of species
-L <- 20 # number of patches
+L <- 2 # number of patches
 
 # scalars----
 set.seed(seed) # set random seed for reproducibility
 v <- (runif(SR, 1.0, 1.0)) *vbar# resource genetic variances
 d <- (runif(SR, 1.0, 1.0)) *dbar# resource dispersal rates
 
-kappa <- 0.1 # intrinsic mortality parameter
+kmag <- -3
+rmag <- 300
+
+kappa <- 10^kmag # intrinsic mortality parameter
 venv <- vbar # environmental variance
 vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
 s <- v + venv # species' total phenotypic variances
-eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
+eta <- 0 # competition width (centigrade; only for Tdep and Tdep_trophic)
 eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
 nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
-bw <- 4 # intercept of trait-dependence of tolerance width
+aw <- 0 # (negative) slope of trait-dependence of tolerance width
+bw <- 0 # intercept of trait-dependence of tolerance width
 
 # matrices----
-rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
+rho <- runif(SR, 1, 1) * 10^rmag # resource growth-tolerance tradeoff parameter
 a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
 # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
 # V2 : upper was 0.15*0.9, not 0.15*0.4
-aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.4), SR, SR) # resource comp coeffs 
-diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.4) # resource intraspecific comp coeffs
-a[1:SR,1:SR] <- aP # top left block: resources
+#aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.4), SR, SR) # resource comp coeffs 
+#diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.4) # resource intraspecific comp coeffs
+#a[1:SR,1:SR] <- aP # top left block: resources
 W <- matrix(0, S, S) # create feeding network: nothing if no consumers
 Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
 arate <- rep(1, S) # attack rates in type II f.r. (dummy value if no consumers)
@@ -212,7 +215,7 @@ at <-1e-8
 rt <-1e-8
 maxsteps <- 10000
 tE <-tail(T_kozai, n=1)[1]
-step <- unname(T_kozai[2,1])-unname(T_kozai[1,1])
+step <- (unname(T_kozai[2,1])-unname(T_kozai[1,1]))
 fail_time <- 0
 original_tE <- tE
 add <- Sys.time()-start

@@ -27,6 +27,7 @@ if (length(clargs)>0) { # command-line arguments
 # Assuming always dual display
 #--- large time plot----
 large_dat <-suppressMessages(read_csv(paste("outputs/large_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")))
+source("./plotting_functions.R") # various functions for plotting final data
 plot1 <- plot_landscape(large_dat %>% filter(patch %in% c(1,11,20)) %>% filter(time>=-1e5))+ggtitle("Long Adaptation Period")
 #--- small time plot----
 suppressMessages(small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_FAILED",sep ="")))

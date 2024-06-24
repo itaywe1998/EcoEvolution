@@ -43,8 +43,8 @@ if (!is.na(clargs)) { # command-line arguments
   tE <-as.numeric(clargs[12])
 } else { # sample input parameters, if no command line arguments are given
   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-FALSE
-  id <-"reCheckPaper"
+  small <-TRUE
+  id <-"recheckPeriodica0"
   seed <- 11093
   vbar <- 3e-5
   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
@@ -53,12 +53,12 @@ if (!is.na(clargs)) { # command-line arguments
   updown <- TRUE
   Cmax <- 23 # projected temperature increase at poles
   Cmin <- 11 # projected temperature increase at equator
-  tstart <- if (small) -1e2 else -1e8 
+  tstart <- if (small) -1e5 else -1e8 
   tE <- 2e7
   #crit_v <- Cmax / tE
  # vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
 }
-S <- 3 # fifty species per trophic level
+S <- 4 # fifty species per trophic level
 str <- if (small) "small" else "large"
 periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 replicate <- 1 # replicate number = 1
@@ -270,6 +270,7 @@ print(mean(temp$n))
 #   #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
 #   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
 # }
+plot_timeseries(dat %>% filter(time %in% c(tstart,seq(0, fail_time, by=during_step))))
 print("Final Runtime")
 print(Sys.time()-start)
 

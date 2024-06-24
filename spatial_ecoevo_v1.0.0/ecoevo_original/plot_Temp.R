@@ -14,6 +14,11 @@ smoothstep<-function(x){
 }
 periodic <- FALSE
 cycles <- 0
+tE <- 2e6
+Tmin <- -25
+Tmax <- 15
+Cmin <- 20
+Cmax <- 30
 t <- seq(0, tE, by=tE/200)
 if (periodic){
   T_mid <- (Tmax-Tmin)*0.5+Tmin+((Cmin-Cmax)*0.5+Cmax)*sin((t/tE)*cycles*pi)
@@ -36,12 +41,15 @@ p <- ggplot(df, aes(x = t)) +
         y = "Temprature (\u00B0C)",
         color = "") +
    scale_color_manual(values = colors)+
-  scale_y_continuous(breaks = seq(-40, 30, by = 10))
+  scale_x_continuous(labels = function(x) format(x, scientific = TRUE))+
+  scale_y_continuous(breaks = seq(-25, 35, by = 10))+theme(axis.text = element_text(size = 20)
+,axis.title = element_text(size = 20),legend.text = element_text(size = 18))
+#legend.position = "none",
 print(p)
 
 #v3e-05_d1e-07idBiggerCompetition_Seed7234
 
 dest_fold <- "/home/itay/EcoEvolution/spatial_ecoevo_v1.0.0/Ecoevo Paper Examples/Plots/"
-runname <- "v3e-05_d1e-07idBiggerCompetition_Seed7234_Paper"
+runname <- "demo_Paper"
 ggsave(filename =  paste(dest_fold, "WeatherProfile_",runname,".png",sep ="")
        , plot = p, width = 6, height = 4, units = "in")
