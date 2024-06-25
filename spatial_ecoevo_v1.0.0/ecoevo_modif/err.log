@@ -1,2 +1,0 @@
-+                    print(paste("Error : ",err))
- 9: tryCatch({    ode(y = ic, times = seq(tstart, 0, by = before_step), func = eqs,         parms = pars, method = "bdf_d")}, error = function(err) {    print(paste("Error : ", err))    quit()})
