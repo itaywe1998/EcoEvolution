@@ -17,9 +17,7 @@ require(scales)
 # - a ggplot2 figure
 plot_timeseries <- function(dat) {
   # define color gradient from cold to warm colors:
-  color_pal <- colorRampPalette(c("#56B4E9", "#009E73", "#E69F00"))
   S <- filter(dat, tl=="R") %>% pull(species) %>% max() # no. of resource spp.
-  time.labs <- function(x) format(dat$time, scientific = TRUE)
   dat %>%
     # calculate mean densities at each time and patch for each species:
     group_by(time, species, patch, tl) %>%
@@ -28,19 +26,18 @@ plot_timeseries <- function(dat) {
     mutate(species=as.factor(species),
            tl=ifelse(tl=="R", "resource species", "consumer species")) %>%
     ggplot() + # create plot
-    aes(x=90/19*(patch-1), ymin=0, y=avg_n ,ymax=avg_n, colour=species, fill=species) +
-    geom_ribbon(alpha=0.3) +
+    aes(x=90/19*(patch-1), ymin=0, y=avg_n ,ymax=avg_n,fill=species, colour=species, linetype=species) +
+    geom_line(alpha=1)+
+    geom_ribbon(alpha=0.1)+
+    #geom_line(aes()) +scale_alpha_manual(values=c(0.25, 0.5, 0.75,1))+
+    
     # panel rows: trophic level; panel columns: time
     facet_grid(tl~time, labeller=label_bquote(col=t==.(format(time,scientific=TRUE)))) +
     coord_flip() +
     scale_x_reverse(name="latitude", expand=c(0.02, 0.02),breaks = seq(0, 90, by = 30)) +
-    theme(title=element_text(size = 20), axis.text.x= element_text(size = 20),axis.text.y= element_text(size = 20),axis.title = element_text(size=22),strip.text = element_text(
-      size = 22),strip.text.y = element_blank())+
-    scale_y_continuous(name="population density", labels=abbreviate) +
-    scale_colour_manual(values=color_pal(S)) +
-    scale_fill_manual(values=color_pal(S)) %>%
-  #+theme_bw() 
-  #+theme(legend.position="none")
+    theme(title=element_text(size = 20), axis.text.x= element_text(size = 18),axis.text.y= element_text(size = 18),axis.title = element_text(size=20),strip.text = element_text(
+      size = 18),strip.text.y = element_blank())+
+    scale_y_continuous(name="population density", labels=abbreviate) %>%
     return()
 }
 
@@ -52,7 +49,6 @@ plot_timeseries <- function(dat) {
 # - a ggplot2 figure
 plot_landscape <- function(dat) {
   # define color gradient from cold to warm colors:
-  color_pal <- colorRampPalette(c("#56B4E9", "#009E73", "#E69F00"))
   S <- filter(dat, tl=="R") %>% pull(species) %>% max() # no. of resource spp.
       # calculate mean densities at each patch and time for each species:
 
@@ -66,20 +62,15 @@ plot_landscape <- function(dat) {
     mutate(species=as.factor(species),
            tl=ifelse(tl=="R", "resource species", "consumer species")) %>%
     ggplot() + # create plot
-    aes(x=avg_n , xmin=0,xmax=avg_n,y=time, colour=species, fill=species) +
-    geom_ribbon(alpha=0.3) +
+    aes(x=avg_n , xmin=0,xmax=avg_n,y=time, colour=species, fill=species, linetype=species) +
+    geom_ribbon(alpha=0.1)+
     # panel rows: trophic level; panel columns: patch
     facet_grid(tl~patch, labeller=label_bquote(col=.(patch))) +
     coord_flip() +
     scale_x_continuous(name="density", expand=c(0.02, 0.02)) +
-    theme(title=element_text(size = 20), axis.text.x= element_text(size = 20),axis.text.y= element_text(size = 20),axis.title = element_text(size=22),strip.text = element_text(
-      size = 22),strip.text.y = element_blank())+
-    scale_y_continuous(name="time (years)", labels = function(x) format(x, scientific = TRUE)) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5))+
-    scale_colour_manual(values=color_pal(S)) +
-    scale_fill_manual(values=color_pal(S)) %>%
-    #+theme_bw() 
-    #+theme(legend.position="none")
+    theme(title=element_text(size = 20), axis.text.x= element_text(size = 18,angle = 45, vjust = 0.5, hjust=0.5),axis.text.y= element_text(size = 18),axis.title = element_text(size=20),strip.text = element_text(
+      size = 18),strip.text.y = element_blank())+
+    scale_y_continuous(name="time (years)", labels = function(x) format(x, scientific = TRUE)) %>%
     return()
 }
 

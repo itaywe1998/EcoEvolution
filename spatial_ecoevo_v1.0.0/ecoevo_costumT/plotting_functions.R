@@ -2,12 +2,8 @@
 # This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
 # you are welcome to redistribute it under certain conditions. for details,
 # see the GNU General Public License Agreement (in the file COPYING.txt).
-
-
 require(tidyverse) # manipulating and visualizing data
 require(ggpmisc) # adding statistics to plots
-#library(ggallin)
-#library(scales)
 
 # show densities across the landscape through time; works for data with
 # a single model and parameterization
@@ -29,8 +25,6 @@ plot_timeseries <- function(dat) {
     aes(x=90/19*(patch-1), ymin=0, y=avg_n ,ymax=avg_n,fill=species, colour=species, linetype=species) +
     geom_line(alpha=1)+
     geom_ribbon(alpha=0.1)+
-    #geom_line(aes()) +scale_alpha_manual(values=c(0.25, 0.5, 0.75,1))+
-    
     # panel rows: trophic level; panel columns: time
     facet_grid(tl~time, labeller=label_bquote(col=t==.(format(time,scientific=TRUE)))) +
     coord_flip() +
@@ -52,7 +46,6 @@ plot_landscape <- function(dat) {
   color_pal <- colorRampPalette(c("#56B4E9", "#009E73", "#E69F00"))
   S <- filter(dat, tl=="R") %>% pull(species) %>% max() # no. of resource spp.
       # calculate mean densities at each patch and time for each species:
-
   dat  %>% mutate(patch=case_when(
     (patch<=round(max(patch)/3))   ~ "Pole",
     (patch>=round(2*max(patch)/3)) ~ "Equator", 
@@ -72,12 +65,8 @@ plot_landscape <- function(dat) {
     scale_y_continuous(name="time (years)")+
     scale_colour_manual(values=color_pal(S)) +
     scale_fill_manual(values=color_pal(S)) %>%
-    #+theme_bw() 
-    #+theme(legend.position="none")
     return()
 }
-
-
 plot_traitLag <- function(dat,nmin) {
   # define color gradient from cold to warm colors:
   color_pal <- colorRampPalette(c("#56B4E9", "#009E73", "#E69F00"))
@@ -99,7 +88,5 @@ plot_traitLag <- function(dat,nmin) {
     scale_y_continuous(name="trait lag (°C)", labels=abbreviate) +
     scale_colour_manual(values=color_pal(S)) +
     scale_fill_manual(values=color_pal(S)) %>%
-    #+theme_bw() 
-    #+theme(legend.position="none")
     return()
 }

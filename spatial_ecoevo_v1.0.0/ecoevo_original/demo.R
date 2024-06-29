@@ -21,7 +21,7 @@ if (length(clargs)>0) { # command-line arguments
   cycles<-as.numeric(clargs[5])
 } else { # sample input parameters, if no command line arguments are given
   dual <-TRUE
-  id <-"BiggerCompetition_Seed7234"
+  id <-"PeriodicCC11093_FullSin_23_11"
   vbar <-3e-5
   dbar <-1e-7
   cycles<--1
@@ -43,7 +43,7 @@ if(cycles>0){
   print(obs_times)
   plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart,tstart+before_step, obs_times)))
 }else {
-  plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart, tstart+before_step, seq(from=0,to=final_time,by=50*during_step))))+ggtitle("Long Adaptation Period")
+  plot1 <- plot_timeseries(large_dat %>% filter(time %in% c(tstart,  seq(from=0,to=tE,by=tE/10))))+ggtitle("Long Adaptation Period")
 }
 
 
@@ -54,13 +54,9 @@ if (dual){
   suppressMessages(small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),"_FAILED",sep ="")))
 }else{ small_dat <-read_csv(paste("outputs/small_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep =""))}
 tstart <- min(small_dat$time)
-final_time<- 1e6#max(small_dat$time)
+final_time<- 1.5e6#max(small_dat$time)
 before_step <- 0#-tstart/1000
-if(cycles>0){
-  plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart,tstart+before_step, seq(from=0,to=final_time,l=2*cycles+1))))
-}else{
-  plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart, tstart+before_step,seq(from=0,to=final_time,by=final_time/4))))+ggtitle("Short Adaptation Period")
-}
+plot2 <- plot_timeseries(small_dat %>% filter(time %in% c(tstart, seq(from=0,to=1.5e6,by=3e5))))+ggtitle("Short Adaptation Period")
 
 #---Combined plot----
 plotCombined <- grid.arrange(plot1, plot2, nrow=2)

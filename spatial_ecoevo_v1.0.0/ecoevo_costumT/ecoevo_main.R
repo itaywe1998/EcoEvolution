@@ -49,7 +49,7 @@ if (!is.na(clargs)) { # command-line arguments
 # Temperatures----
 old_profile <- TRUE
 if (old_profile){
-  wksp_name <- "KozaiNextGen18"
+  wksp_name <- "v3.225165e-05_d0.001idKozaiPreciseDesign2_ForPaper"
   kozai_wksp <- paste("~/EcoEvolution/Kozai_parameters/",wksp_name, sep="")
   tmp.env <- new.env() # create a temporary environment
   load(kozai_wksp, envir=tmp.env) # load workspace into temporary environment
@@ -264,8 +264,8 @@ temp <-(dat %>% filter(time %in% c(max(dat$time))))
 print(mean(temp$n))
 # if data file to save to was not specified as empty (""):
 suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
-#plot_timeseries(dat %>% filter(time %in% seq(from=0,to=tE,by=40*step)))
-plot_landscape(dat %>% filter(patch %in% c(1,11,20)))
+plot_timeseries(dat %>% filter(time %in% c(0,5.5e7,1.35e8,2.65e8,3.45e8,4.8e8,5.6e8,6.9e8,7.7e8,9.05e8,9.85e8)))
+#plot_landscape(dat %>% filter(patch %in% c(1,11,20)))
 
 toSave <- FALSE
 if (toSave){

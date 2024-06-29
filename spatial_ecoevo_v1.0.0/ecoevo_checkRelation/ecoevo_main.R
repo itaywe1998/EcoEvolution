@@ -38,22 +38,15 @@ C <- 10
 tE <-1e6
 magnitude <- 1
 kappa <- 1*10^(floor(log10(-log(nmin)/tE))+magnitude)
-#crit_diff <- 1.875 * C / tE
 aw <- 0 # (negative) slope of trait-dependence of tolerance width
- # intercept of trait-dependence of tolerance width
 v <- 0
 bw <- 25 #sqrt(sigma)
 rho <- kappa*bw*1.01 # resource growth-tolerance tradeoff parameter
 Tmin <- 15
-
-
-
 file <- paste("v",toString(format(v, scientific = TRUE)),"id",toString(id),sep ="")
 outfile <- paste("outputs/",file, sep = "") 
 workspace <-paste("parameters/",file, sep="")
-
 # --------------------------------functions ------------------------------------
-
 # put the results of the numerical integration into a tidy table
 organize_data <- function(dat, times, pars,Tenv) {
   dat <- dat %>%
@@ -76,21 +69,15 @@ organize_data <- function(dat, times, pars,Tenv) {
     mutate(Tenv=Tenv[1:nrow(.)])%>%
     return()
 }
-
-
 # ------------------------------- parameters -----------------------------------
-#Sys.setenv(loop = "0")
 save.image(file = workspace)
 # initial conditions----
 ninit <- 1 # reserve memory for initial densities
 muinit <- Tmin # initial trait means
 ic <- c(ninit, muinit) # merge initial conditions into a vector
-
 # coerce parameters into a list----
 pars <- list(rho=rho, kappa=kappa,v=v, nmin=nmin, aw=aw, bw=bw,Tmin=Tmin,tE=tE,C=C)
-
-
-# --------------------------- integrate ODEs -----------------------------------
+# -------------------------- integrate ODEs -----------------------------------
 #consider changing rtol and atol
 at <-1e-8
 rt <-1e-8

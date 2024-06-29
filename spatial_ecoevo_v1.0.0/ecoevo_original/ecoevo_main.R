@@ -1,74 +1,74 @@
-# Copyright (C) 2021 György Barabás ----
-# This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
-# you are welcome to redistribute it under certain conditions. for details,
-# see the GNU General Public License Agreement (in the file COPYING.txt).
+# # Copyright (C) 2021 György Barabás ----
+# # This program comes with ABSOLUTELY NO WARRANTY. This is free software, and
+# # you are welcome to redistribute it under certain conditions. for details,
+# # see the GNU General Public License Agreement (in the file COPYING.txt).
+# 
+# # To run, either execute within R or enter the following at the command prompt:
+# # Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
+# setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original")
+# suppressPackageStartupMessages({
+#   suppressWarnings({
+#     rm(list = ls())
+#     start <- Sys.time()
+#     require(gridExtra)
+#     require(deSolve) # solving ordinary differential equations (ODEs)
+#     require(tidyverse) # manipulating and visualizing data
+#     require(ggpmisc) # adding statistics to plots
+#     require(Rcpp) # importing C functions
+#     library(tidyr)
+#     library(ggplot2)
+#     library(readr)
+#     library(dplyr)
+#     sourceCpp("rhs_eval.cpp") # compile external C functions
+#     source("./plotting_functions.R") # various functions for plotting final data
+#   })
+# })
 
-# To run, either execute within R or enter the following at the command prompt:
-# Rscript ecoevo.R [vbar] [dbar] [model] [replicate] [outfile]---- 
-setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original")
-suppressPackageStartupMessages({
-  suppressWarnings({
-    rm(list = ls())
-    start <- Sys.time()
-    require(gridExtra)
-    require(deSolve) # solving ordinary differential equations (ODEs)
-    require(tidyverse) # manipulating and visualizing data
-    require(ggpmisc) # adding statistics to plots
-    require(Rcpp) # importing C functions
-    library(tidyr)
-    library(ggplot2)
-    library(readr)
-    library(dplyr)
-    sourceCpp("rhs_eval.cpp") # compile external C functions
-    source("./plotting_functions.R") # various functions for plotting final data
-  })
-})
-
-# ---------------------------- input parameters --------------------------------
-arg <- commandArgs(trailingOnly=TRUE)
-clargs = unlist(strsplit(arg[1], "#"))
-print(clargs)
-if (!is.na(clargs)) { # command-line arguments
-  model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
-  small <- as.logical(clargs[2]) # true for short adaptation time, false for long
-  seed <- as.numeric(clargs[3]) # for seeding random number generator
-  id <- clargs[4] # current run name
-  vbar <- as.numeric(clargs[5]) 
-  dbar <- as.numeric(clargs[6]) 
-  cycles <- as.numeric(clargs[7])
-  updown <- as.logical(clargs[8])
-  Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
-  Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
-  tstart <-as.numeric(clargs[11])
-  tE <-as.numeric(clargs[12])
-} else { # sample input parameters, if no command line arguments are given
-  model <- "Tdep" # 2 trophic levels & temperature-dependent competition
-  small <-TRUE
-  id <-"recheckPeriodica0"
-  seed <- 11093
-  vbar <- 3e-5
-  dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
-  # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
-  cycles <- 5
-  updown <- TRUE
-  Cmax <- 23 # projected temperature increase at poles
-  Cmin <- 11 # projected temperature increase at equator
-  tstart <- if (small) -1e5 else -1e8 
-  tE <- 2e7
-  #crit_v <- Cmax / tE
- # vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
-}
-S <- 4 # fifty species per trophic level
-str <- if (small) "small" else "large"
-periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
-replicate <- 1 # replicate number = 1
-file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
-outfile <- paste("outputs/",file, sep = "") 
-workspace <-paste("parameters/",file, sep="")
-# --------------------------------functions ------------------------------------
-
-# return matrix W[i,j], which is nonzero if consumer i eats resource j;
-# SR is the number of resource, SC the number of consumer species
+# # ---------------------------- input parameters --------------------------------
+# arg <- commandArgs(trailingOnly=TRUE)
+# clargs = unlist(strsplit(arg[1], "#"))
+# print(clargs)
+# if (!is.na(clargs)) { # command-line arguments
+#   model <- clargs[1] # "baseline", "trophic", "Tdep", or "Tdep_trophic"
+#   small <- as.logical(clargs[2]) # true for short adaptation time, false for long
+#   seed <- as.numeric(clargs[3]) # for seeding random number generator
+#   id <- clargs[4] # current run name
+#   vbar <- as.numeric(clargs[5]) 
+#   dbar <- as.numeric(clargs[6]) 
+#   cycles <- as.numeric(clargs[7])
+#   updown <- as.logical(clargs[8])
+#   Cmax <- as.numeric(clargs[9]) # projected temperature increase at poles
+#   Cmin <- as.numeric(clargs[10]) # projected temperature increase at equator
+#   tstart <-as.numeric(clargs[11])
+#   tE <-as.numeric(clargs[12])
+# } else { # sample input parameters, if no command line arguments are given
+#   model <- "Tdep" # 2 trophic levels & temperature-dependent competition
+#   small <-TRUE
+#   id <-"finalRun_stepRise"
+#   seed <- 11093
+#   vbar <- 3e-5
+#   dbar <- 1e-7 # average dispersal (1e-7 <=> 1 meter per year)
+#   # more precisely, in units of pole to equator distance , which is ~100,000 km (1e7 meter)
+#   cycles <- 5
+#   updown <- TRUE
+#   Cmax <- 23 # projected temperature increase at poles
+#   Cmin <- 11 # projected temperature increase at equator
+#   tstart <- if (small) -1e5 else -1e8 
+#   tE <- 2e7
+#   #crit_v <- Cmax / tE
+#  # vbar <- crit_v * cycles*pi * 1.5 # average genetic variance in Celsius squared
+# }
+# S <- 4 # fifty species per trophic level
+# str <- if (small) "small" else "large"
+# periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
+# replicate <- 1 # replicate number = 1
+# file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+# outfile <- paste("outputs/",file, sep = "") 
+# workspace <-paste("parameters/",file, sep="")
+# # --------------------------------functions ------------------------------------
+# 
+# # return matrix W[i,j], which is nonzero if consumer i eats resource j;
+# # SR is the number of resource, SC the number of consumer species
 generate_network <- function(SR, SC) {
   w <- matrix(0, SR+SC, SR+SC) # initialize adjacency matrix
   for (i in 1:SR) { # determine which resources each consumer eats: it must eat
@@ -119,56 +119,91 @@ organize_data <- function(dat, times, pars) {
     return()
 }
 
+# 
+# # ------------------------------- parameters -----------------------------------
+# 
+# # number of species and number of patches----
+# SR <- S # number of resource species
+# SC <- 0 # number of consumer species: 0, unless we have...
+# if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
+# S <- SR + SC # set S to be the total number of species
+# L <- 20 # number of patches
+# 
+# # scalars----
+# set.seed(seed) # set random seed for reproducibility
+# v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
+# d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
+# 
+# kappa <- 0.1 # intrinsic mortality parameter
+# venv <- vbar # environmental variance
+# vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
+# s <- v + venv # species' total phenotypic variances
+# eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
+# eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
+# nmin <- 1e-5 # below this threshold density, genetic variances are reduced
+# aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
+# bw <- 4 # intercept of trait-dependence of tolerance width
+# Tmax <- 25.0 # initial mean temperature at equator
+# Tmin <- Tmax-40 # initial mean temperature at poles
+# save.image(file = workspace)
+# 
+# # matrices----
+# rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
+# a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
+# # assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
+# aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.9), SR, SR) # resource comp coeffs
+# diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.9) # resource intraspecific comp coeffs
+# a[1:SR,1:SR] <- aP # top left block: resources
+# W <- matrix(0, S, S) # create feeding network: nothing if no consumers
+# Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
+# arate <- rep(1, S) # attack rates in type II f.r. (dummy value if no consumers)
+# if (model %in% c("trophic", "Tdep_trophic")) {
+#   v <- c(v, runif(SC, 0.5*vbar, 1.5*vbar)) # add consumer genetic variances
+#   d <- c(d, runif(SC, 0.1*dbar, 10.0*dbar)) # add consumer dispersal rates
+#   rho <- c(rho, runif(SC, 0.9*0.1, 1.1*0.1)) # add consumer tradeoff parameters
+#   aH <- matrix(0, SC, SC) # initialize competition matrix (consumers)
+#   a[(SR+1):S,(SR+1):S] <- aH # bottom right: consumers
+#   W <- generate_network(SR, SC) # trophic feeding network
+#   Th[(SR+1):S] <- runif(S-SR, 0.5, 1) # handling times in type II f.r.
+#   arate[(SR+1):S] <- runif(S-SR, 1, 10) # attack rates in type II f.r.
+# }
+rm(list = ls())
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/Ecoevo Paper Examples/Parameters")
+#file <- "large_time_v3e-05_d1e-07idBiggerCompetition_Seed7234" 
+#file<-"v3.225165e-05_d0.001idKozaiPreciseDesign2_ForPaper"
+#file<-"large_time_v3e-05_d1e-07idPeriodicCC11093_FullSin_23_11"
+file <-"small_time_v3e-05_d1e-07idPeriodicCC11093_FullSin_23_11_FAILED"
+#file <- "small_time_v3e-05_d1e-07idBiggerCompetition_Seed7234_FAILED"
+dat <- load(file)
 
-# ------------------------------- parameters -----------------------------------
+ts <- -1e8
+tstart <- -1e8
+str <- "large"
+file <- paste(str,"_time_v",toString(format(vbar, scientific = TRUE)),"_d",toString(dbar),"id",toString(id),sep ="")
+outfile <- paste("outputs/",file, sep = "")
+workspace <-paste("parameters/",file, sep="")
 
-# number of species and number of patches----
-SR <- S # number of resource species
-SC <- 0 # number of consumer species: 0, unless we have...
-if (model %in% c("trophic", "Tdep_trophic")) SC <- S # ...consumer species
-S <- SR + SC # set S to be the total number of species
-L <- 20 # number of patches
+setwd("~/EcoEvolution/spatial_ecoevo_v1.0.0/ecoevo_original")
+suppressPackageStartupMessages({
+  suppressWarnings({
+    start <- Sys.time()
+    require(gridExtra)
+    require(deSolve) # solving ordinary differential equations (ODEs)
+    require(tidyverse) # manipulating and visualizing data
+    require(ggpmisc) # adding statistics to plots
+    require(Rcpp) # importing C functions
+    library(tidyr)
+    library(ggplot2)
+    library(readr)
+    library(dplyr)
+    sourceCpp("rhs_eval.cpp") # compile external C functions
+    source("./plotting_functions.R") # various functions for plotting final data
+  })
+})
 
-# scalars----
-set.seed(seed) # set random seed for reproducibility
-v <- runif(SR, 1.0*vbar, 2.0*vbar) # resource genetic variances
-d <- runif(SR, 1.0*dbar, 2.0*dbar) # resource dispersal rates
-
-kappa <- 0.1 # intrinsic mortality parameter
-venv <- vbar # environmental variance
-vmat <- matrix(rep(v, L), S, L) # genetic variances at each patch
-s <- v + venv # species' total phenotypic variances
-eta <- 1 # competition width (centigrade; only for Tdep and Tdep_trophic)
-eps <- c(rep(0, SR), rep(0.3, SC)) # feeding efficiency of consumers
-nmin <- 1e-5 # below this threshold density, genetic variances are reduced
-aw <- 0.1 # (negative) slope of trait-dependence of tolerance width
-bw <- 4 # intercept of trait-dependence of tolerance width
-Tmax <- 25.0 # initial mean temperature at equator
-Tmin <- Tmax-40 # initial mean temperature at poles
-save.image(file = workspace)
-
-# matrices----
-rho <- runif(SR, 0.1, 11) # resource growth-tolerance tradeoff parameter
-a <- matrix(0, S, S) # initialize full competition matrix (resources+consumers)
-# assigned 0.7 & 0.9 instead of 0.5 & 1.5 as margins in aP, to lower competition
-aP <- matrix(runif(SR*SR, 0.15*0.4, 0.15*0.9), SR, SR) # resource comp coeffs
-diag(aP) <- runif(SR, 0.2*0.4, 0.2*0.9) # resource intraspecific comp coeffs
-a[1:SR,1:SR] <- aP # top left block: resources
-W <- matrix(0, S, S) # create feeding network: nothing if no consumers
-Th <- rep(1, S) # handling times in type II f.r. (dummy value if no consumers)
-arate <- rep(1, S) # attack rates in type II f.r. (dummy value if no consumers)
-if (model %in% c("trophic", "Tdep_trophic")) {
-  v <- c(v, runif(SC, 0.5*vbar, 1.5*vbar)) # add consumer genetic variances
-  d <- c(d, runif(SC, 0.1*dbar, 10.0*dbar)) # add consumer dispersal rates
-  rho <- c(rho, runif(SC, 0.9*0.1, 1.1*0.1)) # add consumer tradeoff parameters
-  aH <- matrix(0, SC, SC) # initialize competition matrix (consumers)
-  a[(SR+1):S,(SR+1):S] <- aH # bottom right: consumers
-  W <- generate_network(SR, SC) # trophic feeding network
-  Th[(SR+1):S] <- runif(S-SR, 0.5, 1) # handling times in type II f.r.
-  arate[(SR+1):S] <- runif(S-SR, 1, 10) # attack rates in type II f.r.
-}
-
-
+# cycles <- -1
+# updown <- TRUE
+# periodic <- if (cycles>0) TRUE else FALSE # Temporary Convention
 
 # dispersal matrix----
 mig <- matrix(0, L, L) # initialize dispersal matrix
@@ -270,7 +305,9 @@ print(mean(temp$n))
 #   #plot_timeseries(dat %>% filter(time %in% c(tstart,tstart+200*before_step,
 #   #                                          tstart+400*before_step,tstart+600*before_step,tstart+800*before_step,0)))
 # }
-plot_timeseries(dat %>% filter(time %in% c(tstart,seq(0, fail_time, by=during_step))))
+suppressWarnings(write_csv(dat, path=outfile)) # save data to specified file
+plot_timeseries(dat %>% filter(time %in% c(tstart,seq(0, 2e7, by=2e6))))
 print("Final Runtime")
 print(Sys.time()-start)
+save.image(file = workspace)
 
